@@ -28,9 +28,13 @@ import java.io.IOException;
 
 public class MapsFragment extends Fragment {
 
-    private OkHttpClient client;
-    private GoogleMap mMap;
+    private OkHttpClient client;  // Client to make API requests
+    private GoogleMap mMap;       // The Map itself
 
+    /*
+    * Method to make a GET request to a given URL
+    * returns response body as String
+     */
     private String getApiCall(String url) {
         try {
             // Create request
@@ -50,6 +54,33 @@ public class MapsFragment extends Fragment {
         }
     }
 
+    /*
+    * Method to draw a bus route on the map
+     */
+    private void drawBusRoute(String routeNo) {
+
+    }
+
+    /*
+    * Method to draw all buses on a given route
+     */
+    private void drawBusesOnRoute(String routeNo) {
+
+    }
+
+    /*
+    * Method to create array of a route from two latlng coordinates
+    * returns a TripPlan obj
+     */
+    private TripPlan getRoute(LatLng src, LatLng dest) {
+
+        return null;
+    }
+
+    /*
+    * When the map is ready to be interacted with
+    * Ex. Draw lines, add circles, set style
+     */
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
         /**
@@ -67,10 +98,13 @@ public class MapsFragment extends Fragment {
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.addMarker(new MarkerOptions().position(collegeStation).title("Marker in Cstat"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(collegeStation));
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getActivity(), R.raw.sin_city));
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
         }
     };
 
+    /*
+    * When the view is created, what happens
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -83,6 +117,9 @@ public class MapsFragment extends Fragment {
         return mView;
     }
 
+    /*
+    * Don't worry about this
+    */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

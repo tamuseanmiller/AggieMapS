@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.esri.core.geometry.Point;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -20,9 +21,11 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
-
-import org.json.JSONArray;
-import org.json.JSONException;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.CoordinateTransform;
+import org.locationtech.proj4j.CoordinateTransformFactory;
+import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.IOException;
 
@@ -30,6 +33,22 @@ public class MapsFragment extends Fragment {
 
     private OkHttpClient client;  // Client to make API requests
     private GoogleMap mMap;       // The Map itself
+
+    /*
+     * Method to convert transportation coords to LatLng
+     * returns Point
+     */
+    private Point convertWebMercatorToLatLng(final double x, final double y) {
+        CRSFactory crsFactory = new CRSFactory();
+        CoordinateReferenceSystem targetCRS = crsFactory.createFromName("EPSG:4236");
+        CoordinateReferenceSystem sourceCRS = crsFactory.createFromName("EPSG:3857");
+        CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
+        CoordinateTransform wgsToUtm = ctFactory.createTransform(sourceCRS, targetCRS);
+        ProjCoordinate result = new ProjCoordinate();
+        wgsToUtm.transform(new ProjCoordinate(x, y), result);
+
+        return new Point(result.x, result.y);
+    }
 
     /*
     * Method to make a GET request to a given URL

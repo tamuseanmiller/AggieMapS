@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.mrst.aggiemaps"
-        minSdk 21
+        minSdk 26
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -39,4 +39,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp/okhttp
     implementation group: 'com.squareup.okhttp', name: 'okhttp', version: '2.7.5'
+
+    implementation 'io.github.lapism:search:1.0.0'
 }

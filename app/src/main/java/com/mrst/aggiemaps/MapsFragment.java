@@ -31,9 +31,16 @@ public class MapsFragment extends Fragment {
     private OkHttpClient client;  // Client to make API requests
     private GoogleMap mMap;       // The Map itself
 
+    enum TripType {
+        WALK,
+        BUS,
+        BIKE,
+        DRIVE
+    }
+
     /*
-    * Method to make a GET request to a given URL
-    * returns response body as String
+     * Method to make a GET request to a given URL
+     * returns response body as String
      */
     private String getApiCall(String url) {
         try {
@@ -55,31 +62,31 @@ public class MapsFragment extends Fragment {
     }
 
     /*
-    * Method to draw a bus route on the map
+     * Method to draw a bus route on the map
      */
     private void drawBusRoute(String routeNo) {
 
     }
 
     /*
-    * Method to draw all buses on a given route
+     * Method to draw all buses on a given route
      */
     private void drawBusesOnRoute(String routeNo) {
 
     }
 
     /*
-    * Method to create array of a route from two latlng coordinates
-    * returns a TripPlan obj
+     * Method to create array of a trip from two latlng coordinates
+     * returns a TripPlan obj
      */
-    private TripPlan getRoute(LatLng src, LatLng dest) {
+    private TripPlan getTripPlan(LatLng src, LatLng dest, TripType type) {
 
         return null;
     }
 
     /*
-    * When the map is ready to be interacted with
-    * Ex. Draw lines, add circles, set style
+     * When the map is ready to be interacted with
+     * Ex. Draw lines, add circles, set style
      */
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -97,13 +104,13 @@ public class MapsFragment extends Fragment {
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.addMarker(new MarkerOptions().position(collegeStation).title("Marker in Cstat"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(collegeStation));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
             mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
         }
     };
 
     /*
-    * When the view is created, what happens
+     * When the view is created, this is what is called
      */
     @Nullable
     @Override
@@ -113,13 +120,13 @@ public class MapsFragment extends Fragment {
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
-        client = new OkHttpClient(); // Create OkHttpClient to be used in API requests
+        client = new OkHttpClient(); // Create OkHttpClient to be used in API request
         return mView;
     }
 
     /*
-    * Don't worry about this
-    */
+     * Don't worry about this
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

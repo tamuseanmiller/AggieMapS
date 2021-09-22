@@ -5,8 +5,11 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewbinding.ViewBinding;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
 import android.view.View;
@@ -41,10 +44,18 @@ public class MainActivity extends AppCompatActivity {
         Window w = getWindow();
         w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
+        //navController.navigate(R.id.mapsFragment);
+
         materialSearchBar = findViewById(R.id.material_search_bar);
         materialSearchView = findViewById(R.id.material_search_view);
 
+        materialSearchBar.setBackgroundColor(Color.TRANSPARENT);
+
         Toolbar toolbar = materialSearchBar.getToolbar();
+        toolbar.setBackgroundColor(Color.TRANSPARENT);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -68,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
-//                                                      adapter.filter(newText)
+//              adapter.filter(newText)
                 return true;
             }
 

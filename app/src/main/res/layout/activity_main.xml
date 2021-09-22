@@ -10,41 +10,33 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent">
+        android:background="?android:selectableItemBackground">
 
-        <!-- Simple MaterialToolbar extension -->
+<!--         Simple MaterialToolbar extension -->
         <com.lapism.search.widget.MaterialSearchBar
             android:id="@+id/material_search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="0dp"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
-            android:background="@android:color/transparent"/>
+            app:layout_scrollFlags="enterAlways|snap"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
-        android:name="com.mrst.aggiemaps.MapsFragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:defaultNavHost="true"
         app:layout_behavior="@string/material_search_bar_scrolling_view_behavior"
-        android:background="@android:color/transparent"/>
+        app:navGraph="@navigation/nav_graph" />
 
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@id/material_search_bar" />
-
-<!--    <BottomNavigationView-->
-<!--        android:id="@+id/bottom_navigation_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="bottom"-->
-<!--        android:orientation="vertical"-->
-<!--        app:layout_insetEdge="bottom"-->
-<!--        app:menu="@menu/menu_bottom_nav" />-->
+        app:layout_anchor="@id/material_search_bar"/>
 
 <!--    <androidx.fragment.app.FragmentContainerView-->
 <!--        android:id="@+id/maps_fragment"-->

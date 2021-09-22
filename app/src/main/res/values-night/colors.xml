@@ -9,6 +9,6 @@
     <color name="black_60">#99171717</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_60">#99FFFFFF</color>
-    <color name="background">#37474F</color>
+    <color name="background">#FFFFFFFF</color>
     <color name="all_color">#171717</color>
 </resources>

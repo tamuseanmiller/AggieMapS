@@ -116,7 +116,7 @@ public class MapsFragment extends Fragment {
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.addMarker(new MarkerOptions().position(collegeStation).title("Marker in Cstat"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(collegeStation));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
             mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
         }
     };

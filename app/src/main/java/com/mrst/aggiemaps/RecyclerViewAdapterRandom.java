@@ -10,18 +10,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
-public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerViewAdapterRoutes.ViewHolder> {
+public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerViewAdapterRandom.ViewHolder> {
 
-    private static List<MapsActivity.Route> mData;
+    private static List<String> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    RecyclerViewAdapterRandom(Context context, List<MapsActivity.Route> data) {
+    RecyclerViewAdapterRandom(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -30,17 +29,16 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_routes, parent, false);
+        View view = mInflater.inflate(R.layout.search_row, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapterRoutes.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerViewAdapterRandom.ViewHolder holder, int position) {
 
-        MapsActivity.Route route = mData.get(position);
-        holder.routeNumber.setText(route.routeNumber);
-        holder.routeNumber.setBackgroundColor(route.color);
-        holder.routeName.setText(route.routeName);
+        String searchEntry = mData.get(position);
+        holder.subtitleText.setText(searchEntry);
+        holder.titleText.setText(searchEntry);
 
     }
 
@@ -63,18 +61,17 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView routeName;
-        MaterialButton routeNumber;
-        MaterialCardView card;
+        TextView titleText;
+        TextView subtitleText;
+        MaterialButton directionIcon;
 
         ViewHolder(View itemView) {
             super(itemView);
-            routeName = itemView.findViewById(R.id.route_name);
-            routeNumber = itemView.findViewById(R.id.route_number);
-            card = itemView.findViewById(R.id.positionCard);
+            titleText = itemView.findViewById(R.id.title_text);
+            subtitleText = itemView.findViewById(R.id.subtitle_text);
+            directionIcon = itemView.findViewById(R.id.direction_icon);
             itemView.setOnClickListener(this);
-            routeNumber.setOnClickListener(this);
-            card.setOnClickListener(this);
+            subtitleText.setOnClickListener(this);
 
         }
 
@@ -88,7 +85,7 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
     }
 
     // convenience method for getting data at click position
-    MapsActivity.Route getItem(int id) {
+    String getItem(int id) {
         return mData.get(id);
     }
 

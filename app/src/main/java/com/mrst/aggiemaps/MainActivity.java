@@ -11,7 +11,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.renderscript.ScriptGroup;
 import android.util.AttributeSet;
@@ -22,6 +24,9 @@ import android.view.WindowManager;
 import com.google.android.material.appbar.AppBarLayout;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,10 +44,10 @@ public class MainActivity extends AppCompatActivity {
         ScriptGroup.Binding binding;
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchView.requestFocus();
-            materialSearchBar.setVisibility(View.VISIBLE);
-            showSystemUI();
-            materialSearchBar.setVisibility(View.GONE);
-            hideSystemUI();
+        materialSearchBar.setVisibility(View.VISIBLE);
+        showSystemUI();
+        materialSearchBar.setVisibility(View.GONE);
+        hideSystemUI();
     }
 
     @Override
@@ -62,10 +67,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = materialSearchBar.getToolbar();
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setIcon(R.drawable.magnify);
+        Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
+        if (nav != null && actionBar != null) {
+            nav.setTint(getColor(R.color.foreground));
+            actionBar.setIcon(nav);
+        }
 
         // Set Search Bar Settings
-        materialSearchBar.setHint("Aggie MapS >");
+        materialSearchBar.setHint("Aggie MapS");
+        materialSearchBar.setBackgroundColor(getColor(R.color.background));
         materialSearchBar.setOnClickListener(v -> {
             requestFocusOnSearch();
         });
@@ -74,14 +84,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Set SearchView Settings
+        List<String> l = new ArrayList<>();
+        l.add("Test1");
+        l.add("Test2");
+        l.add("Test3");
+        l.add("Test4");
+        RecyclerViewAdapterRandom recyclerViewAdapterRandom = new RecyclerViewAdapterRandom(this, l);
         RecyclerView recyclerRandom = new RecyclerView(this);
+        recyclerRandom.setAdapter(recyclerViewAdapterRandom);
         materialSearchView.addView(recyclerRandom);
+        Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
+        navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
         materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
         materialSearchView.setVisibility(View.GONE);
-        materialSearchView.setHint("Yeet");
-        materialSearchView.setBackgroundColor(ContextCompat.getColor(this, R.color.cardview_light_background));
-        materialSearchView.setFitsSystemWindows(false);
-        materialSearchView.setSystemUiVisibility(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        materialSearchView.setHint("Try Building Numbers/Names");
+        materialSearchView.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
 
         // Set OnClick Listeners
         materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());

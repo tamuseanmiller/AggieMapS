@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FavAdapter.ItemClickListener, OnCampusAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener {
 
     private BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
@@ -154,6 +154,12 @@ public class MainActivity extends AppCompatActivity {
                     gameDayRoutes.setAdapter(gameDayAdapter);
                 });
 
+                // Set click listeners
+                favAdapter.setClickListener(this);
+                onCampusAdapter.setClickListener(this);
+                offCampusAdapter.setClickListener(this);
+                gameDayAdapter.setClickListener(this);
+
                 // If no favorites don't show the list
                 if (favList.size() == 1) {
                     favRoutes.setVisibility(View.GONE);
@@ -194,5 +200,10 @@ public class MainActivity extends AppCompatActivity {
 
         // To remove the callback:
         standardBottomSheetBehavior.removeBottomSheetCallback(bottomSheetCallback);
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+
     }
 }

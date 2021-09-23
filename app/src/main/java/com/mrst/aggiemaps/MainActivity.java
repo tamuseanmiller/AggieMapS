@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements FavAdapter.ItemCl
         View standardBottomSheet = findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
         standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
-        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(200);
         standardBottomSheetBehavior.setHideable(false);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.9f);

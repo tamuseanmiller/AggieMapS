@@ -30,10 +30,36 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private BottomSheetBehavior<View> standardBottomSheetBehavior;
-    private RecyclerView recyclerRoutes;
-    private RecyclerViewAdapterBusRoutes adapterRoutes;
-    private RecyclerViewAdapterBusRoutes adapterOnCampus;
-    private RecyclerView recyclerOnCampus;
+    private RecyclerView onCampusRoutes;
+    private RecyclerViewAdapterBusRoutes onCampusAdapter;
+    private RecyclerViewAdapterBusRoutes offCampusAdapter;
+    private RecyclerView offCampusRoutes;
+    private RecyclerViewAdapterBusRoutes favAdapter;
+    private RecyclerView favRoutes;
+    private OkHttpClient client;  // Client to make API requests
+
+    /*
+     * Method to make a GET request to a given URL
+     * returns response body as String
+     */
+    private String getApiCall(String url) {
+        try {
+            // Create request
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            // Execute request and get response
+            Response response = client.newCall(request).execute();
+            ResponseBody body = response.body();
+
+            return body.string(); // Return the response as a string
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,29 +70,37 @@ public class MainActivity extends AppCompatActivity {
         Window w = getWindow();
         w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        // Set up recycler
-        recyclerRoutes = findViewById(R.id.recycler_favorites);
-        adapterRoutes = null;
+        // Initialize OkHttp Client
+        client = new OkHttpClient(); // Create OkHttpClient to be used in API requests
 
-        // Set decoration
-        recyclerRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        // Set up recyclers
+        favRoutes = findViewById(R.id.recycler_favorites);
+        favAdapter = null;
+        onCampusRoutes = findViewById(R.id.recycler_oncampus);
+        onCampusAdapter = null;
+        offCampusRoutes = findViewById(R.id.recycler_offcampus);
+        offCampusAdapter = null;
+
+        // Set decorations
         ColumnProvider col = () -> 2;
-        recyclerRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        favRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        onCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        offCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
         new Thread(() -> {
             try {
-                OkHttpClient client = new OkHttpClient();
-                // Add buses
-                Request request = new Request.Builder()
-                        .url("https://transport.tamu.edu/BusRoutesFeed/api/Routes")
-                        .build();
-                Response response = client.newCall(request).execute();
-                ResponseBody body = response.body();
-                String str = body.string();
+                String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");
                 JSONArray routes = new JSONArray(str);
 
-                List<BusRoute> routeList = new ArrayList<>();
-                routeList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(this, R.color.all_color)));
+                List<BusRoute> favList = new ArrayList<>();
+                List<BusRoute> onList = new ArrayList<>();
+                List<BusRoute> offList = new ArrayList<>();
+                favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(this, R.color.all_color)));
+                onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(this, R.color.all_color)));
+                offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(this, R.color.all_color)));
                 for (int i = 0; i < routes.length(); i++) {
 
                     // Get Color int
@@ -80,62 +114,27 @@ public class MainActivity extends AppCompatActivity {
                                 Integer.parseInt(colors[2].trim()));
                     }
 
-                    routeList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
-                }
-                adapterRoutes = new RecyclerViewAdapterBusRoutes(this, routeList);
-                runOnUiThread(() -> recyclerRoutes.setAdapter(adapterRoutes));
-                //adapterRoutes.setClickListener(this);
-
-            } catch (JSONException | IOException e) {
-                e.printStackTrace();
-            }
-
-        }).start();
-
-        // Set up recycler
-        recyclerOnCampus = findViewById(R.id.recycler_oncampus);
-        adapterOnCampus = null;
-
-        // Set decoration
-        recyclerOnCampus.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
-        recyclerOnCampus.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        new Thread(() -> {
-            try {
-                OkHttpClient client = new OkHttpClient();
-                // Add buses
-                Request request = new Request.Builder()
-                        .url("https://transport.tamu.edu/BusRoutesFeed/api/Routes")
-                        .build();
-                Response response = client.newCall(request).execute();
-                ResponseBody body = response.body();
-                String str = body.string();
-                JSONArray routes = new JSONArray(str);
-
-                List<BusRoute> routeList = new ArrayList<>();
-                routeList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(this, R.color.all_color)));
-                for (int i = 0; i < routes.length(); i++) {
-
-                    if (routes.getJSONObject(i).getString("Description").contains("On Campus")) {
-
-                        // Get Color int
-                        String strRGB = routes.getJSONObject(i).getString("Color");
-                        int color = Color.rgb(255, 0, 255);
-                        if (strRGB.startsWith("rgb")) {
-                            String[] colors = strRGB.substring(4, strRGB.length() - 1).split(",");
-                            color = Color.rgb(
-                                    Integer.parseInt(colors[0].trim()),
-                                    Integer.parseInt(colors[1].trim()),
-                                    Integer.parseInt(colors[2].trim()));
-                        }
-
-                        routeList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                    switch(routes.getJSONObject(i).getJSONObject("Group").getString("Name")) {
+                        case "On Campus":
+                            onList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                            break;
+                        case "Off Campus":
+                            offList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                            break;
+                        case "Game Day":
+                        default:
+                            favList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
                     }
                 }
-                adapterOnCampus = new RecyclerViewAdapterBusRoutes(this, routeList);
-                runOnUiThread(() -> recyclerOnCampus.setAdapter(adapterOnCampus));
+                favAdapter = new RecyclerViewAdapterBusRoutes(this, favList, BusRouteTag.FAVORITES);
+                runOnUiThread(() -> favRoutes.setAdapter(favAdapter));
+                onCampusAdapter = new RecyclerViewAdapterBusRoutes(this, onList, BusRouteTag.ON_CAMPUS);
+                runOnUiThread(() -> onCampusRoutes.setAdapter(onCampusAdapter));
+                offCampusAdapter = new RecyclerViewAdapterBusRoutes(this, offList, BusRouteTag.OFF_CAMPUS);
+                runOnUiThread(() -> offCampusRoutes.setAdapter(offCampusAdapter));
                 //adapterRoutes.setClickListener(this);
 
-            } catch (JSONException | IOException e) {
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
 

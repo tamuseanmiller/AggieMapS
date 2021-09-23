@@ -1,5 +1,12 @@
 package com.mrst.aggiemaps;
 
+enum BusRouteTag {
+    FAVORITES,
+    ON_CAMPUS,
+    OFF_CAMPUS,
+    GAME_DAY
+}
+
 public class BusRoute {
 
     public String routeNumber;

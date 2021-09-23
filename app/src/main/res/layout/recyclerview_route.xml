@@ -19,7 +19,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingLeft="16dp">
+            android:paddingLeft="14dp">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -32,8 +32,8 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-medium"
                     android:text="00"
-                    android:textSize="17sp"
-                    android:textColor="@color/black" />
+                    android:textSize="16sp"
+                    android:textColor="@color/foreground" />
 
                 <TextView
                     android:id="@+id/route_name"
@@ -49,8 +49,8 @@
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:text="@string/loading"
-                    android:textSize="17sp"
-                    android:textColor="@color/black_60" />
+                    android:textSize="16sp"
+                    android:textColor="@color/foreground_60" />
 
             </RelativeLayout>
 

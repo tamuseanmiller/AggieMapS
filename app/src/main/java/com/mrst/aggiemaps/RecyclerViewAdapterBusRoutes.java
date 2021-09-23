@@ -12,31 +12,36 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 
-public class RecyclerViewAdapterBusRoutes extends RecyclerView.Adapter<RecyclerViewAdapterBusRoutes.ViewHolder> {
+public class RecyclerViewAdapterBusRoutes extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static List<BusRoute> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private BusRouteTag tag;
 
     // data is passed into the constructor
-    RecyclerViewAdapterBusRoutes(Context context, List<BusRoute> data) {
+    RecyclerViewAdapterBusRoutes(Context context, List<BusRoute> data, BusRouteTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
+        this.tag = tag;
     }
 
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_route, parent, false);
-        return new ViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        switch (tag) {
+            case ON_CAMPUS:
+                return new RecyclerViewAdapterBusRoutes.OnCampusViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+            case OFF_CAMPUS:
+                return new RecyclerViewAdapterBusRoutes.OffCampusViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+            default:
+                return new RecyclerViewAdapterBusRoutes.FavoritesViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+        }
     }
 
     private static int lightenColor(int color, double fraction) {
@@ -55,24 +60,62 @@ public class RecyclerViewAdapterBusRoutes extends RecyclerView.Adapter<RecyclerV
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapterBusRoutes.ViewHolder holder, int position) {
-
-        if (position == 0) {
-            BusRoute route = mData.get(position);
-            holder.routeNumber.setText(route.routeNumber);
-            holder.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white));
-            holder.card.setBackgroundTintList(ColorStateList.valueOf(route.color));
-            holder.routeName.setText(route.routeName);
-            holder.routeName.setSelected(true);
-            holder.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
-        } else {
-            BusRoute route = mData.get(position);
-            holder.routeNumber.setText(route.routeNumber);
-            holder.card.setBackgroundTintList(ColorStateList.valueOf(getLighterShade(route.color, 0)));
-            holder.routeName.setText(route.routeName);
-            holder.routeName.setSelected(true);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
+        switch (tag) {
+            case ON_CAMPUS:
+                OnCampusViewHolder holderOn = (OnCampusViewHolder) holderView;
+                if (position == 0) {
+                    BusRoute route = mData.get(position);
+                    holderOn.routeNumber.setText(route.routeNumber);
+                    holderOn.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white));
+                    holderOn.card.setBackgroundTintList(ColorStateList.valueOf(route.color));
+                    holderOn.routeName.setText(route.routeName);
+                    holderOn.routeName.setSelected(true);
+                    holderOn.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+                } else {
+                    BusRoute route = mData.get(position);
+                    holderOn.routeNumber.setText(route.routeNumber);
+                    holderOn.card.setBackgroundTintList(ColorStateList.valueOf(getLighterShade(route.color, 0)));
+                    holderOn.routeName.setText(route.routeName);
+                    holderOn.routeName.setSelected(true);
+                }
+                break;
+            case OFF_CAMPUS:
+                OffCampusViewHolder holderOff = (OffCampusViewHolder) holderView;
+                if (position == 0) {
+                    BusRoute route = mData.get(position);
+                    holderOff.routeNumber.setText(route.routeNumber);
+                    holderOff.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white));
+                    holderOff.card.setBackgroundTintList(ColorStateList.valueOf(route.color));
+                    holderOff.routeName.setText(route.routeName);
+                    holderOff.routeName.setSelected(true);
+                    holderOff.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+                } else {
+                    BusRoute route = mData.get(position);
+                    holderOff.routeNumber.setText(route.routeNumber);
+                    holderOff.card.setBackgroundTintList(ColorStateList.valueOf(getLighterShade(route.color, 0)));
+                    holderOff.routeName.setText(route.routeName);
+                    holderOff.routeName.setSelected(true);
+                }
+                break;
+            default:
+                FavoritesViewHolder holderFav = (FavoritesViewHolder) holderView;
+                if (position == 0) {
+                    BusRoute route = mData.get(position);
+                    holderFav.routeNumber.setText(route.routeNumber);
+                    holderFav.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white));
+                    holderFav.card.setBackgroundTintList(ColorStateList.valueOf(route.color));
+                    holderFav.routeName.setText(route.routeName);
+                    holderFav.routeName.setSelected(true);
+                    holderFav.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+                } else {
+                    BusRoute route = mData.get(position);
+                    holderFav.routeNumber.setText(route.routeNumber);
+                    holderFav.card.setBackgroundTintList(ColorStateList.valueOf(getLighterShade(route.color, 0)));
+                    holderFav.routeName.setText(route.routeName);
+                    holderFav.routeName.setSelected(true);
+                }
         }
-
     }
 
     @Override
@@ -82,7 +125,14 @@ public class RecyclerViewAdapterBusRoutes extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public int getItemViewType(int position) {
-        return position;
+        switch (tag) {
+            case ON_CAMPUS:
+                return 0;
+            case OFF_CAMPUS:
+                return 1;
+            default:
+                return 2;
+        }
     }
 
     // total number of rows
@@ -93,12 +143,62 @@ public class RecyclerViewAdapterBusRoutes extends RecyclerView.Adapter<RecyclerV
 
 
     // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class FavoritesViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView routeName;
         TextView routeNumber;
         MaterialCardView card;
 
-        ViewHolder(View itemView) {
+        FavoritesViewHolder(View itemView) {
+            super(itemView);
+            routeName = itemView.findViewById(R.id.route_name);
+            routeNumber = itemView.findViewById(R.id.route_number);
+            card = itemView.findViewById(R.id.route_card);
+            itemView.setOnClickListener(this);
+            card.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View view) {
+
+            if (mClickListener != null) {
+                mClickListener.onItemClick(view, getAdapterPosition());
+            }
+        }
+    }
+
+    // stores and recycles views as they are scrolled off screen
+    public class OnCampusViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView routeName;
+        TextView routeNumber;
+        MaterialCardView card;
+
+        OnCampusViewHolder(View itemView) {
+            super(itemView);
+            routeName = itemView.findViewById(R.id.route_name);
+            routeNumber = itemView.findViewById(R.id.route_number);
+            card = itemView.findViewById(R.id.route_card);
+            itemView.setOnClickListener(this);
+            card.setOnClickListener(this);
+
+        }
+
+        @Override
+        public void onClick(View view) {
+
+            if (mClickListener != null) {
+                mClickListener.onItemClick(view, getAdapterPosition());
+            }
+        }
+    }
+
+    // stores and recycles views as they are scrolled off screen
+    public class OffCampusViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView routeName;
+        TextView routeNumber;
+        MaterialCardView card;
+
+        OffCampusViewHolder(View itemView) {
             super(itemView);
             routeName = itemView.findViewById(R.id.route_name);
             routeNumber = itemView.findViewById(R.id.route_number);

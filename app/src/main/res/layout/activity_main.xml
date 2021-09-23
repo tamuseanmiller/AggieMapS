@@ -33,7 +33,7 @@
                 android:fontFamily="sans-serif-medium"
                 android:textSize="17sp"
                 android:text="@string/favorites"
-                android:textColor="@color/background"
+                android:textColor="@color/foreground"
                 android:layout_marginBottom="16dp"
                 android:paddingStart="6dp"/>
 
@@ -50,12 +50,29 @@
                 android:fontFamily="sans-serif-medium"
                 android:textSize="17sp"
                 android:text="@string/on_campus"
-                android:textColor="@color/background"
+                android:textColor="@color/foreground"
                 android:layout_marginBottom="16dp"
                 android:paddingStart="6dp"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_oncampus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:paddingBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="17sp"
+                android:text="@string/off_campus"
+                android:textColor="@color/foreground"
+                android:layout_marginBottom="16dp"
+                android:paddingStart="6dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_offcampus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -68,7 +85,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/background"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             app:cardCornerRadius="25dp"
@@ -84,7 +101,7 @@
                     android:layout_height="15dp"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="30dp"
-                    android:backgroundTint="@color/background"
+                    android:backgroundTint="@color/foreground"
                     android:stateListAnimator="@null"
                     app:cornerRadius="25dp" />
 

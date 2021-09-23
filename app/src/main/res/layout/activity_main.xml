@@ -16,7 +16,7 @@
         android:id="@+id/standard_bottom_sheet"
         style="@style/ThemeOverlay.App.BottomSheetDialog"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
@@ -28,6 +28,7 @@
             android:elevation="5dp">
 
             <TextView
+                android:id="@+id/favorites_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
@@ -73,6 +74,23 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_offcampus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:paddingBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:textSize="17sp"
+                android:text="@string/game_day"
+                android:textColor="@color/foreground"
+                android:layout_marginBottom="16dp"
+                android:paddingStart="6dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_gameday"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"

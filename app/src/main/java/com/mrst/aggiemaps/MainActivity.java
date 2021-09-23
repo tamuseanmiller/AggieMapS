@@ -31,11 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
-    private RecyclerViewAdapterBusRoutes onCampusAdapter;
-    private RecyclerViewAdapterBusRoutes offCampusAdapter;
+    private OnCampusAdapter onCampusAdapter;
+    private OffCampusAdapter offCampusAdapter;
     private RecyclerView offCampusRoutes;
-    private RecyclerViewAdapterBusRoutes favAdapter;
+    private FavAdapter favAdapter;
     private RecyclerView favRoutes;
+    private GameDayAdapter gameDayAdapter;
+    private RecyclerView gameDayRoutes;
     private OkHttpClient client;  // Client to make API requests
 
     /*
@@ -80,27 +82,37 @@ public class MainActivity extends AppCompatActivity {
         onCampusAdapter = null;
         offCampusRoutes = findViewById(R.id.recycler_offcampus);
         offCampusAdapter = null;
+        gameDayRoutes = findViewById(R.id.recycler_gameday);
+        gameDayAdapter = null;
 
         // Set decorations
-        ColumnProvider col = () -> 2;
-        favRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        ColumnProvider col = () -> 1;
+        favRoutes.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
         favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        col = () -> 2;
         onCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
         onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
         offCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
         offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        gameDayRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
+        // Thread for fetching the routes
         new Thread(() -> {
             try {
                 String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");
                 JSONArray routes = new JSONArray(str);
 
+                // Initialize lists and add the `ALL` Route
                 List<BusRoute> favList = new ArrayList<>();
                 List<BusRoute> onList = new ArrayList<>();
                 List<BusRoute> offList = new ArrayList<>();
+                List<BusRoute> gameDayList = new ArrayList<>();
                 favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(this, R.color.all_color)));
                 onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(this, R.color.all_color)));
                 offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(this, R.color.all_color)));
+                gameDayList.add(new BusRoute("All", "Game Day", ContextCompat.getColor(this, R.color.all_color)));
+
                 for (int i = 0; i < routes.length(); i++) {
 
                     // Get Color int
@@ -114,7 +126,8 @@ public class MainActivity extends AppCompatActivity {
                                 Integer.parseInt(colors[2].trim()));
                     }
 
-                    switch(routes.getJSONObject(i).getJSONObject("Group").getString("Name")) {
+                    // See what group the route lies in, then add it
+                    switch (routes.getJSONObject(i).getJSONObject("Group").getString("Name")) {
                         case "On Campus":
                             onList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
                             break;
@@ -122,24 +135,36 @@ public class MainActivity extends AppCompatActivity {
                             offList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
                             break;
                         case "Game Day":
+                            gameDayList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                            break;
                         default:
                             favList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
                     }
                 }
-                favAdapter = new RecyclerViewAdapterBusRoutes(this, favList, BusRouteTag.FAVORITES);
-                runOnUiThread(() -> favRoutes.setAdapter(favAdapter));
-                onCampusAdapter = new RecyclerViewAdapterBusRoutes(this, onList, BusRouteTag.ON_CAMPUS);
-                runOnUiThread(() -> onCampusRoutes.setAdapter(onCampusAdapter));
-                offCampusAdapter = new RecyclerViewAdapterBusRoutes(this, offList, BusRouteTag.OFF_CAMPUS);
-                runOnUiThread(() -> offCampusRoutes.setAdapter(offCampusAdapter));
-                //adapterRoutes.setClickListener(this);
+
+                // Create adapters and add them to the recyclers
+                favAdapter = new FavAdapter(this, favList, BusRouteTag.FAVORITES);
+                onCampusAdapter = new OnCampusAdapter(this, onList, BusRouteTag.ON_CAMPUS);
+                offCampusAdapter = new OffCampusAdapter(this, offList, BusRouteTag.OFF_CAMPUS);
+                gameDayAdapter = new GameDayAdapter(this, gameDayList, BusRouteTag.GAME_DAY);
+                runOnUiThread(() -> {
+                    favRoutes.setAdapter(favAdapter);
+                    onCampusRoutes.setAdapter(onCampusAdapter);
+                    offCampusRoutes.setAdapter(offCampusAdapter);
+                    gameDayRoutes.setAdapter(gameDayAdapter);
+                });
+
+                // If no favorites don't show the list
+                if (favList.size() == 1) {
+                    favRoutes.setVisibility(View.GONE);
+                    findViewById(R.id.favorites_text).setVisibility(View.GONE);
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
         }).start();
-
 
 
         // Set up the bottom sheet
@@ -149,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         standardBottomSheetBehavior.setPeekHeight(200);
         standardBottomSheetBehavior.setHideable(false);
+        standardBottomSheetBehavior.setHalfExpandedRatio(0.9f);
 
         BottomSheetBehavior.BottomSheetCallback bottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
             @Override

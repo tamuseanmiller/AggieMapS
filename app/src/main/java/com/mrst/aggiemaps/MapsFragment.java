@@ -61,6 +61,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private RecyclerView gameDayRoutes;
     private TextView favoritesText;
 
+    enum TripType {
+        WALK,
+        BUS,
+        BIKE,
+        DRIVE
+    }
+
     /*
      * Method to convert transportation coords to LatLng
      * returns Point
@@ -163,7 +170,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to create array of a route from two latlng coordinates
      * returns a TripPlan obj
      */
-    private TripPlan getRoute(LatLng src, LatLng dest) {
+    private TripPlan getTripPlan(LatLng src, LatLng dest, TripType type) {
 
         return null;
     }
@@ -377,7 +384,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.mapsFragmentID);
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
         }

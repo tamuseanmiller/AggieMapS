@@ -4,13 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
     tools:context=".MainActivity">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/maps_fragment"
-        android:name="com.mrst.aggiemaps.MapsFragment"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:elevation="0.1dp"
+        android:stateListAnimator="@null"
+        android:background="@android:color/transparent">
+
+<!--         Simple MaterialToolbar extension -->
+        <com.lapism.search.widget.MaterialSearchBar
+            android:id="@+id/material_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="0dp"
+            app:layout_scrollFlags="enterAlways|snap"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/maps_fragment"
+            android:name="com.mrst.aggiemaps.MapsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    <com.lapism.search.widget.MaterialSearchView
+        android:id="@+id/material_search_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_anchor="@id/material_search_bar"/>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+

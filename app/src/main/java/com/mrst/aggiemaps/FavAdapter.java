@@ -2,6 +2,7 @@ package com.mrst.aggiemaps;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,10 +38,19 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return new FavAdapter.FavoritesViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
     }
 
+    public static int manipulateColor(int color, float factor) {
+        int a = Color.alpha(color);
+        int r = Math.round(Color.red(color) * factor);
+        int g = Math.round(Color.green(color) * factor);
+        int b = Math.round(Color.blue(color) * factor);
+        return Color.argb(a,
+                Math.min(r,255),
+                Math.min(g,255),
+                Math.min(b,255));
+    }
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
-
-
         FavoritesViewHolder holderFav = (FavoritesViewHolder) holderView;
         if (position == 0) {
             BusRoute route = mData.get(position);
@@ -52,15 +62,21 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holderFav.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
         } else {
             BusRoute route = mData.get(position);
-            holderFav.routeNumber.setText(route.routeNumber);
+            holderFav.routeNumber.setText(route.routeNumber); // Set route number text
+
+            // If no color is given, pick a random color, otherwise find the nearest color
             if (route.color == Integer.MAX_VALUE) route.color = palette.pickRandomColor();
-            holderFav.card.setCardBackgroundColor(palette.findClosestPaletteColorTo(route.color));
-            if (ColorUtils.calculateLuminance(route.color) > 0.3) {
+            else route.color = palette.findClosestPaletteColorTo(route.color);
+            holderFav.card.setCardBackgroundColor(route.color);
+            holderFav.card.setRippleColor(ColorStateList.valueOf(manipulateColor(route.color, 0.8f)));
+
+            // If the shade of the background color is too light, change text color to black
+            if (ColorUtils.calculateLuminance(route.color) > 0.6) {
                 holderFav.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black_60));
                 holderFav.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black));
             }
-            holderFav.routeName.setText(route.routeName);
-            holderFav.routeName.setSelected(true);
+            holderFav.routeName.setText(route.routeName); // Set route name text
+            holderFav.routeName.setSelected(true); // Set selected so will marquee if needed
         }
 
     }

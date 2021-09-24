@@ -285,7 +285,6 @@
     <color name="grey_900">#212121</color>
 
     <integer-array name="material_colors">
-        <item>@color/red_50</item>
         <item>@color/red_100</item>
         <item>@color/red_200</item>
         <item>@color/red_300</item>
@@ -296,7 +295,6 @@
         <item>@color/red_A400</item>
         <item>@color/red_A700</item>
 
-        <item>@color/deep_purple_50</item>
         <item>@color/deep_purple_100</item>
         <item>@color/deep_purple_200</item>
         <item>@color/deep_purple_300</item>
@@ -307,7 +305,6 @@
         <item>@color/deep_purple_A400</item>
         <item>@color/deep_purple_A700</item>
 
-        <item>@color/light_blue_50</item>
         <item>@color/light_blue_100</item>
         <item>@color/light_blue_200</item>
         <item>@color/light_blue_300</item>
@@ -318,7 +315,6 @@
         <item>@color/light_blue_A400</item>
         <item>@color/light_blue_A700</item>
 
-        <item>@color/green_50</item>
         <item>@color/green_100</item>
         <item>@color/green_200</item>
         <item>@color/green_300</item>
@@ -329,7 +325,6 @@
         <item>@color/green_A400</item>
         <item>@color/green_A700</item>
 
-        <item>@color/yellow_50</item>
         <item>@color/yellow_100</item>
         <item>@color/yellow_200</item>
         <item>@color/yellow_300</item>
@@ -340,7 +335,6 @@
         <item>@color/yellow_A400</item>
         <item>@color/yellow_A700</item>
 
-        <item>@color/deep_orange_50</item>
         <item>@color/deep_orange_100</item>
         <item>@color/deep_orange_200</item>
         <item>@color/deep_orange_300</item>
@@ -351,14 +345,12 @@
         <item>@color/deep_orange_A400</item>
         <item>@color/deep_orange_A700</item>
 
-        <item>@color/blue_grey_50</item>
         <item>@color/blue_grey_100</item>
         <item>@color/blue_grey_200</item>
         <item>@color/blue_grey_300</item>
         <item>@color/blue_grey_400</item>
         <item>@color/blue_grey_500</item>
 
-        <item>@color/pink_50</item>
         <item>@color/pink_100</item>
         <item>@color/pink_200</item>
         <item>@color/pink_300</item>
@@ -369,7 +361,6 @@
         <item>@color/pink_A400</item>
         <item>@color/pink_A700</item>
 
-        <item>@color/indigo_50</item>
         <item>@color/indigo_100</item>
         <item>@color/indigo_200</item>
         <item>@color/indigo_300</item>
@@ -380,7 +371,6 @@
         <item>@color/indigo_A400</item>
         <item>@color/indigo_A700</item>
 
-        <item>@color/cyan_50</item>
         <item>@color/cyan_100</item>
         <item>@color/cyan_200</item>
         <item>@color/cyan_300</item>
@@ -391,7 +381,6 @@
         <item>@color/cyan_A400</item>
         <item>@color/cyan_A700</item>
 
-        <item>@color/light_green_50</item>
         <item>@color/light_green_100</item>
         <item>@color/light_green_200</item>
         <item>@color/light_green_300</item>
@@ -402,7 +391,6 @@
         <item>@color/light_green_A400</item>
         <item>@color/light_green_A700</item>
 
-        <item>@color/amber_50</item>
         <item>@color/amber_100</item>
         <item>@color/amber_200</item>
         <item>@color/amber_300</item>
@@ -413,14 +401,12 @@
         <item>@color/amber_A400</item>
         <item>@color/amber_A700</item>
 
-        <item>@color/brown_50</item>
         <item>@color/brown_100</item>
         <item>@color/brown_200</item>
         <item>@color/brown_300</item>
         <item>@color/brown_400</item>
         <item>@color/brown_500</item>
 
-        <item>@color/purple_50</item>
         <item>@color/purple_100</item>
         <item>@color/purple_200</item>
         <item>@color/purple_300</item>
@@ -431,7 +417,6 @@
         <item>@color/purple_A400</item>
         <item>@color/purple_A700</item>
 
-        <item>@color/blue_50</item>
         <item>@color/blue_100</item>
         <item>@color/blue_200</item>
         <item>@color/blue_300</item>
@@ -442,7 +427,6 @@
         <item>@color/blue_A400</item>
         <item>@color/blue_A700</item>
 
-        <item>@color/teal_50</item>
         <item>@color/teal_100</item>
         <item>@color/teal_200</item>
         <item>@color/teal_300</item>
@@ -453,7 +437,6 @@
         <item>@color/teal_A400</item>
         <item>@color/teal_A700</item>
 
-        <item>@color/lime_50</item>
         <item>@color/lime_100</item>
         <item>@color/lime_200</item>
         <item>@color/lime_300</item>
@@ -464,7 +447,6 @@
         <item>@color/lime_A400</item>
         <item>@color/lime_A700</item>
 
-        <item>@color/orange_50</item>
         <item>@color/orange_100</item>
         <item>@color/orange_200</item>
         <item>@color/orange_300</item>
@@ -475,8 +457,6 @@
         <item>@color/orange_A400</item>
         <item>@color/orange_A700</item>
 
-        <item>@color/grey_50</item>
-        <item>@color/grey_100</item>
         <item>@color/grey_200</item>
         <item>@color/grey_300</item>
         <item>@color/grey_400</item>

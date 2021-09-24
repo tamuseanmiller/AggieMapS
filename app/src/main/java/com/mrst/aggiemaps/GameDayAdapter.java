@@ -2,6 +2,7 @@ package com.mrst.aggiemaps;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,17 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return new GameDayAdapter.GameDayViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
     }
 
+    public static int manipulateColor(int color, float factor) {
+        int a = Color.alpha(color);
+        int r = Math.round(Color.red(color) * factor);
+        int g = Math.round(Color.green(color) * factor);
+        int b = Math.round(Color.blue(color) * factor);
+        return Color.argb(a,
+                Math.min(r,255),
+                Math.min(g,255),
+                Math.min(b,255));
+    }
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
         GameDayViewHolder holderGame = (GameDayViewHolder) holderView;
@@ -49,15 +61,21 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             holderGame.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
         } else {
             BusRoute route = mData.get(position);
-            holderGame.routeNumber.setText(route.routeNumber);
+            holderGame.routeNumber.setText(route.routeNumber); // Set route number text
+
+            // If no color is given, pick a random color, otherwise find the nearest color
             if (route.color == Integer.MAX_VALUE) route.color = palette.pickRandomColor();
-            holderGame.card.setCardBackgroundColor(palette.findClosestPaletteColorTo(route.color));
-            if (ColorUtils.calculateLuminance(route.color) > 0.3) {
+            else route.color = palette.findClosestPaletteColorTo(route.color);
+            holderGame.card.setCardBackgroundColor(route.color);
+            holderGame.card.setRippleColor(ColorStateList.valueOf(manipulateColor(route.color, 0.8f)));
+
+            // If the shade of the background color is too light, change text color to black
+            if (ColorUtils.calculateLuminance(route.color) > 0.6) {
                 holderGame.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black_60));
                 holderGame.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black));
             }
-            holderGame.routeName.setText(route.routeName);
-            holderGame.routeName.setSelected(true);
+            holderGame.routeName.setText(route.routeName); // Set route name text
+            holderGame.routeName.setSelected(true); // Set selected so will marquee if needed
         }
     }
 

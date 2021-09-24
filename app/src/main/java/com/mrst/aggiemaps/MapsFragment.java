@@ -189,10 +189,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 14.0f));
             mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
-
-            // Draw Initial Bus Route
-            routeNo = "27";
-            new Thread(() -> drawBusRoute(ContextCompat.getColor(requireActivity(), R.color.light_blue_300))).start();
         }
     };
 
@@ -331,20 +327,47 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     @Override
-    public void onItemClick(View view, int position) {
-        // When a route is clicked, check which view it comes from and draw that route
-        if (view == onCampusRoutes) {
-            routeNo = onCampusAdapter.getItem(position).routeNumber;
-        } else if (view == offCampusRoutes) {
-            routeNo = offCampusAdapter.getItem(position).routeNumber;
-        } else if (view == favRoutes) {
-            routeNo = favAdapter.getItem(position).routeNumber;
-        } else if (view == gameDayRoutes) {
-            routeNo = gameDayAdapter.getItem(position).routeNumber;
-        }
+    public void onItemClick(View view, BusRoute busRoute) {
+        // When a route is clicked, set route number and draw route
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         mMap.clear();
-        new Thread(() -> drawBusRoute(gameDayAdapter.getItem(position).color)).start();
+        if (busRoute.routeNumber.equals("All")) {
+            new Thread(() -> {
+                switch (busRoute.routeName) {
+                    case "Favorites":
+                        for (int i = 1; i < favAdapter.getItemCount(); i++) {
+                            routeNo = favAdapter.getItem(i).routeNumber;
+                            int finalI = i;
+                            new Thread(() ->drawBusRoute(favAdapter.getItem(finalI).color)).start();
+                        }
+                        break;
+                    case "On Campus":
+                        for (int i = 1; i < onCampusAdapter.getItemCount(); i++) {
+                            routeNo = onCampusAdapter.getItem(i).routeNumber;
+                            int finalI = i;
+                            new Thread(() -> drawBusRoute(onCampusAdapter.getItem(finalI).color)).start();
+                        }
+                        break;
+                    case "Off Campus":
+                        for (int i = 1; i < offCampusAdapter.getItemCount(); i++) {
+                            routeNo = offCampusAdapter.getItem(i).routeNumber;
+                            int finalI = i;
+                            new Thread(() -> drawBusRoute(offCampusAdapter.getItem(finalI).color)).start();
+                        }
+                        break;
+                    case "Game Day":
+                        for (int i = 1; i < gameDayAdapter.getItemCount(); i++) {
+                            routeNo = gameDayAdapter.getItem(i).routeNumber;
+                            int finalI = i;
+                            new Thread(() ->drawBusRoute(gameDayAdapter.getItem(finalI).color)).start();
+                        }
+                        break;
+                }
+            }).start();
+        } else {
+            routeNo = busRoute.routeNumber;
+            new Thread(() -> drawBusRoute(busRoute.color)).start();
+        }
     }
 
     /*

@@ -115,7 +115,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onItemClick(view, getAdapterPosition());
+                mClickListener.onItemClick(view, mData.get(getAdapterPosition()));
             }
         }
     }
@@ -132,7 +132,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(View view, BusRoute busRoute);
 
     }
 }

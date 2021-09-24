@@ -29,13 +29,14 @@
             android:id="@+id/maps_fragment"
             android:name="com.mrst.aggiemaps.MapsFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
 
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_anchor="@id/material_search_bar"/>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -1,45 +1,69 @@
 package com.mrst.aggiemaps;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerViewAdapterRandom.ViewHolder> {
+public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static List<String> mData;
+    enum SearchTag {
+        CATEGORY,
+        LIST
+    }
+
+    private static List<SearchResult> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private SearchTag tag;
 
     // data is passed into the constructor
-    RecyclerViewAdapterRandom(Context context, List<String> data) {
+    RecyclerViewAdapterRandom(Context context, List<SearchResult> data, SearchTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
+        this.tag = tag;
     }
 
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.search_row, parent, false);
-        return new ViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        switch (tag) {
+            case CATEGORY:
+                return new RecyclerViewAdapterRandom.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+            case LIST:
+                return new RecyclerViewAdapterRandom.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+            default:
+                return null;
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapterRandom.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
+        switch (tag) {
+            case CATEGORY:
+                CategoryViewHolder holderCat = (CategoryViewHolder) holderView;
+                holderCat.categoryName.setText(mData.get(position).title);
 
-        String searchEntry = mData.get(position);
-        holder.subtitleText.setText(searchEntry);
-        holder.titleText.setText(searchEntry);
-
+                break;
+            case LIST:
+                ListViewHolder holderList = (ListViewHolder) holderView;
+                holderList.titleText.setText(mData.get(position).title);
+                holderList.subtitleText.setText(mData.get(position).subtitle);
+                break;
+        }
     }
 
     @Override
@@ -60,19 +84,18 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
 
 
     // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView titleText;
         TextView subtitleText;
-        MaterialButton directionIcon;
+        FloatingActionButton directionIcon;
 
-        ViewHolder(View itemView) {
+        ListViewHolder(View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.title_text);
             subtitleText = itemView.findViewById(R.id.subtitle_text);
             directionIcon = itemView.findViewById(R.id.direction_icon);
             itemView.setOnClickListener(this);
             subtitleText.setOnClickListener(this);
-
         }
 
         @Override
@@ -84,8 +107,24 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
         }
     }
 
+    // stores and recycles views as they are scrolled off screen
+    public class CategoryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView categoryName;
+
+        CategoryViewHolder(View itemView) {
+            super(itemView);
+            categoryName = itemView.findViewById(R.id.category_name);
+
+        }
+
+        @Override
+        public void onClick(View view) {
+
+        }
+    }
+
     // convenience method for getting data at click position
-    String getItem(int id) {
+    SearchResult getItem(int id) {
         return mData.get(id);
     }
 

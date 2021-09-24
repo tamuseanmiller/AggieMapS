@@ -5,4 +5,6 @@
     <string name="on_campus">On Campus</string>
     <string name="off_campus">Off Campus</string>
     <string name="game_day">Game Day</string>
+    <string name="buses">Buses</string>
+    <string name="bus_icon">Bus Icon</string>
 </resources>

@@ -8,11 +8,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
 import com.squareup.okhttp.OkHttpClient;
@@ -63,40 +66,7 @@ public class MainActivity extends AppCompatActivity implements FavAdapter.ItemCl
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Set the status bar to be transparent
-        Window w = getWindow();
-        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-
-        // Initialize OkHttp Client
-        client = new OkHttpClient(); // Create OkHttpClient to be used in API requests
-
-        // Set up recyclers
-        favRoutes = findViewById(R.id.recycler_favorites);
-        favAdapter = null;
-        onCampusRoutes = findViewById(R.id.recycler_oncampus);
-        onCampusAdapter = null;
-        offCampusRoutes = findViewById(R.id.recycler_offcampus);
-        offCampusAdapter = null;
-        gameDayRoutes = findViewById(R.id.recycler_gameday);
-        gameDayAdapter = null;
-
-        // Set decorations
-        ColumnProvider col = () -> 1;
-        favRoutes.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
-        favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        col = () -> 2;
-        onCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
-        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        offCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
-        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        gameDayRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
-        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-
+    private void setUpBusRoutes() {
         // Thread for fetching the routes
         new Thread(() -> {
             try {
@@ -117,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements FavAdapter.ItemCl
 
                     // Get Color int
                     String strRGB = routes.getJSONObject(i).getString("Color");
-                    int color = Color.rgb(255, 0, 255);
+                    int color = Integer.MAX_VALUE;
                     if (strRGB.startsWith("rgb")) {
                         String[] colors = strRGB.substring(4, strRGB.length() - 1).split(",");
                         color = Color.rgb(
@@ -171,16 +141,53 @@ public class MainActivity extends AppCompatActivity implements FavAdapter.ItemCl
             }
 
         }).start();
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Set the status bar to be transparent
+        Window w = getWindow();
+        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+        // Initialize OkHttp Client
+        client = new OkHttpClient(); // Create OkHttpClient to be used in API requests
+
+        // Set up recyclers
+        favRoutes = findViewById(R.id.recycler_favorites);
+        favAdapter = null;
+        onCampusRoutes = findViewById(R.id.recycler_oncampus);
+        onCampusAdapter = null;
+        offCampusRoutes = findViewById(R.id.recycler_offcampus);
+        offCampusAdapter = null;
+        gameDayRoutes = findViewById(R.id.recycler_gameday);
+        gameDayAdapter = null;
+
+        // Set decorations for the recyclers
+        ColumnProvider col = () -> 1;
+        favRoutes.setLayoutManager(new GridLayoutManager(this, 1, GridLayoutManager.HORIZONTAL, false));
+        favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        col = () -> 2;
+        onCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        offCampusRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        gameDayRoutes.setLayoutManager(new GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false));
+        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+
+        // Initialize bus button
+        MaterialCardView busButton = findViewById(R.id.bus_button);
 
         // Set up the bottom sheet
         View standardBottomSheet = findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
         standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
-        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        standardBottomSheetBehavior.setPeekHeight(200);
         standardBottomSheetBehavior.setHideable(false);
-        standardBottomSheetBehavior.setHalfExpandedRatio(0.9f);
+        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        standardBottomSheetBehavior.setPeekHeight(0);
+        //standardBottomSheetBehavior.setExpandedRatio(0.9f);
 
         BottomSheetBehavior.BottomSheetCallback bottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -200,10 +207,28 @@ public class MainActivity extends AppCompatActivity implements FavAdapter.ItemCl
 
         // To remove the callback:
         standardBottomSheetBehavior.removeBottomSheetCallback(bottomSheetCallback);
+
+        // Then set up the bus routes on the bottom sheet
+        setUpBusRoutes();
+
+        // Set the Button to open the routes sheet
+        busButton.setOnClickListener(v -> {
+            standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        });
     }
 
     @Override
     public void onItemClick(View view, int position) {
 
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+
+                break;
+        }
+        return super.onTouchEvent(event);
     }
 }

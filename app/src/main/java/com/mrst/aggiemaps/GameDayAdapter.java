@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
@@ -49,7 +50,12 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else {
             BusRoute route = mData.get(position);
             holderGame.routeNumber.setText(route.routeNumber);
+            if (route.color == Integer.MAX_VALUE) route.color = palette.pickRandomColor();
             holderGame.card.setCardBackgroundColor(palette.findClosestPaletteColorTo(route.color));
+            if (ColorUtils.calculateLuminance(route.color) > 0.3) {
+                holderGame.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black_60));
+                holderGame.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black));
+            }
             holderGame.routeName.setText(route.routeName);
             holderGame.routeName.setSelected(true);
         }

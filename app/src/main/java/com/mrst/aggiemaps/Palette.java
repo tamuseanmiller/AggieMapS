@@ -16,6 +16,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 /*
  * Class taken https://codereview.stackexchange.com/questions/115046/fast-way-to-find-the-most-similar-color-in-an-array
@@ -45,6 +46,13 @@ public final class Palette {
             }
         }
         return closestColor;
+    }
+
+    public int pickRandomColor() {
+        final int min = 0;
+        final int max = colors.size() - 1;
+        final int random = new Random().nextInt((max - min) + 1) + min;
+        return colors.get(random).asInt();
     }
 
     private static final class PaletteColor {

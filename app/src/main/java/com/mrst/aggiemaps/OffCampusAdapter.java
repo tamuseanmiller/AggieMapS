@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
@@ -50,7 +51,12 @@ public class OffCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else {
             BusRoute route = mData.get(position);
             holderOff.routeNumber.setText(route.routeNumber);
+            if (route.color == Integer.MAX_VALUE) route.color = palette.pickRandomColor();
             holderOff.card.setCardBackgroundColor(palette.findClosestPaletteColorTo(route.color));
+            if (ColorUtils.calculateLuminance(route.color) > 0.3) {
+                holderOff.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black_60));
+                holderOff.routeNumber.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.black));
+            }
             holderOff.routeName.setText(route.routeName);
             holderOff.routeName.setSelected(true);
         }

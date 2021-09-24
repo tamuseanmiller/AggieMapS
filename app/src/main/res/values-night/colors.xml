@@ -291,95 +291,197 @@
         <item>@color/red_100</item>
         <item>@color/red_200</item>
         <item>@color/red_300</item>
+        <item>@color/red_400</item>
+        <item>@color/red_500</item>
+        <item>@color/red_A100</item>
+        <item>@color/red_A200</item>
+        <item>@color/red_A400</item>
+        <item>@color/red_A700</item>
 
         <item>@color/deep_purple_50</item>
         <item>@color/deep_purple_100</item>
         <item>@color/deep_purple_200</item>
         <item>@color/deep_purple_300</item>
+        <item>@color/deep_purple_400</item>
+        <item>@color/deep_purple_500</item>
+        <item>@color/deep_purple_A100</item>
+        <item>@color/deep_purple_A200</item>
+        <item>@color/deep_purple_A400</item>
+        <item>@color/deep_purple_A700</item>
 
         <item>@color/light_blue_50</item>
         <item>@color/light_blue_100</item>
         <item>@color/light_blue_200</item>
         <item>@color/light_blue_300</item>
+        <item>@color/light_blue_400</item>
+        <item>@color/light_blue_500</item>
+        <item>@color/light_blue_A100</item>
+        <item>@color/light_blue_A200</item>
+        <item>@color/light_blue_A400</item>
+        <item>@color/light_blue_A700</item>
 
         <item>@color/green_50</item>
         <item>@color/green_100</item>
         <item>@color/green_200</item>
         <item>@color/green_300</item>
+        <item>@color/green_400</item>
+        <item>@color/green_500</item>
+        <item>@color/green_A100</item>
+        <item>@color/green_A200</item>
+        <item>@color/green_A400</item>
+        <item>@color/green_A700</item>
 
         <item>@color/yellow_50</item>
         <item>@color/yellow_100</item>
         <item>@color/yellow_200</item>
         <item>@color/yellow_300</item>
+        <item>@color/yellow_400</item>
+        <item>@color/yellow_500</item>
+        <item>@color/yellow_A100</item>
+        <item>@color/yellow_A200</item>
+        <item>@color/yellow_A400</item>
+        <item>@color/yellow_A700</item>
 
         <item>@color/deep_orange_50</item>
         <item>@color/deep_orange_100</item>
         <item>@color/deep_orange_200</item>
         <item>@color/deep_orange_300</item>
+        <item>@color/deep_orange_400</item>
+        <item>@color/deep_orange_500</item>
+        <item>@color/deep_orange_A100</item>
+        <item>@color/deep_orange_A200</item>
+        <item>@color/deep_orange_A400</item>
+        <item>@color/deep_orange_A700</item>
 
         <item>@color/blue_grey_50</item>
         <item>@color/blue_grey_100</item>
         <item>@color/blue_grey_200</item>
         <item>@color/blue_grey_300</item>
+        <item>@color/blue_grey_400</item>
+        <item>@color/blue_grey_500</item>
 
         <item>@color/pink_50</item>
         <item>@color/pink_100</item>
         <item>@color/pink_200</item>
         <item>@color/pink_300</item>
+        <item>@color/pink_400</item>
+        <item>@color/pink_500</item>
+        <item>@color/pink_A100</item>
+        <item>@color/pink_A200</item>
+        <item>@color/pink_A400</item>
+        <item>@color/pink_A700</item>
 
         <item>@color/indigo_50</item>
         <item>@color/indigo_100</item>
         <item>@color/indigo_200</item>
         <item>@color/indigo_300</item>
+        <item>@color/indigo_400</item>
+        <item>@color/indigo_500</item>
+        <item>@color/indigo_A100</item>
+        <item>@color/indigo_A200</item>
+        <item>@color/indigo_A400</item>
+        <item>@color/indigo_A700</item>
 
         <item>@color/cyan_50</item>
         <item>@color/cyan_100</item>
         <item>@color/cyan_200</item>
         <item>@color/cyan_300</item>
+        <item>@color/cyan_400</item>
+        <item>@color/cyan_500</item>
+        <item>@color/cyan_A100</item>
+        <item>@color/cyan_A200</item>
+        <item>@color/cyan_A400</item>
+        <item>@color/cyan_A700</item>
 
         <item>@color/light_green_50</item>
         <item>@color/light_green_100</item>
         <item>@color/light_green_200</item>
         <item>@color/light_green_300</item>
+        <item>@color/light_green_400</item>
+        <item>@color/light_green_500</item>
+        <item>@color/light_green_A100</item>
+        <item>@color/light_green_A200</item>
+        <item>@color/light_green_A400</item>
+        <item>@color/light_green_A700</item>
 
         <item>@color/amber_50</item>
         <item>@color/amber_100</item>
         <item>@color/amber_200</item>
         <item>@color/amber_300</item>
+        <item>@color/amber_400</item>
+        <item>@color/amber_500</item>
+        <item>@color/amber_A100</item>
+        <item>@color/amber_A200</item>
+        <item>@color/amber_A400</item>
+        <item>@color/amber_A700</item>
 
         <item>@color/brown_50</item>
         <item>@color/brown_100</item>
         <item>@color/brown_200</item>
         <item>@color/brown_300</item>
+        <item>@color/brown_400</item>
+        <item>@color/brown_500</item>
 
         <item>@color/purple_50</item>
         <item>@color/purple_100</item>
         <item>@color/purple_200</item>
         <item>@color/purple_300</item>
+        <item>@color/purple_400</item>
+        <item>@color/purple_500</item>
+        <item>@color/purple_A100</item>
+        <item>@color/purple_A200</item>
+        <item>@color/purple_A400</item>
+        <item>@color/purple_A700</item>
 
         <item>@color/blue_50</item>
         <item>@color/blue_100</item>
         <item>@color/blue_200</item>
         <item>@color/blue_300</item>
+        <item>@color/blue_400</item>
+        <item>@color/blue_500</item>
+        <item>@color/blue_A100</item>
+        <item>@color/blue_A200</item>
+        <item>@color/blue_A400</item>
+        <item>@color/blue_A700</item>
 
         <item>@color/teal_50</item>
         <item>@color/teal_100</item>
         <item>@color/teal_200</item>
         <item>@color/teal_300</item>
+        <item>@color/teal_400</item>
+        <item>@color/teal_500</item>
+        <item>@color/teal_A100</item>
+        <item>@color/teal_A200</item>
+        <item>@color/teal_A400</item>
+        <item>@color/teal_A700</item>
 
         <item>@color/lime_50</item>
         <item>@color/lime_100</item>
         <item>@color/lime_200</item>
         <item>@color/lime_300</item>
+        <item>@color/lime_400</item>
+        <item>@color/lime_500</item>
+        <item>@color/lime_A100</item>
+        <item>@color/lime_A200</item>
+        <item>@color/lime_A400</item>
+        <item>@color/lime_A700</item>
 
         <item>@color/orange_50</item>
         <item>@color/orange_100</item>
         <item>@color/orange_200</item>
         <item>@color/orange_300</item>
+        <item>@color/orange_400</item>
+        <item>@color/orange_500</item>
+        <item>@color/orange_A100</item>
+        <item>@color/orange_A200</item>
+        <item>@color/orange_A400</item>
+        <item>@color/orange_A700</item>
 
         <item>@color/grey_50</item>
         <item>@color/grey_100</item>
         <item>@color/grey_200</item>
         <item>@color/grey_300</item>
+        <item>@color/grey_400</item>
+        <item>@color/grey_500</item>
     </integer-array>
 </resources>

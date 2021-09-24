@@ -8,35 +8,38 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/maps_fragment"
+        android:name="com.mrst.aggiemaps.MapsFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:name="com.mrst.aggiemaps.MapsFragment"/>
+        android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/standard_bottom_sheet"
         style="@style/ThemeOverlay.App.BottomSheetDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="10dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="65dp"
-            android:paddingLeft="36dp"
+            android:elevation="5dp"
             android:orientation="vertical"
-            android:elevation="5dp">
+            android:paddingLeft="36dp"
+            android:paddingTop="65dp">
 
             <TextView
                 android:id="@+id/favorites_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="17sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="6dp"
                 android:text="@string/favorites"
                 android:textColor="@color/foreground"
-                android:layout_marginBottom="16dp"
-                android:paddingStart="6dp"/>
+                android:textSize="17sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_favorites"
@@ -44,58 +47,64 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
 
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="17sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="6dp"
                 android:text="@string/on_campus"
                 android:textColor="@color/foreground"
-                android:layout_marginBottom="16dp"
-                android:paddingStart="6dp"/>
+                android:textSize="17sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_oncampus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="17sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="6dp"
                 android:text="@string/off_campus"
                 android:textColor="@color/foreground"
-                android:layout_marginBottom="16dp"
-                android:paddingStart="6dp"/>
+                android:textSize="17sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_offcampus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:fontFamily="sans-serif-medium"
-                android:textSize="17sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="6dp"
                 android:text="@string/game_day"
                 android:textColor="@color/foreground"
-                android:layout_marginBottom="16dp"
-                android:paddingStart="6dp"/>
+                android:textSize="17sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_gameday"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:paddingBottom="16dp"/>
+                android:paddingBottom="16dp" />
 
         </LinearLayout>
 
@@ -104,9 +113,9 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:backgroundTint="@color/background"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/background"
             app:cardCornerRadius="25dp"
             app:contentPadding="20dp">
 
@@ -130,5 +139,59 @@
 
 
     </FrameLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bus_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/foreground"
+        app:cardCornerRadius="25dp"
+        app:contentPadding="6dp"
+        android:layout_gravity="end|bottom"
+        app:layout_anchorGravity="bottom|right|end"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginBottom="44dp"
+        android:layout_marginEnd="23dp"
+        android:elevation="8dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/bus_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/bus"
+                android:layout_centerVertical="true"
+                app:tint="@color/background"
+                android:contentDescription="@string/bus_icon" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/bus_icon"
+                android:text="@string/buses"
+                android:textSize="16sp"
+                android:textColor="@color/background"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="14dp"
+                android:layout_height="2dp"
+                android:focusable="false"
+                android:clickable="false"
+                android:layout_centerHorizontal="true"
+                app:cornerRadius="25dp"
+                android:backgroundTint="@color/background" />
+
+        </RelativeLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

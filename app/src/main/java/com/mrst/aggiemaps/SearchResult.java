@@ -9,10 +9,10 @@ public class SearchResult {
     public String subtitle;
     public int color;
     public Drawable direction;
-    public RecyclerViewAdapterRandom.SearchTag tag;
+    public SearchAdapter.SearchTag tag;
     public LatLng position;
 
-    public SearchResult(String title, String subtitle, int color, Drawable direction, RecyclerViewAdapterRandom.SearchTag tag, LatLng position) {
+    public SearchResult(String title, String subtitle, int color, Drawable direction, SearchAdapter.SearchTag tag, LatLng position) {
         this.title = title;
         this.subtitle = subtitle;
         this.color = color;

@@ -37,13 +37,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements RecyclerViewAdapterRandom.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements SearchAdapter.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
     private OkHttpClient client;  // Client to make API requests
     private Thread searchThread;
-    private RecyclerViewAdapterRandom recyclerViewAdapterRandom;
+    private SearchAdapter searchAdapter;
 
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
@@ -123,11 +123,11 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
         // Set SearchView Settings
         ArrayList<SearchResult> l = new ArrayList<>();
-        recyclerViewAdapterRandom = new RecyclerViewAdapterRandom(this, l, RecyclerViewAdapterRandom.SearchTag.LIST);
-        recyclerViewAdapterRandom.setClickListener(this);
+        searchAdapter = new SearchAdapter(this, l, SearchAdapter.SearchTag.LIST);
+        searchAdapter.setClickListener(this);
         RecyclerView recyclerRandom = new RecyclerView(this);
         recyclerRandom.setLayoutManager(new LinearLayoutManager(this));
-        recyclerRandom.setAdapter(recyclerViewAdapterRandom);
+        recyclerRandom.setAdapter(searchAdapter);
         materialSearchView.addView(recyclerRandom);
         Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
         navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
@@ -161,9 +161,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                             "featureEncoding=esriDefault&f=pjson");
                     try {
                         if (resp != null) {
-                            int lSize = l.size();
                             l.clear();
-                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
                             JSONObject jsonObject = new JSONObject(resp);
                             JSONArray features = jsonObject.getJSONArray("features");
                             for (int i = 0; i < features.length(); i++) {
@@ -171,14 +169,13 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                                 double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
                                 double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
-                                l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
+                                l.add(new SearchResult(bldgName, address, 0, null, SearchAdapter.SearchTag.LIST, new LatLng(lat, lng)));
                             }
-                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
+                    runOnUiThread(searchAdapter::notifyDataSetChanged);
                 });
                 searchThread.start();
                 return true;
@@ -215,14 +212,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                                 double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
                                 double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
-                                l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
+                                l.add(new SearchResult(bldgName, address, 0, null, SearchAdapter.SearchTag.LIST, new LatLng(lat, lng)));
                             }
                             //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
+                    runOnUiThread(searchAdapter::notifyDataSetChanged);
                 });
                 searchThread.start();
                 return true;
@@ -232,7 +229,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         materialSearchView.setOnFocusChangeListener(v -> {
 
         });
-
     }
 
     @Override
@@ -265,11 +261,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     public void onItemClick(View view, int position) {
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.flat(true);
-        selectedResult.position(recyclerViewAdapterRandom.getItem(position).position);
-        selectedResult.title(recyclerViewAdapterRandom.getItem(position).title);
+        selectedResult.position(searchAdapter.getItem(position).position);
+        selectedResult.title(searchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
-        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recyclerViewAdapterRandom.getItem(position).position, 18.0f));
+        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(searchAdapter.getItem(position).position, 18.0f));
         clearFocusOnSearch();
     }
+
 }
 

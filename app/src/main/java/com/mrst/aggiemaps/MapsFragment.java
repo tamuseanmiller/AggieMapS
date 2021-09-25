@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -15,6 +17,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -57,7 +60,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickListener, FavAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener {
+public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickListener, FavAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener, SwipeAdapter.ItemClickListener {
 
     private OkHttpClient client;  // Client to make API requests
     public static GoogleMap mMap;       // The Map itself
@@ -71,6 +74,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private GameDayAdapter gameDayAdapter;
     private RecyclerView gameDayRoutes;
     private TextView favoritesText;
+
+    @Override
+    public void onItemClick(View view, int position) {
+        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
 
     enum TripType {
         WALK,
@@ -119,10 +127,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
-    * Helper method to convert a drawable to a BitmapDescriptor for use with a maps marker
-    * Taken from somewhere similar to here
-    * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
-    */
+     * Helper method to convert a drawable to a BitmapDescriptor for use with a maps marker
+     * Taken from somewhere similar to here
+     * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
+     */
     private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
         // below line is use to generate a drawable.
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
@@ -283,6 +291,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
 
         // Set up recyclers
+        RecyclerView swipeRecycler = mView.findViewById(R.id.swipe_recycler);
         favRoutes = mView.findViewById(R.id.recycler_favorites);
         favAdapter = null;
         onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
@@ -291,6 +300,26 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         offCampusAdapter = null;
         gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
         gameDayAdapter = null;
+        swipeRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+        List<String> l = new ArrayList<>();
+        l.add(" ");
+        SwipeAdapter swipeAdapter = new SwipeAdapter(getActivity(), l);
+        swipeRecycler.setAdapter(swipeAdapter);
+        swipeAdapter.setClickListener(this);
+
+        // TODO: Swiping isn't doing anything
+        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        });
+        helper.attachToRecyclerView(swipeRecycler);
 
         // Set decorations for the recyclers
         ColumnProvider col = () -> 1;
@@ -305,7 +334,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
         // Initialize bus button
-        MaterialCardView busButton = mView.findViewById(R.id.bus_button);
+        //MaterialCardView busButton = mView.findViewById(R.id.bus_button);
 
         // Set up the bottom sheet
         View standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
@@ -319,7 +348,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         new Thread(this::setUpBusRoutes).start();
 
         // Set the Button to open the routes sheet
-        busButton.setOnClickListener(v -> standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
+        //busButton.setOnClickListener(v -> standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
 
         return mView;
     }

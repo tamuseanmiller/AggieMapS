@@ -1,8 +1,6 @@
 package com.mrst.aggiemaps;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +8,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     enum SearchTag {
         CATEGORY,
@@ -31,7 +27,7 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
     private SearchTag tag;
 
     // data is passed into the constructor
-    RecyclerViewAdapterRandom(Context context, List<SearchResult> data, SearchTag tag) {
+    SearchAdapter(Context context, List<SearchResult> data, SearchTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
         this.tag = tag;
@@ -43,9 +39,9 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (tag) {
             case CATEGORY:
-                return new RecyclerViewAdapterRandom.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+                return new SearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case LIST:
-                return new RecyclerViewAdapterRandom.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+                return new SearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
             default:
                 return null;
         }

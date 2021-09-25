@@ -128,6 +128,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
 
         // below line is use to set bounds to our vector drawable.
+        assert vectorDrawable != null;
         vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth() - 20, vectorDrawable.getIntrinsicHeight() - 20);
         vectorDrawable.setTintList(ColorStateList.valueOf(color));
 
@@ -154,8 +155,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         // Check for cached data
         Map<String, AggiePolyline> route = AggiePolyline.getData(requireActivity());
         if (route.containsKey(routeNo)) {
+
             // Draw polyline of route
             requireActivity().runOnUiThread(() -> mMap.addPolyline(Objects.requireNonNull(route.get(routeNo)).polylineOptions));
+
             // Draw stops
             for (LatLng i : Objects.requireNonNull(route.get(routeNo)).stops) {
                 MarkerOptions marker = new MarkerOptions();
@@ -351,18 +354,20 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 }
 
                 // See what group the route lies in, then add it
-                switch (routes.getJSONObject(i).getJSONObject("Group").getString("Name")) {
+                String shortName = routes.getJSONObject(i).getString("ShortName");
+                String name = routes.getJSONObject(i).getString("Name");
+                switch (name) {
                     case "On Campus":
-                        onList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                        onList.add(new BusRoute(shortName, name, color));
                         break;
                     case "Off Campus":
-                        offList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                        offList.add(new BusRoute(shortName, name, color));
                         break;
                     case "Game Day":
-                        gameDayList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                        gameDayList.add(new BusRoute(shortName, name, color));
                         break;
                     default: // Favorites
-                        favList.add(new BusRoute(routes.getJSONObject(i).getString("ShortName"), routes.getJSONObject(i).getString("Name"), color));
+                        favList.add(new BusRoute(shortName, name, color));
                 }
             }
 
@@ -399,9 +404,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     @Override
     public void onItemClick(View view, BusRoute busRoute) {
-        // When a route is clicked, set route number and draw route
+        // When a route is clicked, close sheet, set route number and draw route
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        mMap.clear();
+        mMap.clear(); // Clear map first
         if (busRoute.routeNumber.equals("All")) {
             new Thread(() -> {
                 switch (busRoute.routeName) {

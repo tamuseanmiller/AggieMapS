@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
     private OkHttpClient client;  // Client to make API requests
     private Thread searchThread;
     private RecyclerViewAdapterRandom recyclerViewAdapterRandom;
-    private AggieMapSCache cache;
 
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
@@ -89,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         client = new OkHttpClient(); // Create OkHttpClient to be used in API request
-        cache = new AggieMapSCache(this);
 
         // Set the status bar to be transparent
         Window w = getWindow();
@@ -146,23 +144,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                 // Query GIS
                 searchThread = new Thread(() -> {
-                    ArrayList<SearchResult> l2 = new ArrayList<>();
-                    String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
-                            "TAMU_BaseMap/MapServer/1/query?where=Abbrev+LIKE+UPPER%28%27%25" +
-                            charSequence.toString() + "%25%27%29+OR+UPPER%28BldgName%29" +
-                            "+LIKE+UPPER%28%27%25" + charSequence.toString() + "%25%27%29&" +
-                            "text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&" +
-                            "inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&" +
-                            "returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&" +
-                            "geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&" +
-                            "returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&" +
-                            "outStatistics=&returnZ=false&returnM=false&gdbVersion=&" +
-                            "historicMoment=&returnDistinctValues=false&resultOffset=&" +
-                            "resultRecordCount=&queryByDistance=&returnExtentOnly=false&" +
-                            "datumTransformation=&parameterValues=&rangeValues=&" +
-                            "quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+                    String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/TAMU_BaseMap/MapServer/1/query?where=UPPER%28Abbrev%29+LIKE+UPPER%28%27%25"+ charSequence.toString() +"%25%27%29+OR+UPPER%28BldgName%29+LIKE+UPPER%28%27%25"+ charSequence.toString() +"%25%27%29&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=10&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
                     try {
                         if (resp != null) {
+                            int lSize = l.size();
+                            l.clear();
+                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
                             JSONObject jsonObject = new JSONObject(resp);
                             JSONArray features = jsonObject.getJSONArray("features");
                             for (int i = 0; i < features.length(); i++) {
@@ -171,15 +158,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
                                 double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
                                 if (Thread.interrupted()) return;
-                                l2.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
+                                l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
                             }
+                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                     if (Thread.interrupted()) return;
-                    l.clear();
-                    l.addAll(l2);
                     if (resp != null && !Thread.interrupted())
                         runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
                 });
@@ -204,9 +190,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                             "returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&" +
                             "outStatistics=&returnZ=false&returnM=false&gdbVersion=&" +
                             "historicMoment=&returnDistinctValues=false&resultOffset=&" +
-                            "resultRecordCount=&queryByDistance=&returnExtentOnly=false&" +
-                            "datumTransformation=&parameterValues=&rangeValues=&" +
-                            "quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+                            "resultRecordCount=&resultRecordCount=10&queryByDistance=&" +
+                            "returnExtentOnly=false&datumTransformation=&parameterValues=&" +
+                            "rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
                     try {
                         if (resp != null) {
                             JSONObject jsonObject = new JSONObject(resp);

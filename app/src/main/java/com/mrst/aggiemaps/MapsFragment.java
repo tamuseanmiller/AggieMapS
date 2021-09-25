@@ -118,6 +118,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
+    /*
+    * Helper method to convert a drawable to a BitmapDescriptor for use with a maps marker
+    * Taken from somewhere similar to here
+    * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
+    */
     private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
         // below line is use to generate a drawable.
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);

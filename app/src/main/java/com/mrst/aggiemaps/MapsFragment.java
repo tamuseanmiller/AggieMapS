@@ -356,7 +356,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 // See what group the route lies in, then add it
                 String shortName = routes.getJSONObject(i).getString("ShortName");
                 String name = routes.getJSONObject(i).getString("Name");
-                switch (name) {
+                String group = routes.getJSONObject(i).getJSONObject("Group").getString("Name");
+                switch (group) {
                     case "On Campus":
                         onList.add(new BusRoute(shortName, name, color));
                         break;

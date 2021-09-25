@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
         materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
+                if (charSequence.length() == 0) return true;
                 // Query GIS
                 searchThread = new Thread(() -> {
                     String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
@@ -162,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                         if (resp != null) {
                             int lSize = l.size();
                             l.clear();
-                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
+                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
                             JSONObject jsonObject = new JSONObject(resp);
                             JSONArray features = jsonObject.getJSONArray("features");
                             for (int i = 0; i < features.length(); i++) {
@@ -170,22 +171,22 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                                 double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
                                 double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
-                                if (Thread.interrupted()) return;
                                 l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
                             }
-                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
+                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
                 });
-                searchThread.interrupt();
                 searchThread.start();
                 return true;
             }
 
             @Override
             public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
+                if (charSequence.length() == 0) return true;
                 // Query GIS
                 searchThread = new Thread(() -> {
                     String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
@@ -206,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                         if (resp != null) {
                             int lSize = l.size();
                             l.clear();
-                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
+                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeRemoved(0, lSize));
                             JSONObject jsonObject = new JSONObject(resp);
                             JSONArray features = jsonObject.getJSONArray("features");
                             for (int i = 0; i < features.length(); i++) {
@@ -214,14 +215,14 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                                 String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                                 double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
                                 double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
-                                if (Thread.interrupted()) return;
                                 l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
                             }
-                            runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
+                            //runOnUiThread(() -> recyclerViewAdapterRandom.notifyItemRangeInserted(0, features.length()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
                 });
                 searchThread.start();
                 return true;

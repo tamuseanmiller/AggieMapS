@@ -7,7 +7,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +24,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -28,10 +35,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.card.MaterialCardView;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,15 +44,23 @@ import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickListener, FavAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener {
 
     private OkHttpClient client;  // Client to make API requests
-    private GoogleMap mMap;       // The Map itself
-    public static String routeNo;
+    public static GoogleMap mMap;       // The Map itself
     private BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
     private OnCampusAdapter onCampusAdapter;
@@ -99,7 +110,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             Response response = client.newCall(request).execute();
             ResponseBody body = response.body();
 
-            return body.string(); // Return the response as a string
+            return Objects.requireNonNull(body).string(); // Return the response as a string
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -107,10 +118,51 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
+    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
+        // below line is use to generate a drawable.
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+
+        // below line is use to set bounds to our vector drawable.
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth() - 20, vectorDrawable.getIntrinsicHeight() - 20);
+        vectorDrawable.setTintList(ColorStateList.valueOf(color));
+
+        // below line is use to create a bitmap for our
+        // drawable which we have added.
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+
+        // below line is use to add bitmap in our canvas.
+        Canvas canvas = new Canvas(bitmap);
+
+        // below line is use to draw our
+        // vector drawable in canvas.
+        vectorDrawable.draw(canvas);
+
+        // after generating our bitmap we are returning our bitmap.
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
     /*
      * Method to draw a bus route on the map
      */
-    private void drawBusRoute(int color) {
+    private void drawBusRoute(String routeNo, int color) {
+
+        // Check for cached data
+        Map<String, AggiePolyline> route = AggiePolyline.getData(requireActivity());
+        if (route.containsKey(routeNo)) {
+            // Draw polyline of route
+            requireActivity().runOnUiThread(() -> mMap.addPolyline(Objects.requireNonNull(route.get(routeNo)).polylineOptions));
+            // Draw stops
+            for (LatLng i : Objects.requireNonNull(route.get(routeNo)).stops) {
+                MarkerOptions marker = new MarkerOptions();
+                marker.flat(true);
+                marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color));
+                marker.zIndex(100);
+                marker.anchor(0.5F, 0.5F);
+                marker.position(i);
+                requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
+            }
+            return;
+        }
         try {
             Request request = new Request.Builder()
                     .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/pattern")
@@ -119,11 +171,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             Response response = client.newCall(request).execute();
             ResponseBody body = response.body();
 
-            String str = body.string();
+            String str = Objects.requireNonNull(body).string();
             JSONArray stops = new JSONArray(str);
             PolylineOptions polylineOptions = new PolylineOptions();
             LatLng first = null;
 
+            ArrayList<LatLng> busStops = new ArrayList<>();
             for (int i = 0; i < stops.length(); i++) {
 
                 Point p = convertWebMercatorToLatLng(stops.getJSONObject(i).getDouble("Longtitude"),
@@ -138,22 +191,27 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
                 // Add bus stop circles
                 if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
-                    CircleOptions circleOptions = new CircleOptions();
-                    circleOptions.center(new LatLng(x, y));
-                    circleOptions.radius(55);
-                    circleOptions.fillColor(color);
-                    circleOptions.strokeWidth(0);
-                    requireActivity().runOnUiThread(() -> mMap.addCircle(circleOptions));
+                    MarkerOptions marker = new MarkerOptions();
+                    marker.flat(true);
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color));
+                    marker.zIndex(100);
+                    marker.anchor(0.5F, 0.5F);
+                    marker.position(new LatLng(x, y));
+                    requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
+                    busStops.add(new LatLng(x, y));
                 }
 
             }
 
+            assert first != null;
             polylineOptions.add(first);
             polylineOptions.color(color);
             polylineOptions.width(10);
             polylineOptions.geodesic(true);
             polylineOptions.pattern(null);
+            polylineOptions.clickable(true);
             requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+            AggiePolyline.writeData(requireActivity(), new AggiePolyline(polylineOptions, busStops), routeNo);
         } catch (JSONException | IOException jsonException) {
             jsonException.printStackTrace();
         }
@@ -195,7 +253,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 14.0f));
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
         }
     };
 
@@ -210,7 +268,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
-        client = new OkHttpClient(); // Create OkHttpClient to be used in API requests
+        client = new OkHttpClient.Builder() // Create OkHttpClient to be used in API requests
+                .cache(new Cache(new File(requireActivity().getCacheDir(), "http_cache"),
+                        50L * 1024L * 1024L))
+                .build();
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
 
         // Set up recyclers
@@ -250,9 +311,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         new Thread(this::setUpBusRoutes).start();
 
         // Set the Button to open the routes sheet
-        busButton.setOnClickListener(v -> {
-            standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        });
+        busButton.setOnClickListener(v -> standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
 
         return mView;
     }
@@ -343,37 +402,32 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 switch (busRoute.routeName) {
                     case "Favorites":
                         for (int i = 1; i < favAdapter.getItemCount(); i++) {
-                            routeNo = favAdapter.getItem(i).routeNumber;
                             int finalI = i;
-                            new Thread(() ->drawBusRoute(favAdapter.getItem(finalI).color)).start();
+                            new Thread(() -> drawBusRoute(favAdapter.getItem(finalI).routeNumber, favAdapter.getItem(finalI).color)).start();
                         }
                         break;
                     case "On Campus":
                         for (int i = 1; i < onCampusAdapter.getItemCount(); i++) {
-                            routeNo = onCampusAdapter.getItem(i).routeNumber;
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(onCampusAdapter.getItem(finalI).color)).start();
+                            new Thread(() -> drawBusRoute(onCampusAdapter.getItem(finalI).routeNumber, onCampusAdapter.getItem(finalI).color)).start();
                         }
                         break;
                     case "Off Campus":
                         for (int i = 1; i < offCampusAdapter.getItemCount(); i++) {
-                            routeNo = offCampusAdapter.getItem(i).routeNumber;
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(offCampusAdapter.getItem(finalI).color)).start();
+                            new Thread(() -> drawBusRoute(offCampusAdapter.getItem(finalI).routeNumber, offCampusAdapter.getItem(finalI).color)).start();
                         }
                         break;
                     case "Game Day":
                         for (int i = 1; i < gameDayAdapter.getItemCount(); i++) {
-                            routeNo = gameDayAdapter.getItem(i).routeNumber;
                             int finalI = i;
-                            new Thread(() ->drawBusRoute(gameDayAdapter.getItem(finalI).color)).start();
+                            new Thread(() -> drawBusRoute(gameDayAdapter.getItem(finalI).routeNumber, gameDayAdapter.getItem(finalI).color)).start();
                         }
                         break;
                 }
             }).start();
         } else {
-            routeNo = busRoute.routeNumber;
-            new Thread(() -> drawBusRoute(busRoute.color)).start();
+            new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();
         }
     }
 

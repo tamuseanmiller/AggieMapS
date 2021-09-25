@@ -1,48 +1,28 @@
 package com.mrst.aggiemaps;
 
-import static android.content.ContentValues.TAG;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.renderscript.ScriptGroup;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.renderscript.ScriptGroup;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-
-import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
-import com.google.android.libraries.places.api.model.RectangularBounds;
-import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.appbar.AppBarLayout;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,13 +30,21 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapterRandom.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
     private OkHttpClient client;  // Client to make API requests
+    private Thread searchThread;
+    private RecyclerViewAdapterRandom recyclerViewAdapterRandom;
+    private AggieMapSCache cache;
 
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
@@ -88,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             Response response = client.newCall(request).execute();
             ResponseBody body = response.body();
 
-            return body.string(); // Return the response as a string
+            return Objects.requireNonNull(body).string(); // Return the response as a string
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -101,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         client = new OkHttpClient(); // Create OkHttpClient to be used in API request
+        cache = new AggieMapSCache(this);
 
         // Set the status bar to be transparent
         Window w = getWindow();
@@ -129,21 +118,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Set Search Bar Settings
         materialSearchBar.setHint("Aggie MapS");
+        materialSearchBar.setElevation(5);
         materialSearchBar.setBackgroundColor(getColor(R.color.background));
-        materialSearchBar.setOnClickListener(v -> {
-            requestFocusOnSearch();
-        });
-        materialSearchBar.setNavigationOnClickListener(v -> {
-            requestFocusOnSearch();
-        });
+        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch());
+        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch());
 
         // Set SearchView Settings
         ArrayList<SearchResult> l = new ArrayList<>();
-        RecyclerViewAdapterRandom recyclerViewAdapterRandom = new RecyclerViewAdapterRandom(this, l, RecyclerViewAdapterRandom.SearchTag.LIST);
+        recyclerViewAdapterRandom = new RecyclerViewAdapterRandom(this, l, RecyclerViewAdapterRandom.SearchTag.LIST);
+        recyclerViewAdapterRandom.setClickListener(this);
         RecyclerView recyclerRandom = new RecyclerView(this);
         recyclerRandom.setLayoutManager(new LinearLayoutManager(this));
-        int val = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-        recyclerRandom.setPadding(val, 0, val, 0);
         recyclerRandom.setAdapter(recyclerViewAdapterRandom);
         materialSearchView.addView(recyclerRandom);
         Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
@@ -160,7 +145,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                 // Query GIS
-                new Thread(() -> {
+                searchThread = new Thread(() -> {
+                    ArrayList<SearchResult> l2 = new ArrayList<>();
                     String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
                             "TAMU_BaseMap/MapServer/1/query?where=Abbrev+LIKE+UPPER%28%27%25" +
                             charSequence.toString() + "%25%27%29+OR+UPPER%28BldgName%29" +
@@ -176,19 +162,29 @@ public class MainActivity extends AppCompatActivity {
                             "datumTransformation=&parameterValues=&rangeValues=&" +
                             "quantizationParameters=&featureEncoding=esriDefault&f=pjson");
                     try {
-                        JSONObject jsonObject = new JSONObject(resp);
-                        JSONArray features = jsonObject.getJSONArray("features");
-                        l.clear();
-                        for (int i = 0; i < features.length(); i++) {
-                            String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
-                            String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
-                            l.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST));
+                        if (resp != null) {
+                            JSONObject jsonObject = new JSONObject(resp);
+                            JSONArray features = jsonObject.getJSONArray("features");
+                            for (int i = 0; i < features.length(); i++) {
+                                String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
+                                String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
+                                double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
+                                double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
+                                if (Thread.interrupted()) return;
+                                l2.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
+                            }
                         }
-                        runOnUiThread(() -> recyclerViewAdapterRandom.notifyDataSetChanged());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }).start();
+                    if (Thread.interrupted()) return;
+                    l.clear();
+                    l.addAll(l2);
+                    if (resp != null && !Thread.interrupted())
+                        runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
+                });
+                searchThread.interrupt();
+                searchThread.start();
                 return true;
             }
 
@@ -196,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
                 // Query GIS
                 new Thread(() -> {
+                    ArrayList<SearchResult> l2 = new ArrayList<>();
                     String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
                             "TAMU_BaseMap/MapServer/1/query?where=Abbrev+LIKE+UPPER%28%27%25" +
                             charSequence.toString() + "%25%27%29+OR+UPPER%28BldgName%29" +
@@ -211,17 +208,26 @@ public class MainActivity extends AppCompatActivity {
                             "datumTransformation=&parameterValues=&rangeValues=&" +
                             "quantizationParameters=&featureEncoding=esriDefault&f=pjson");
                     try {
-                        JSONObject jsonObject = new JSONObject(resp);
-                        JSONArray features = jsonObject.getJSONArray("features");
-                        l.clear();
-                        for (int i = 0; i < features.length(); i++) {
-                            String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
-                            l.add(new SearchResult(bldgName, null, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST));
+                        if (resp != null) {
+                            JSONObject jsonObject = new JSONObject(resp);
+                            JSONArray features = jsonObject.getJSONArray("features");
+                            for (int i = 0; i < features.length(); i++) {
+                                String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
+                                String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
+                                double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
+                                double lng = features.getJSONObject(i).getJSONObject("attributes").getDouble("Longitude");
+                                if (Thread.interrupted()) return;
+                                l2.add(new SearchResult(bldgName, address, 0, null, RecyclerViewAdapterRandom.SearchTag.LIST, new LatLng(lat, lng)));
+                            }
                         }
-                        runOnUiThread(() -> recyclerViewAdapterRandom.notifyDataSetChanged());
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    if (Thread.interrupted()) return;
+                    l.clear();
+                    l.addAll(l2);
+                    if (resp != null && !Thread.interrupted())
+                        runOnUiThread(recyclerViewAdapterRandom::notifyDataSetChanged);
                 }).start();
                 return true;
             }
@@ -231,7 +237,13 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+    }
 
+    @Override
+    public void onBackPressed() {
+        if (materialSearchView.hasFocus()) {
+            clearFocusOnSearch();
+        }
     }
 
     private void hideSystemUI() {
@@ -253,5 +265,15 @@ public class MainActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
+    @Override
+    public void onItemClick(View view, int position) {
+        MarkerOptions selectedResult = new MarkerOptions();
+        selectedResult.flat(true);
+        selectedResult.position(recyclerViewAdapterRandom.getItem(position).position);
+        selectedResult.title(recyclerViewAdapterRandom.getItem(position).title);
+        MapsFragment.mMap.addMarker(selectedResult);
+        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recyclerViewAdapterRandom.getItem(position).position, 18.0f));
+        clearFocusOnSearch();
+    }
 }
 

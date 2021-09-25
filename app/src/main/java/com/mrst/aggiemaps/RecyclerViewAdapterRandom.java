@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -88,14 +89,16 @@ public class RecyclerViewAdapterRandom extends RecyclerView.Adapter<RecyclerView
         TextView titleText;
         TextView subtitleText;
         FloatingActionButton directionIcon;
+        RelativeLayout rlSearch;
 
         ListViewHolder(View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.title_text);
             subtitleText = itemView.findViewById(R.id.subtitle_text);
             directionIcon = itemView.findViewById(R.id.direction_icon);
+            rlSearch = itemView.findViewById(R.id.rl_search);
             itemView.setOnClickListener(this);
-            subtitleText.setOnClickListener(this);
+            rlSearch.setOnClickListener(this);
         }
 
         @Override

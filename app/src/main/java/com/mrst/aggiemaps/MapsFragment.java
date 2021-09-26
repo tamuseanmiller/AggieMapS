@@ -1,5 +1,17 @@
 package com.mrst.aggiemaps;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -9,19 +21,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
 import com.esri.core.geometry.Point;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -29,13 +28,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.card.MaterialCardView;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
 
@@ -218,7 +215,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
                     busStops.add(new LatLng(x, y));
                 }
-
             }
 
             assert first != null;
@@ -275,7 +271,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     };
 
-    public class UnscrollableLinearLayoutManager extends LinearLayoutManager {
+    /*
+    * LinearLayoutManager that stops a recycler from being scrolled
+    * Used for swiping up on the buses button
+     */
+    private static class UnscrollableLinearLayoutManager extends LinearLayoutManager {
         public UnscrollableLinearLayoutManager(Context context) {
             super(context);
         }
@@ -347,9 +347,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
         gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
-        // Initialize bus button
-        //MaterialCardView busButton = mView.findViewById(R.id.bus_button);
-
         // Set up the bottom sheet
         View standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
@@ -364,6 +361,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         return mView;
     }
 
+    /*
+    * Method to create and display all bus routes on the bottom sheet
+     */
     private void setUpBusRoutes() {
         try {
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");

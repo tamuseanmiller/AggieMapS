@@ -6,15 +6,12 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -26,16 +23,12 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.CancellationToken;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
-import com.google.android.libraries.places.api.net.FetchPlaceResponse;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.lapism.search.widget.MaterialSearchBar;
@@ -47,7 +40,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -75,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
     }
 
     private void requestFocusOnSearch() {
-        ScriptGroup.Binding binding;
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchView.requestFocus();
         materialSearchBar.setVisibility(View.GONE);
@@ -172,6 +163,8 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                 if (charSequence.length() == 0) return true;
                 mHandler.removeCallbacksAndMessages(null);
 
+                // Delays the query call so that the recyclers can keep up
+                // This is just a fix for fast typing
                 mHandler.postDelayed(() -> searchRecycler.post(() -> {
                     queryGIS(charSequence, token); // Query GIS, Google
                 }), 300);
@@ -183,6 +176,8 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                 if (charSequence.length() == 0) return true;
                 mHandler.removeCallbacksAndMessages(null);
 
+                // Delays the query call so that the recyclers can keep up
+                // This is just a fix for fast typing
                 mHandler.postDelayed(() -> searchRecycler.post(() -> {
                     queryGIS(charSequence, token); // Query GIS, Google
                 }), 300);
@@ -195,6 +190,9 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         });
     }
 
+    /*
+    * Queries Google's Autocomplete Places API to search with GIS
+     */
     private void queryGoogle(CharSequence charSequence, AutocompleteSessionToken token) {
         // Create a RectangularBounds object.
         RectangularBounds bounds = RectangularBounds.newInstance(
@@ -238,6 +236,9 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         });
     }
 
+    /*
+    * First query GIS, then query google places
+     */
     private void queryGIS(CharSequence charSequence, AutocompleteSessionToken token) {
         new Thread(() -> {
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
@@ -282,6 +283,10 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         }).start();
     }
 
+    /*
+    * When back is pressed, make sure that it clears the searchview focus
+    * instead of closing the app
+     */
     @Override
     public void onBackPressed() {
         if (materialSearchView.hasFocus()) {
@@ -289,10 +294,10 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         }
     }
 
+    /*
+     * Un-Show the navigation bar and get out of full screen
+     */
     private void hideSystemUI() {
-        // Enables regular immersive mode.
-        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
-        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -300,6 +305,9 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
+    /*
+    * Show the navigation bar and get out of full screen
+     */
     private void showSystemUI() {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
@@ -308,6 +316,9 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
+    /*
+    * When a Search Result is tapped, create marker and animate to position
+     */
     @Override
     public void onItemClick(View view, int position) {
         MarkerOptions selectedResult = new MarkerOptions();

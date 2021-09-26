@@ -18,6 +18,8 @@
         android:layout_height="wrap_content"
         app:fabCustomSize="40dp"
         app:elevation="0dp"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/red_60"
         app:tint="@color/foreground"
         android:stateListAnimator="@null"
         android:layout_centerVertical="true"
@@ -52,10 +54,12 @@
         android:textColor="@color/foreground_60"/>
 
     <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/search_divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/subtitle_text"
         android:layout_marginTop="14dp"
+        android:visibility="invisible"
         app:dividerInsetStart="65dp" />
 
 </RelativeLayout>

@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.divider.MaterialDivider;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -18,29 +19,27 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     enum SearchTag {
         CATEGORY,
-        LIST
+        RESULT
     }
 
     private static List<SearchResult> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private SearchTag tag;
 
     // data is passed into the constructor
-    SearchAdapter(Context context, List<SearchResult> data, SearchTag tag) {
+    SearchAdapter(Context context, List<SearchResult> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
-        this.tag = tag;
     }
 
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        switch (tag) {
-            case CATEGORY:
+        switch (viewType) {
+            case 1:
                 return new SearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
-            case LIST:
+            case 0:
                 return new SearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
             default:
                 return null;
@@ -49,16 +48,19 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
-        switch (tag) {
+        if (mData.size() <= position) return;
+        switch (mData.get(position).tag) {
             case CATEGORY:
                 CategoryViewHolder holderCat = (CategoryViewHolder) holderView;
                 holderCat.categoryName.setText(mData.get(position).title);
 
                 break;
-            case LIST:
+            case RESULT:
                 ListViewHolder holderList = (ListViewHolder) holderView;
                 holderList.titleText.setText(mData.get(position).title);
                 holderList.subtitleText.setText(mData.get(position).subtitle);
+                if (mData.size() - 1 > position && mData.get(position + 1).tag != SearchTag.CATEGORY)
+                holderList.divider.setVisibility(View.VISIBLE);
                 break;
         }
     }
@@ -70,6 +72,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
+        if (mData.size() <= position) return position;
+        switch (mData.get(position).tag) {
+            case RESULT:
+                return 0;
+            case CATEGORY:
+                return 1;
+        }
         return position;
     }
 
@@ -86,6 +95,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         TextView subtitleText;
         FloatingActionButton directionIcon;
         RelativeLayout rlSearch;
+        MaterialDivider divider;
 
         ListViewHolder(View itemView) {
             super(itemView);
@@ -93,6 +103,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             subtitleText = itemView.findViewById(R.id.subtitle_text);
             directionIcon = itemView.findViewById(R.id.direction_icon);
             rlSearch = itemView.findViewById(R.id.rl_search);
+            divider = itemView.findViewById(R.id.search_divider);
             itemView.setOnClickListener(this);
             rlSearch.setOnClickListener(this);
         }

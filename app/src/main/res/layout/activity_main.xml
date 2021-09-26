@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="0dp"
-            app:layout_scrollFlags="enterAlways|snap"/>
+            app:layout_scrollFlags="enterAlways|snap" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -35,7 +35,8 @@
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@id/material_search_bar" />
+        app:layout_anchor="@id/material_search_bar"
+        android:elevation="0dp"/>
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

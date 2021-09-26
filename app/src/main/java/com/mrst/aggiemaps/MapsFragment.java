@@ -165,7 +165,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         if (route.containsKey(routeNo)) {
 
             // Draw polyline of route
-            requireActivity().runOnUiThread(() -> mMap.addPolyline(Objects.requireNonNull(route.get(routeNo)).polylineOptions));
+            PolylineOptions newPolyline = Objects.requireNonNull(route.get(routeNo)).polylineOptions;
+            newPolyline.color(color);
+            requireActivity().runOnUiThread(() -> mMap.addPolyline(newPolyline));
 
             // Draw stops
             for (LatLng i : Objects.requireNonNull(route.get(routeNo)).stops) {
@@ -273,6 +275,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     };
 
+    public class UnscrollableLinearLayoutManager extends LinearLayoutManager {
+        public UnscrollableLinearLayoutManager(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean canScrollVertically() {
+            return false;
+        }
+    }
+
     /*
      * When the view is created, what happens
      */
@@ -300,14 +313,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         offCampusAdapter = null;
         gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
         gameDayAdapter = null;
-        swipeRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+        swipeRecycler.setLayoutManager(new UnscrollableLinearLayoutManager(getActivity()));
         List<String> l = new ArrayList<>();
         l.add(" ");
         SwipeAdapter swipeAdapter = new SwipeAdapter(getActivity(), l);
         swipeRecycler.setAdapter(swipeAdapter);
         swipeAdapter.setClickListener(this);
 
-        // TODO: Swiping isn't doing anything
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -317,8 +329,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                swipeAdapter.notifyItemChanged(0);
             }
         });
+        helper.attachToRecyclerView(null);
         helper.attachToRecyclerView(swipeRecycler);
 
         // Set decorations for the recyclers
@@ -346,9 +360,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
-
-        // Set the Button to open the routes sheet
-        //busButton.setOnClickListener(v -> standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
 
         return mView;
     }

@@ -137,13 +137,12 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-
         </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/swipe_recycler"
             android:layout_width="wrap_content"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             app:layout_anchorGravity="bottom|right|end"
             android:layout_gravity="end|bottom"
             android:layout_marginEnd="23dp"

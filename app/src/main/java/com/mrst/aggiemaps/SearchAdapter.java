@@ -53,14 +53,13 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             case CATEGORY:
                 CategoryViewHolder holderCat = (CategoryViewHolder) holderView;
                 holderCat.categoryName.setText(mData.get(position).title);
-
                 break;
             case RESULT:
                 ListViewHolder holderList = (ListViewHolder) holderView;
                 holderList.titleText.setText(mData.get(position).title);
                 holderList.subtitleText.setText(mData.get(position).subtitle);
-                if (mData.size() - 1 > position && mData.get(position + 1).tag != SearchTag.CATEGORY)
-                holderList.divider.setVisibility(View.VISIBLE);
+                if (mData.size() - 1 != position)
+                    holderList.divider.setVisibility(View.VISIBLE);
                 break;
         }
     }

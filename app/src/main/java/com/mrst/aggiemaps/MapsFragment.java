@@ -2,18 +2,30 @@ package com.mrst.aggiemaps;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.esri.core.geometry.Point;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -21,6 +33,10 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.ResponseBody;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
@@ -28,11 +44,16 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class MapsFragment extends Fragment {
 
     private OkHttpClient client;  // Client to make API requests
     private GoogleMap mMap;       // The Map itself
+    private ArrayList<LatLng> bussesArray;
+    private Handler handler = new Handler();
+    private Runnable runnable;
 
     /*
      * Method to convert transportation coords to LatLng
@@ -51,8 +72,8 @@ public class MapsFragment extends Fragment {
     }
 
     /*
-    * Method to make a GET request to a given URL
-    * returns response body as String
+     * Method to make a GET request to a given URL
+     * returns response body as String
      */
     private String getApiCall(String url) {
         try {
@@ -74,22 +95,80 @@ public class MapsFragment extends Fragment {
     }
 
     /*
-    * Method to draw a bus route on the map
+     * Helper method to convert a drawable to a BitmapDescriptor for use with a maps marker
+     * Taken from somewhere similar to here
+     * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
+     */
+    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
+        // below line is use to generate a drawable.
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+
+        // below line is use to set bounds to our vector drawable.
+        assert vectorDrawable != null;
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
+        vectorDrawable.setTintList(ColorStateList.valueOf(color));
+
+        // below line is use to create a bitmap for our
+        // drawable which we have added.
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+
+        // below line is use to add bitmap in our canvas.
+        Canvas canvas = new Canvas(bitmap);
+
+        // below line is use to draw our
+        // vector drawable in canvas.
+        vectorDrawable.draw(canvas);
+
+        // after generating our bitmap we are returning our bitmap.
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+
+
+
+    /*
+     * Method to draw a bus route on the map
      */
     private void drawBusRoute(String routeNo) {
 
     }
 
     /*
-    * Method to draw all buses on a given route
+     * Method to draw all buses on a given route
      */
-    private void drawBusesOnRoute(String routeNo) {
 
+    private void drawBusesOnRoute(String routeNo) {
+        try {
+            JSONArray busData_jsonArray = new JSONArray(getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/"+routeNo+"/buses"));
+            bussesArray = new ArrayList<>();
+            for (int i = 0; i < busData_jsonArray.length(); i++) {
+                Point p = convertWebMercatorToLatLng(busData_jsonArray.getJSONObject(i).getDouble("lng"),
+                        busData_jsonArray.getJSONObject(i).getDouble("lat"));
+                bussesArray.add(new LatLng(p.getY(), p.getX()));
+            }
+            requireActivity().runOnUiThread(() -> {
+                mMap.clear();
+            });
+            for (LatLng busLatLng : bussesArray){
+                Log.e("BUS Coords: ", busLatLng.toString());
+                requireActivity().runOnUiThread(() -> {
+                    MarkerOptions marker = new MarkerOptions();
+                    marker.flat(true);
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus, ContextCompat.getColor(requireActivity(), R.color.white)));
+                    marker.zIndex(100);
+                    marker.anchor(0.5F, 0.5F);
+                    marker.position(busLatLng);
+                    mMap.addMarker(marker);
+                });
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
-    * Method to create array of a route from two latlng coordinates
-    * returns a TripPlan obj
+     * Method to create array of a route from two latlng coordinates
+     * returns a TripPlan obj
      */
     private TripPlan getRoute(LatLng src, LatLng dest) {
 
@@ -97,8 +176,8 @@ public class MapsFragment extends Fragment {
     }
 
     /*
-    * When the map is ready to be interacted with
-    * Ex. Draw lines, add circles, set style
+     * When the map is ready to be interacted with
+     * Ex. Draw lines, add circles, set style
      */
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
 
@@ -115,14 +194,23 @@ public class MapsFragment extends Fragment {
         public void onMapReady(GoogleMap googleMap) {
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
-            mMap.addMarker(new MarkerOptions().position(collegeStation).title("Marker in Cstat"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(collegeStation));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
             mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+
+            // Call drawBusesOnRoute repeatedly
+            handler.postDelayed(runnable = () -> {
+                handler.postDelayed(runnable, 3000);
+                // Calling the drawBusesOnRoute in a new thread
+                Thread t = new Thread(() -> { drawBusesOnRoute("04"); });
+                t.start();
+                try { t.join(); }
+                catch (InterruptedException e) { e.printStackTrace(); }
+            }, 3000);
         }
     };
 
     /*
-    * When the view is created, what happens
+     * When the view is created, what happens
      */
     @Nullable
     @Override
@@ -137,8 +225,8 @@ public class MapsFragment extends Fragment {
     }
 
     /*
-    * Don't worry about this
-    */
+     * Don't worry about this
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

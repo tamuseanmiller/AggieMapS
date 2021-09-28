@@ -44,6 +44,7 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -53,7 +54,7 @@ public class MapsFragment extends Fragment {
     private GoogleMap mMap;       // The Map itself
     private ArrayList<LatLng> busesArray; // Holds the busses rti location
     private ArrayList<Double> busDirArray; // Holds the direction of each bus
-
+    private ArrayList<String> busInfo;
     private Handler handler = new Handler();
     private Runnable runnable;
 
@@ -166,11 +167,11 @@ public class MapsFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     MarkerOptions marker = new MarkerOptions();
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus, ContextCompat.getColor(requireActivity(), R.color.white)));
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.white)));
                     marker.zIndex(100);
                     marker.anchor(0.5F, 0.5F);
                     marker.position(busesArray.get(finalI));
-                    marker.rotation(busDirArray.get(finalI).floatValue());
+                    marker.rotation(busDirArray.get(finalI).floatValue()-90);
                     mMap.addMarker(marker); //add marker to the new cleared map
                 });
             }

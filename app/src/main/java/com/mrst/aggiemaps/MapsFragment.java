@@ -52,9 +52,6 @@ public class MapsFragment extends Fragment {
 
     private OkHttpClient client;  // Client to make API requests
     private GoogleMap mMap;       // The Map itself
-    private ArrayList<LatLng> busesArray; // Holds the busses rti location
-    private ArrayList<Double> busDirArray; // Holds the direction of each bus
-    private ArrayList<String> busInfo;
     private Handler handler = new Handler();
     private Runnable runnable;
 
@@ -142,27 +139,23 @@ public class MapsFragment extends Fragment {
 
     private void drawBusesOnRoute(String routeNo) {
         try {
+
             // Get JSON Array of data from transportation API
             JSONArray busData_jsonArray = new JSONArray(getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/"+routeNo+"/buses"));
-            // Initialize new arrays
-            busesArray = new ArrayList<>();
-            busDirArray=new ArrayList<>();
-            // Go through the JSON array to get each busses latitude, longitude, and direction.
-            // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and add it to the new array.
-            // Add direction of each bus to the new array as well
-            for (int i = 0; i < busData_jsonArray.length(); i++) {
-                Point p = convertWebMercatorToLatLng(busData_jsonArray.getJSONObject(i).getDouble("lng"),
-                        busData_jsonArray.getJSONObject(i).getDouble("lat"));
-                busesArray.add(new LatLng(p.getY(), p.getX()));
-                busDirArray.add(busData_jsonArray.getJSONObject(i).getDouble("direction"));
-            }
+
             // clear the map of markers
             requireActivity().runOnUiThread(() -> {
                 mMap.clear();
             });
 
-            // Make the new markers for each bus with the latitude, longitude and rotate the marker using the direction.
-            for (int i = 0; i < busesArray.size(); i++) {
+            // Go through the JSON array to get each busses latitude, longitude, and direction.
+            // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and add it to the marker.
+            // Get the direction and use it to rotate the bus icon and add this to the marker.
+
+            for (int i = 0; i < busData_jsonArray.length(); i++) {
+                Point p = convertWebMercatorToLatLng(busData_jsonArray.getJSONObject(i).getDouble("lng"),
+                        busData_jsonArray.getJSONObject(i).getDouble("lat"));
+
                 int finalI = i;
                 requireActivity().runOnUiThread(() -> {
                     MarkerOptions marker = new MarkerOptions();
@@ -170,8 +163,13 @@ public class MapsFragment extends Fragment {
                     marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.white)));
                     marker.zIndex(100);
                     marker.anchor(0.5F, 0.5F);
-                    marker.position(busesArray.get(finalI));
-                    marker.rotation(busDirArray.get(finalI).floatValue()-90);
+                    marker.position(new LatLng(p.getY(), p.getX()));
+                    try {
+                        marker.rotation((float)busData_jsonArray.getJSONObject(finalI).getDouble("direction") -90);
+                        marker.title("Occupancy: "+busData_jsonArray.getJSONObject(finalI).getString("occupancy"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     mMap.addMarker(marker); //add marker to the new cleared map
                 });
             }

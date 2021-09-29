@@ -35,7 +35,7 @@ public class OffCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new OffCampusAdapter.OffCampusViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+        return new OffCampusAdapter.OffCampusViewHolder(mInflater.inflate(R.layout.route_card, parent, false));
     }
 
     public static int manipulateColor(int color, float factor) {

@@ -1,14 +1,19 @@
 package com.mrst.aggiemaps;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +39,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new OnCampusAdapter.OnCampusViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+        return new OnCampusAdapter.OnCampusViewHolder(mInflater.inflate(R.layout.route_card, parent, false));
     }
 
     public static int manipulateColor(int color, float factor) {
@@ -43,14 +48,15 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         int g = Math.round(Color.green(color) * factor);
         int b = Math.round(Color.blue(color) * factor);
         return Color.argb(a,
-                Math.min(r,255),
-                Math.min(g,255),
-                Math.min(b,255));
+                Math.min(r, 255),
+                Math.min(g, 255),
+                Math.min(b, 255));
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
         OnCampusViewHolder holderOn = (OnCampusViewHolder) holderView;
+        holderOn.card.setLayoutParams(new LinearLayout.LayoutParams(holderOn.card.getLayoutParams().width, holderOn.card.getLayoutParams().height, getDeviceParams()));
         if (position == 0) {
             BusRoute route = mData.get(position);
             holderOn.routeNumber.setText(route.routeNumber);
@@ -93,6 +99,24 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemCount() {
         return mData.size();
+    }
+
+    private int convertDpToPx(int dp){
+        DisplayMetrics displayMetrics = mInflater.getContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+
+    }
+
+    private int convertPxToDp(int px){
+        DisplayMetrics displayMetrics = mInflater.getContext().getResources().getDisplayMetrics();
+        return Math.round(px / (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    public float getDeviceParams() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((Activity)mInflater.getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        return (float) (metrics.density / 2.9750001);
     }
 
     // stores and recycles views as they are scrolled off screen

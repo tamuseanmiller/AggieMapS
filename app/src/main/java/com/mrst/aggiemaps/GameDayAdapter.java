@@ -34,7 +34,7 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new GameDayAdapter.GameDayViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+        return new GameDayAdapter.GameDayViewHolder(mInflater.inflate(R.layout.route_card, parent, false));
     }
 
     public static int manipulateColor(int color, float factor) {

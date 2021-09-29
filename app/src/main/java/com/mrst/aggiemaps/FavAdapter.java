@@ -35,7 +35,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new FavAdapter.FavoritesViewHolder(mInflater.inflate(R.layout.recyclerview_route, parent, false));
+        return new FavAdapter.FavoritesViewHolder(mInflater.inflate(R.layout.route_card, parent, false));
     }
 
     public static int manipulateColor(int color, float factor) {

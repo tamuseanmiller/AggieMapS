@@ -15,19 +15,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    enum SearchTag {
-        CATEGORY,
-        RESULT
-    }
+public class GISSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static List<SearchResult> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    SearchAdapter(Context context, List<SearchResult> data) {
+    GISSearchAdapter(Context context, List<SearchResult> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -38,9 +33,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
             case 1:
-                return new SearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+                return new GISSearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new SearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+                return new GISSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
             default:
                 return null;
         }
@@ -111,7 +106,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onItemClick(view, getAdapterPosition());
+                mClickListener.onGISClick(view, getAdapterPosition());
             }
         }
     }
@@ -144,7 +139,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, int position);
+        void onGISClick(View view, int position);
 
     }
 }

@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -38,6 +39,7 @@ import com.rubensousa.decorator.GridMarginDecoration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
@@ -128,13 +130,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Taken from somewhere similar to here
      * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
      */
-    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
+    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color, int modifySize) {
         // below line is use to generate a drawable.
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
 
         // below line is use to set bounds to our vector drawable.
         assert vectorDrawable != null;
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth() - 20, vectorDrawable.getIntrinsicHeight() - 20);
+        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth() + modifySize, vectorDrawable.getIntrinsicHeight() + modifySize);
         vectorDrawable.setTintList(ColorStateList.valueOf(color));
 
         // below line is use to create a bitmap for our
@@ -170,8 +172,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             for (LatLng i : Objects.requireNonNull(route.get(routeNo)).stops) {
                 MarkerOptions marker = new MarkerOptions();
                 marker.flat(true);
-                marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color));
-                marker.zIndex(100);
+                marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
                 marker.anchor(0.5F, 0.5F);
                 marker.position(i);
                 requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
@@ -208,8 +209,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
                     MarkerOptions marker = new MarkerOptions();
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color));
-                    marker.zIndex(100);
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+
                     marker.anchor(0.5F, 0.5F);
                     marker.position(new LatLng(x, y));
                     requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
@@ -234,8 +235,72 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to draw all buses on a given route
      */
-    private void drawBusesOnRoute() {
+    private void drawBusesOnRoute(String routeNo) {
+        new Thread(() -> {
+            boolean first = true;
+            ArrayList<Marker> busMarkers = new ArrayList<>();
+            try {
+                while (true) {
+                    // Add buses
+                    Request request = new Request.Builder()
+                            .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/buses")
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    ResponseBody body = response.body();
+                    String str = body.string();
+                    JSONArray buses = new JSONArray(str);
 
+                    for (int i = 0; i < buses.length(); i++) {
+                        busMarkers.add(null);
+                        JSONObject currentBus = buses.getJSONObject(i);
+                        Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"), currentBus.getDouble("lat"));
+                        double x = p.getY();
+                        double y = p.getX();
+                        int finalI = i;
+                        if (first) {
+                            MarkerOptions marker = new MarkerOptions();
+                            marker.icon(BitmapFromVector(requireActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
+                            marker.zIndex(100);
+                            marker.anchor(0.5F, 0.8F);
+                            marker.rotation((float) currentBus.getDouble("direction") - 90);
+                            marker.position(new LatLng(x, y));
+                            requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
+                        } else {
+                            while (busMarkers.get(finalI) == null) {
+
+                                requireActivity().runOnUiThread(() -> {
+                                    busMarkers.get(finalI).setPosition(new LatLng(x, y));
+                                    try {
+                                        busMarkers.get(finalI).setRotation((float) currentBus.getDouble("direction") - 90);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                            }
+                        }
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            try {
+                                busMarkers.get(finalI).setTitle(currentBus.getString("occupancy"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                    }
+                    first = false;
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (JSONException | IOException jsonException) {
+                jsonException.printStackTrace();
+            }
+
+
+        }).start();
     }
 
     /*
@@ -272,8 +337,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     };
 
     /*
-    * LinearLayoutManager that stops a recycler from being scrolled
-    * Used for swiping up on the buses button
+     * LinearLayoutManager that stops a recycler from being scrolled
+     * Used for swiping up on the buses button
      */
     private static class UnscrollableLinearLayoutManager extends LinearLayoutManager {
         public UnscrollableLinearLayoutManager(Context context) {
@@ -294,6 +359,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+        if (!isAdded()) return null;
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
@@ -362,7 +429,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
-    * Method to create and display all bus routes on the bottom sheet
+     * Method to create and display all bus routes on the bottom sheet
      */
     private void setUpBusRoutes() {
         try {
@@ -479,6 +546,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             }).start();
         } else {
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();
+            drawBusesOnRoute(busRoute.routeNumber);
         }
     }
 

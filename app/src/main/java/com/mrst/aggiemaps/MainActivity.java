@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -49,15 +50,23 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements SearchAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
     private OkHttpClient client;  // Client to make API requests
-    private SearchAdapter searchAdapter;
-    private ArrayList<SearchResult> searchResults;
+    private GISSearchAdapter gisSearchAdapter;
+    private GoogleSearchAdapter googleSearchAdapter;
+    private ArrayList<SearchResult> gisSearchResults;
+    private ArrayList<SearchResult> googleSearchResults;
     private PlacesClient placesClient;
-    private RecyclerView searchRecycler;
+    private RecyclerView gisSearchRecycler;
+    private RecyclerView googleSearchRecycler;
+
+    enum SearchTag {
+        CATEGORY,
+        RESULT
+    }
 
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
@@ -134,14 +143,26 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         materialSearchBar.setOnClickListener(v -> requestFocusOnSearch());
         materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch());
 
+        // Set recyclers
+        gisSearchResults = new ArrayList<>();
+        googleSearchResults = new ArrayList<>();
+        LinearLayout ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        gisSearchAdapter = new GISSearchAdapter(this, gisSearchResults);
+        gisSearchAdapter.setClickListener(this);
+        googleSearchAdapter = new GoogleSearchAdapter(this, googleSearchResults);
+        googleSearchAdapter.setClickListener(this);
+        gisSearchRecycler = new RecyclerView(this);
+        gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this));
+        gisSearchRecycler.setAdapter(gisSearchAdapter);
+        googleSearchRecycler = new RecyclerView(this);
+        googleSearchRecycler.setLayoutManager(new LinearLayoutManager(this));
+        googleSearchRecycler.setAdapter(googleSearchAdapter);
+        ll.addView(gisSearchRecycler);
+        ll.addView(googleSearchRecycler);
+
         // Set SearchView Settings
-        searchResults = new ArrayList<>();
-        searchAdapter = new SearchAdapter(this, searchResults);
-        searchAdapter.setClickListener(this);
-        searchRecycler = new RecyclerView(this);
-        searchRecycler.setLayoutManager(new LinearLayoutManager(this));
-        searchRecycler.setAdapter(searchAdapter);
-        materialSearchView.addView(searchRecycler);
+        materialSearchView.addView(ll);
         Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
         navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
         materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
@@ -156,31 +177,30 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
         // Set OnClick Listeners
         materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
 
-        Handler mHandler = new Handler();
         materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
-                mHandler.removeCallbacksAndMessages(null);
 
                 // Delays the query call so that the recyclers can keep up
                 // This is just a fix for fast typing
-                mHandler.postDelayed(() -> searchRecycler.post(() -> {
-                    queryGIS(charSequence, token); // Query GIS, Google
-                }), 300);
+                gisSearchRecycler.post(() -> {
+                    queryGIS(charSequence); // Query GIS, Google
+                    queryGoogle(charSequence, token);
+                });
                 return true;
             }
 
             @Override
             public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
-                mHandler.removeCallbacksAndMessages(null);
 
                 // Delays the query call so that the recyclers can keep up
                 // This is just a fix for fast typing
-                mHandler.postDelayed(() -> searchRecycler.post(() -> {
-                    queryGIS(charSequence, token); // Query GIS, Google
-                }), 300);
+                gisSearchRecycler.post(() -> {
+                    queryGIS(charSequence); // Query GIS, Google
+                    queryGoogle(charSequence, token);
+                });
                 return true;
             }
         });
@@ -209,8 +229,11 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
 
         placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
             if (!response.getAutocompletePredictions().isEmpty()) {
-                searchResults.add(new SearchResult("Google Maps", "", 0, null, SearchAdapter.SearchTag.CATEGORY, null));
-                searchAdapter.notifyItemInserted(searchResults.size() - 1);
+                int size = googleSearchResults.size();
+                googleSearchResults.clear();
+                googleSearchAdapter.notifyItemRangeRemoved(0, size);
+                googleSearchResults.add(new SearchResult("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
+                googleSearchAdapter.notifyItemInserted(googleSearchResults.size() - 1);
             }
             for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
                 Log.i(TAG, prediction.getPlaceId());
@@ -223,8 +246,8 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                 final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(prediction.getPlaceId(), placeFields);
 
                 placesClient.fetchPlace(placeRequest).addOnSuccessListener((placeResponse) -> {
-                    searchResults.add(new SearchResult(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchAdapter.SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
-                    searchAdapter.notifyItemInserted(searchResults.size() - 1);
+                    googleSearchResults.add(new SearchResult(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
+                    googleSearchAdapter.notifyItemInserted(googleSearchResults.size() - 1);
                 });
             }
 
@@ -239,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
     /*
     * First query GIS, then query google places
      */
-    private void queryGIS(CharSequence charSequence, AutocompleteSessionToken token) {
+    private void queryGIS(CharSequence charSequence) {
         new Thread(() -> {
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/" +
                     "TAMU_BaseMap/MapServer/1/query?where=UPPER%28Abbrev%29+LIKE+UPPER%28" +
@@ -257,12 +280,13 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                     "featureEncoding=esriDefault&f=pjson");
             try {
                 if (resp != null) {
-                    searchResults.clear();
+                    int size = gisSearchResults.size();
+                    gisSearchResults.clear();
                     JSONObject jsonObject = new JSONObject(resp);
                     JSONArray features = jsonObject.getJSONArray("features");
                     for (int i = 0; i < features.length(); i++) {
                         if (i == 0)
-                            searchResults.add(new SearchResult("On Campus", "", 0, null, SearchAdapter.SearchTag.CATEGORY, null));
+                            gisSearchResults.add(new SearchResult("On Campus", "", 0, null, SearchTag.CATEGORY, null));
                         String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
                         String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                         double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
@@ -270,12 +294,9 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
                         if (address.equals("null"))
                             address = lat + ", " + lng; // If no address, use lat/lng instead
                         String finalAddress = address;
-                        searchResults.add(new SearchResult(bldgName, finalAddress, 0, null, SearchAdapter.SearchTag.RESULT, new LatLng(lat, lng)));
+                        gisSearchResults.add(new SearchResult(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
                     }
-                    runOnUiThread(() -> {
-                        searchAdapter.notifyDataSetChanged();
-                        searchRecycler.post(() -> queryGoogle(charSequence, token));
-                    });
+                    runOnUiThread(() -> gisSearchAdapter.notifyDataSetChanged());
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -317,15 +338,28 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.Ite
     }
 
     /*
-    * When a Search Result is tapped, create marker and animate to position
+    * When a GIS Search Result is tapped, create marker and animate to position
      */
     @Override
-    public void onItemClick(View view, int position) {
+    public void onGISClick(View view, int position) {
         MarkerOptions selectedResult = new MarkerOptions();
-        selectedResult.position(searchAdapter.getItem(position).position);
-        selectedResult.title(searchAdapter.getItem(position).title);
+        selectedResult.position(gisSearchAdapter.getItem(position).position);
+        selectedResult.title(gisSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
-        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(searchAdapter.getItem(position).position, 18.0f));
+        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
+        clearFocusOnSearch();
+    }
+
+    /*
+     * When a Google Search Result is tapped, create marker and animate to position
+     */
+    @Override
+    public void onGoogleClick(View view, int position) {
+        MarkerOptions selectedResult = new MarkerOptions();
+        selectedResult.position(googleSearchAdapter.getItem(position).position);
+        selectedResult.title(googleSearchAdapter.getItem(position).title);
+        MapsFragment.mMap.addMarker(selectedResult);
+        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
         clearFocusOnSearch();
     }
 

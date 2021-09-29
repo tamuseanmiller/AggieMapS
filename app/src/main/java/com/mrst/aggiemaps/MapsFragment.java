@@ -12,6 +12,7 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.IccOpenLogicalChannelResponse;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -148,8 +149,7 @@ public class MapsFragment extends Fragment {
             // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and
             // add it to the marker.
             // Get the direction and use it to rotate the bus icon and add this to the marker.
-            // Get the occupancy to show bus occupancy
-
+            // Get the occupancy to show bus occupancy.
             for (int i = 0; i < busData_jsonArray.length(); i++) {
                 busMarkers.add(null);
                 // Retrieving Data
@@ -167,17 +167,17 @@ public class MapsFragment extends Fragment {
                         marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
                                 ContextCompat.getColor(requireActivity(), R.color.white)));
                         marker.zIndex(100);
-                        marker.anchor(0.5F, 0.5F);
+                        marker.anchor(0.5F, 0.8F);
                         marker.position(new LatLng(p.getY(), p.getX()));
                         marker.rotation(busDirection);
-                        marker.title(occupancy);
+                        marker.title("Occupancy: "+occupancy);
                         busMarkers.set(finalI, mMap.addMarker(marker));
                     }
                     // Update the existing Markers
                     else {
                         busMarkers.get(finalI).setPosition(new LatLng(p.getY(), p.getX()));
                         busMarkers.get(finalI).setRotation(busDirection);
-                        busMarkers.get(finalI).setTitle(occupancy);
+                        busMarkers.get(finalI).setTitle("Occupancy: "+occupancy);
                     }
                 });
             }

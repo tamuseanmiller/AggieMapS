@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -54,6 +55,7 @@ public class MapsFragment extends Fragment {
     private GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
+    private ArrayList<Marker> busMarkers = new ArrayList<>();
 
     /*
      * Method to convert transportation coords to LatLng
@@ -139,38 +141,42 @@ public class MapsFragment extends Fragment {
 
     private void drawBusesOnRoute(String routeNo) {
         try {
-
             // Get JSON Array of data from transportation API
             JSONArray busData_jsonArray = new JSONArray(getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/"+routeNo+"/buses"));
 
-            // clear the map of markers
-            requireActivity().runOnUiThread(() -> {
-                mMap.clear();
-            });
-
-            // Go through the JSON array to get each busses latitude, longitude, and direction.
+            // Go through the JSON array to get each busses latitude, longitude, direction, and occupancy.
             // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and add it to the marker.
             // Get the direction and use it to rotate the bus icon and add this to the marker.
+            // Get the occupancy to show bus occupancy
 
             for (int i = 0; i < busData_jsonArray.length(); i++) {
-                Point p = convertWebMercatorToLatLng(busData_jsonArray.getJSONObject(i).getDouble("lng"),
-                        busData_jsonArray.getJSONObject(i).getDouble("lat"));
-
+                busMarkers.add(null);
+                // Retrieving Data
+                JSONObject currentBus = busData_jsonArray.getJSONObject(i);
+                Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"),
+                        currentBus.getDouble("lat"));
+                Float busDirection = (float)currentBus.getDouble("direction") -90;
+                String occupancy = currentBus.getString("occupancy");
                 int finalI = i;
                 requireActivity().runOnUiThread(() -> {
-                    MarkerOptions marker = new MarkerOptions();
-                    marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.white)));
-                    marker.zIndex(100);
-                    marker.anchor(0.5F, 0.5F);
-                    marker.position(new LatLng(p.getY(), p.getX()));
-                    try {
-                        marker.rotation((float)busData_jsonArray.getJSONObject(finalI).getDouble("direction") -90);
-                        marker.title("Occupancy: "+busData_jsonArray.getJSONObject(finalI).getString("occupancy"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    // Initialize Markers
+                    if (busMarkers.get(finalI)==null){
+                        MarkerOptions marker = new MarkerOptions();
+                        marker.flat(true);
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.white)));
+                        marker.zIndex(100);
+                        marker.anchor(0.5F, 0.5F);
+                        marker.position(new LatLng(p.getY(), p.getX()));
+                        marker.rotation(busDirection);
+                        marker.title("Occupancy: "+occupancy);
+                        busMarkers.set(finalI, mMap.addMarker(marker));
                     }
-                    mMap.addMarker(marker); //add marker to the new cleared map
+                    // Update the existing Markers
+                    else{
+                        busMarkers.get(finalI).setPosition(new LatLng(p.getY(), p.getX()));
+                        busMarkers.get(finalI).setRotation(busDirection);
+                        busMarkers.get(finalI).setTitle(occupancy);
+                    }
                 });
             }
 

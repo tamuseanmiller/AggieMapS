@@ -126,8 +126,6 @@ public class MapsFragment extends Fragment {
     }
 
 
-
-
     /*
      * Method to draw a bus route on the map
      */
@@ -142,10 +140,13 @@ public class MapsFragment extends Fragment {
     private void drawBusesOnRoute(String routeNo) {
         try {
             // Get JSON Array of data from transportation API
-            JSONArray busData_jsonArray = new JSONArray(getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/"+routeNo+"/buses"));
-
-            // Go through the JSON array to get each busses latitude, longitude, direction, and occupancy.
-            // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and add it to the marker.
+            String API_url = "https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo +
+                    "/buses";
+            JSONArray busData_jsonArray = new JSONArray(getApiCall(API_url));
+            // Go through the JSON array to get each busses latitude, longitude, direction, and
+            // occupancy.
+            // Convert Lat and Lng using the helper convertWebMercatorToLatLng function and
+            // add it to the marker.
             // Get the direction and use it to rotate the bus icon and add this to the marker.
             // Get the occupancy to show bus occupancy
 
@@ -155,24 +156,25 @@ public class MapsFragment extends Fragment {
                 JSONObject currentBus = busData_jsonArray.getJSONObject(i);
                 Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"),
                         currentBus.getDouble("lat"));
-                Float busDirection = (float)currentBus.getDouble("direction") -90;
+                Float busDirection = (float) currentBus.getDouble("direction") - 90;
                 String occupancy = currentBus.getString("occupancy");
                 int finalI = i;
                 requireActivity().runOnUiThread(() -> {
                     // Initialize Markers
-                    if (busMarkers.get(finalI)==null){
+                    if (busMarkers.get(finalI) == null) {
                         MarkerOptions marker = new MarkerOptions();
                         marker.flat(true);
-                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.white)));
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
+                                ContextCompat.getColor(requireActivity(), R.color.white)));
                         marker.zIndex(100);
                         marker.anchor(0.5F, 0.5F);
                         marker.position(new LatLng(p.getY(), p.getX()));
                         marker.rotation(busDirection);
-                        marker.title("Occupancy: "+occupancy);
+                        marker.title(occupancy);
                         busMarkers.set(finalI, mMap.addMarker(marker));
                     }
                     // Update the existing Markers
-                    else{
+                    else {
                         busMarkers.get(finalI).setPosition(new LatLng(p.getY(), p.getX()));
                         busMarkers.get(finalI).setRotation(busDirection);
                         busMarkers.get(finalI).setTitle(occupancy);
@@ -220,10 +222,15 @@ public class MapsFragment extends Fragment {
             handler.postDelayed(runnable = () -> {
                 handler.postDelayed(runnable, 3000);
                 // Calling the drawBusesOnRoute in a new thread
-                Thread t = new Thread(() -> { drawBusesOnRoute("04"); });
+                Thread t = new Thread(() -> {
+                    drawBusesOnRoute("04");
+                });
                 t.start();
-                try { t.join(); }
-                catch (InterruptedException e) { e.printStackTrace(); }
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }, 3000);
         }
     };

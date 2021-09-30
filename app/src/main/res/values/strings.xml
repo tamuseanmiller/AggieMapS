@@ -9,4 +9,6 @@
     <string name="buses">Buses</string>
     <string name="bus_icon">Bus Icon</string>
     <string name="add_to_favorites">Add to favorites</string>
+    <string name="shows_timetable">Shows TimeTable</string>
+    <string name="time_table">Time Table</string>
 </resources>

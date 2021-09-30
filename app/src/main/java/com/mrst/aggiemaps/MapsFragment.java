@@ -11,9 +11,13 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -39,6 +43,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rubensousa.decorator.ColumnProvider;
@@ -55,14 +60,21 @@ import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -88,10 +100,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private List<BusRoute> onList;
     private List<BusRoute> offList;
     private List<BusRoute> gameDayList;
+    private RightSheetBehavior<View> rightSheetBehavior;
+    private TableLayout tlTimetable;
+    private String currentRouteNo;
 
     @Override
     public void onItemClick(View view, int position) {
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        if (rightSheetBehavior.getState() != RightSheetBehavior.STATE_COLLAPSED)
+            rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
     }
 
     enum TripType {
@@ -395,6 +412,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         offCampusAdapter = null;
         gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
         gameDayAdapter = null;
+
+        // Set up the bus swiping action
         swipeRecycler.setLayoutManager(new UnscrollableLinearLayoutManager(getActivity()));
         List<String> l = new ArrayList<>();
         l.add(" ");
@@ -411,6 +430,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                if (rightSheetBehavior.getState() != RightSheetBehavior.STATE_COLLAPSED)
+                    rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                 swipeAdapter.notifyItemChanged(0);
             }
         });
@@ -423,8 +444,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
         DisplayMetrics metrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        col = () -> 2; // 925
-        if (metrics.heightPixels < convertDpToPx((215 * 1) + 20 + 15 + 225)) {
+        col = () -> 2;
+        // Vary the number of rows based on screen height
+        if (metrics.heightPixels < convertDpToPx((215 * 1) + 20 + 15 + 325)) {
             col = () -> 1;
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
@@ -432,7 +454,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx((215 * 2) + 20 + 15 + 225)) {
+        } else if (metrics.heightPixels < convertDpToPx((215 * 2) + 20 + 15 + 325)) {
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             col = () -> 1;
@@ -440,7 +462,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx((215 * 3) + 20 + 15 + 225)) {
+        } else if (metrics.heightPixels < convertDpToPx((215 * 3) + 20 + 15 + 325)) {
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
@@ -456,6 +478,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
         }
+
         // Set up the bottom sheet
         View standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
@@ -465,10 +488,76 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setPeekHeight(0);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
 
+        // Set up right sheet for timetable
+        View sheet = mView.findViewById(R.id.timetable_sheet);
+        rightSheetBehavior = RightSheetBehavior.from(sheet);
+        rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+        rightSheetBehavior.setHideable(false);
+        rightSheetBehavior.setPeekWidth(0);
+        rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+        tlTimetable = mView.findViewById(R.id.tl_timetable);
+
+        // Initialize the fab to open the timetable
+        FloatingActionButton fabTimetable = mView.findViewById(R.id.fab_timetable);
+        fabTimetable.setOnClickListener(v -> {
+            if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
+                rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
+            } else {
+                rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+            }
+        });
+
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
 
         return mView;
+    }
+
+    /*
+     * Method to set the values within the table layout for the timetable
+     */
+    private void setUpTimeTable() {
+        try {
+            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
+            JSONArray timetableArray = new JSONArray(str);
+            for (int i = 0; i < timetableArray.length(); i++) {
+                JSONObject row = timetableArray.getJSONObject(i);
+
+                // If no service is scheduled for this date
+                if (row.getString(row.names().getString(0)).equals("No Service Is Scheduled For This Date")) {
+                    TextView time = new TextView(getActivity());
+                    time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                    time.setPadding(10, 10, 10, 10);
+                    time.setText(row.getString(" "));
+                    requireActivity().runOnUiThread(() -> tlTimetable.addView(time));
+                    return;
+                }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US);
+                String lastTime = row.getString(row.names().getString(row.names().length() - 1));
+                LocalTime input = LocalTime.now();
+                if (!lastTime.equals("null")) {
+                    input = LocalTime.parse(lastTime, formatter);
+                }
+                if (!input.isBefore(LocalTime.now())) {
+                    TableRow tr = new TableRow(getActivity());
+                    tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+                    Iterator<String> keys = row.keys();
+                    while (keys.hasNext()) {
+                        String value = row.getString(keys.next());
+                        TextView time = new TextView(getActivity());
+                        time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                        time.setPadding(10, 10, 10, 10);
+                        time.setText(value);
+                        requireActivity().runOnUiThread(() -> tr.addView(time));
+                    }
+                    requireActivity().runOnUiThread(() -> tlTimetable.addView(tr));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private int convertDpToPx(int dp) {
@@ -597,7 +686,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
-    * When is route or a favorite is tapped, calls this method
+     * When is route or a favorite is tapped, calls this method
      */
     @Override
     public void onItemClick(View view, BusRoute busRoute, int position, BusRouteTag tag) {
@@ -691,6 +780,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 }
             }).start();
         } else {
+            currentRouteNo = busRoute.routeNumber;
+            // Set the values for the timetable right sheet
+            tlTimetable.removeAllViews();
+            new Thread(this::setUpTimeTable).start();
+            // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();
             drawBusesOnRoute(busRoute.routeNumber);
         }

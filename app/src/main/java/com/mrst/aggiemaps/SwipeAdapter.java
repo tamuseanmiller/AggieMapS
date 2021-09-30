@@ -24,11 +24,10 @@ public class SwipeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         mData = data;
     }
 
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new ViewHolder(mInflater.inflate(R.layout.swipe_card, parent, false));
+        return new ViewHolder(mInflater.inflate(R.layout.swipe_card, parent, false));
     }
 
     @Override

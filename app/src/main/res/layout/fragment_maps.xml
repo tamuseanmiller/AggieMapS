@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--     Route Sheet      -->
         <FrameLayout
             android:id="@+id/standard_bottom_sheet"
             style="@style/ThemeOverlay.App.BottomSheetDialog"
@@ -20,92 +21,8 @@
             android:elevation="10dp"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:elevation="5dp"
-                android:orientation="vertical"
-                android:paddingLeft="36dp"
-                android:paddingTop="65dp">
-
-                <TextView
-                    android:id="@+id/favorites_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:paddingStart="6dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="6dp"
-                    android:text="@string/favorites"
-                    android:textColor="@color/foreground"
-                    android:textSize="17sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_favorites"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:paddingBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:paddingStart="6dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="6dp"
-                    android:text="@string/on_campus"
-                    android:textColor="@color/foreground"
-                    android:textSize="17sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_oncampus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:paddingBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:paddingStart="6dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="6dp"
-                    android:text="@string/off_campus"
-                    android:textColor="@color/foreground"
-                    android:textSize="17sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_offcampus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:paddingBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:fontFamily="sans-serif-medium"
-                    android:paddingStart="6dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="6dp"
-                    android:text="@string/game_day"
-                    android:textColor="@color/foreground"
-                    android:textSize="17sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_gameday"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:paddingBottom="16dp" />
-
-            </LinearLayout>
+            <!--     Vertical layout of route recycler and category name      -->
+            <include layout="@layout/route_selection" />
 
             <!-- Bottom sheet contents. -->
 
@@ -138,14 +55,44 @@
 
         </FrameLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/swipe_recycler"
+        <!--     View for all the buttons on bottom right      -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_anchorGravity="bottom|right|end"
             android:layout_gravity="end|bottom"
-            android:layout_marginEnd="23dp"
-            android:layout_marginBottom="44dp" />
+            android:layout_marginBottom="44dp"
+            android:orientation="vertical"
+            app:layout_anchorGravity="bottom|right|end">
+
+            <include layout="@layout/timetable" />
+
+            <!--     Timetable FAB      -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_timetable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="23dp"
+                android:layout_marginBottom="33dp"
+                android:backgroundTint="@color/red_500"
+                android:contentDescription="@string/shows_timetable"
+                android:elevation="2dp"
+                app:borderWidth="0dp"
+                app:elevation="2dp"
+                app:pressedTranslationZ="3dp"
+                app:rippleColor="@color/red_700"
+                app:srcCompat="@drawable/timetable"
+                app:tint="@color/background" />
+
+            <!--     Buses Button      -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/swipe_recycler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="23dp" />
+
+        </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

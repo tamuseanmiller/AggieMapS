@@ -7,4 +7,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Aggie MapS"
-include ':app'
+include ':app', ":rightsheet"

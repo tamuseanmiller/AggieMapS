@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="6dp">
+    android:paddingTop="2dp"
+    android:paddingBottom="6dp"
+    android:paddingEnd="2dp"
+    android:paddingStart="6dp">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/favorite_button"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="94dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginTop="6dp"
+        app:icon="@drawable/star_outline"
+        app:iconSize="16dp"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Button.Circle"
+        android:backgroundTint="@color/foreground"
+        app:iconTint="@color/background"
+        app:rippleColor="@color/red_500"
+        android:contentDescription="@string/add_to_favorites"/>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/route_card"
         android:layout_width="120dp"
         android:layout_height="85dp"
+        android:layout_marginTop="10dp"
         android:clickable="true"
         android:focusable="true"
         app:cardCornerRadius="30dp"
@@ -16,15 +41,11 @@
         app:cardPreventCornerOverlap="false"
         app:contentPadding="20dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingLeft="5dp">
-
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true">
+                android:layout_centerVertical="true"
+                android:paddingLeft="5dp">
 
                 <TextView
                     android:id="@+id/route_number"
@@ -54,8 +75,6 @@
 
             </RelativeLayout>
 
-        </RelativeLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
+</RelativeLayout>

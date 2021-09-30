@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     private final Palette palette;
+    private final BusRouteTag tag;
 
     // data is passed into the constructor
     FavAdapter(Context context, List<BusRoute> data, BusRouteTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
         palette = new Palette(mInflater.getContext());
+        this.tag = tag;
     }
 
 
@@ -38,20 +41,10 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return new FavAdapter.FavoritesViewHolder(mInflater.inflate(R.layout.route_card, parent, false));
     }
 
-    public static int manipulateColor(int color, float factor) {
-        int a = Color.alpha(color);
-        int r = Math.round(Color.red(color) * factor);
-        int g = Math.round(Color.green(color) * factor);
-        int b = Math.round(Color.blue(color) * factor);
-        return Color.argb(a,
-                Math.min(r,255),
-                Math.min(g,255),
-                Math.min(b,255));
-    }
-
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
         FavoritesViewHolder holderFav = (FavoritesViewHolder) holderView;
+        holderFav.favoriteButton.setIcon(ContextCompat.getDrawable(mInflater.getContext(), R.drawable.star));
         if (position == 0) {
             BusRoute route = mData.get(position);
             holderFav.routeNumber.setText(route.routeNumber);
@@ -60,6 +53,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holderFav.routeName.setText(route.routeName);
             holderFav.routeName.setSelected(true);
             holderFav.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+            holderFav.favoriteButton.setVisibility(View.INVISIBLE);
         } else {
             BusRoute route = mData.get(position);
             holderFav.routeNumber.setText(route.routeNumber); // Set route number text
@@ -68,7 +62,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (route.color == Integer.MAX_VALUE) route.color = palette.pickRandomColor();
             else route.color = palette.findClosestPaletteColorTo(route.color);
             holderFav.card.setCardBackgroundColor(route.color);
-            holderFav.card.setRippleColor(ColorStateList.valueOf(manipulateColor(route.color, 0.8f)));
+            holderFav.card.setRippleColor(ColorStateList.valueOf(route.color));
 
             // If the shade of the background color is too light, change text color to black
             if (ColorUtils.calculateLuminance(route.color) > 0.6) {
@@ -102,6 +96,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView routeName;
         TextView routeNumber;
         MaterialCardView card;
+        MaterialButton favoriteButton;
 
         FavoritesViewHolder(View itemView) {
             super(itemView);
@@ -110,6 +105,8 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             card = itemView.findViewById(R.id.route_card);
             itemView.setOnClickListener(this);
             card.setOnClickListener(this);
+            favoriteButton = itemView.findViewById(R.id.favorite_button);
+            favoriteButton.setOnClickListener(this);
 
         }
 
@@ -117,7 +114,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onItemClick(view, mData.get(getAdapterPosition()));
+                mClickListener.onItemClick(view, mData.get(getAdapterPosition()), getAdapterPosition(), tag);
             }
         }
     }
@@ -134,7 +131,7 @@ public class FavAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, BusRoute busRoute);
+        void onItemClick(View view, BusRoute busRoute, int position, BusRouteTag tag);
 
     }
 }

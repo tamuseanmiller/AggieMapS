@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     private final Palette palette;
+    private BusRouteTag tag;
 
     // data is passed into the constructor
     GameDayAdapter(Context context, List<BusRoute> data, BusRouteTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
         palette = new Palette(mInflater.getContext());
+        this.tag = tag;
     }
 
     @NonNull
@@ -59,6 +62,7 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             holderGame.routeName.setText(route.routeName);
             holderGame.routeName.setSelected(true);
             holderGame.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+            holderGame.favoriteButton.setVisibility(View.INVISIBLE);
         } else {
             BusRoute route = mData.get(position);
             holderGame.routeNumber.setText(route.routeNumber); // Set route number text
@@ -100,6 +104,7 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView routeName;
         TextView routeNumber;
         MaterialCardView card;
+        MaterialButton favoriteButton;
 
         GameDayViewHolder(View itemView) {
             super(itemView);
@@ -108,6 +113,8 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             card = itemView.findViewById(R.id.route_card);
             itemView.setOnClickListener(this);
             card.setOnClickListener(this);
+            favoriteButton = itemView.findViewById(R.id.favorite_button);
+            favoriteButton.setOnClickListener(this);
 
         }
 
@@ -115,7 +122,7 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onItemClick(view, mData.get(getAdapterPosition()));
+                mClickListener.onItemClick(view, mData.get(getAdapterPosition()), getAdapterPosition(), tag);
             }
         }
     }
@@ -132,7 +139,7 @@ public class GameDayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, BusRoute busRoute);
+        void onItemClick(View view, BusRoute busRoute, int position, BusRouteTag tag);
 
     }
 }

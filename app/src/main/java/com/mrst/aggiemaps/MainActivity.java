@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * Queries Google's Autocomplete Places API to search with GIS
+     * Queries Google's Autocomplete Places API to search with GIS
      */
     private void queryGoogle(CharSequence charSequence, AutocompleteSessionToken token) {
         // Create a RectangularBounds object.
@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * First query GIS, then query google places
+     * First query GIS, then query google places
      */
     private void queryGIS(CharSequence charSequence) {
         new Thread(() -> {
@@ -305,8 +305,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * When back is pressed, make sure that it clears the searchview focus
-    * instead of closing the app
+     * When back is pressed, make sure that it clears the searchview focus
+     * instead of closing the app
      */
     @Override
     public void onBackPressed() {
@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * Show the navigation bar and get out of full screen
+     * Show the navigation bar and get out of full screen
      */
     private void showSystemUI() {
         View decorView = getWindow().getDecorView();
@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * When a GIS Search Result is tapped, create marker and animate to position
+     * When a GIS Search Result is tapped, create marker and animate to position
      */
     @Override
     public void onGISClick(View view, int position) {

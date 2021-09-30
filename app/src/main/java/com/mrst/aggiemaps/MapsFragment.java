@@ -1,12 +1,16 @@
 package com.mrst.aggiemaps;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +38,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
 
@@ -49,9 +56,12 @@ import org.locationtech.proj4j.ProjCoordinate;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
@@ -73,10 +83,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private GameDayAdapter gameDayAdapter;
     private RecyclerView gameDayRoutes;
     private TextView favoritesText;
+    private Set<String> favoritesSet;
+    private List<BusRoute> favList;
+    private List<BusRoute> onList;
+    private List<BusRoute> offList;
+    private List<BusRoute> gameDayList;
 
     @Override
     public void onItemClick(View view, int position) {
-        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
     }
 
     enum TripType {
@@ -395,7 +410,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 swipeAdapter.notifyItemChanged(0);
             }
         });
@@ -406,14 +421,41 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         ColumnProvider col = () -> 1;
         favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
         favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        DisplayMetrics metrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         col = () -> 2;
-        onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-
+        if (metrics.heightPixels < convertDpToPx(15 + (241 * 3))) {
+            col = () -> 1;
+            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        } else if (metrics.heightPixels < convertDpToPx(15 + (241 * 2))) {
+            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            col = () -> 1;
+            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        } else if (metrics.heightPixels < convertDpToPx(15 + (241 * 1))) {
+            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            col = () -> 1;
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        } else {
+            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        }
         // Set up the bottom sheet
         View standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
@@ -421,11 +463,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setHideable(false);
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(0);
+        standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
 
         return mView;
+    }
+
+    private int convertDpToPx(int dp) {
+        DisplayMetrics displayMetrics = requireContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /*
@@ -435,16 +483,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");
             JSONArray routes = new JSONArray(str);
+            favoritesSet = new HashSet<>();  // Initialize the favorites set
+            loadFavorites();  // Load the favorites set from sharedpreferences
 
             // Initialize lists and add the `ALL` Route
-            List<BusRoute> favList = new ArrayList<>();
-            List<BusRoute> onList = new ArrayList<>();
-            List<BusRoute> offList = new ArrayList<>();
-            List<BusRoute> gameDayList = new ArrayList<>();
-            favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(getActivity(), R.color.all_color)));
-            onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(getActivity(), R.color.all_color)));
-            offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(getActivity(), R.color.all_color)));
-            gameDayList.add(new BusRoute("All", "Game Day", ContextCompat.getColor(getActivity(), R.color.all_color)));
+            favList = new ArrayList<>();
+            onList = new ArrayList<>();
+            offList = new ArrayList<>();
+            gameDayList = new ArrayList<>();
+            favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.FAVORITES));
+            onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.ON_CAMPUS));
+            offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.OFF_CAMPUS));
+            gameDayList.add(new BusRoute("All", "Game Day", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.GAME_DAY));
 
             // Traverse through all routes
             for (int i = 0; i < routes.length(); i++) {
@@ -464,18 +514,32 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String shortName = routes.getJSONObject(i).getString("ShortName");
                 String name = routes.getJSONObject(i).getString("Name");
                 String group = routes.getJSONObject(i).getJSONObject("Group").getString("Name");
-                switch (group) {
-                    case "On Campus":
-                        onList.add(new BusRoute(shortName, name, color));
-                        break;
-                    case "Off Campus":
-                        offList.add(new BusRoute(shortName, name, color));
-                        break;
-                    case "Game Day":
-                        gameDayList.add(new BusRoute(shortName, name, color));
-                        break;
-                    default: // Favorites
-                        favList.add(new BusRoute(shortName, name, color));
+
+                // If in the favorites set, add it to favorites, otherwise continue
+                if (favoritesSet.contains(shortName)) {
+                    switch (group) {
+                        case "On Campus":
+                            favList.add(new BusRoute(shortName, name, color, BusRouteTag.ON_CAMPUS));
+                            break;
+                        case "Off Campus":
+                            favList.add(new BusRoute(shortName, name, color, BusRouteTag.OFF_CAMPUS));
+                            break;
+                        case "Game Day":
+                            favList.add(new BusRoute(shortName, name, color, BusRouteTag.GAME_DAY));
+                            break;
+                    }
+                } else {
+                    switch (group) {
+                        case "On Campus":
+                            onList.add(new BusRoute(shortName, name, color, BusRouteTag.ON_CAMPUS));
+                            break;
+                        case "Off Campus":
+                            offList.add(new BusRoute(shortName, name, color, BusRouteTag.OFF_CAMPUS));
+                            break;
+                        case "Game Day":
+                            gameDayList.add(new BusRoute(shortName, name, color, BusRouteTag.GAME_DAY));
+                            break;
+                    }
                 }
             }
 
@@ -510,8 +574,90 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
+    /*
+     * Method to save the current favorites that the user has to sharedpreferences
+     */
+    private void saveFavorites() {
+        Gson gson = new Gson();
+        SharedPreferences.Editor spEditor = requireActivity().getSharedPreferences("RecordedFavorites", MODE_PRIVATE).edit();
+        spEditor.putString("favorites", gson.toJson(favoritesSet)).apply();
+    }
+
+    /*
+     * Method to load the favorites that the user has from sharedpreferences
+     */
+    private void loadFavorites() {
+        Gson gson = new Gson();
+        SharedPreferences sp = requireActivity().getSharedPreferences("RecordedFavorites", MODE_PRIVATE);
+        String defValue = gson.toJson(new HashSet<String>());
+        String json = sp.getString("favorites", defValue);
+        TypeToken<HashSet<String>> token = new TypeToken<HashSet<String>>() {
+        };
+        favoritesSet = gson.fromJson(json, token.getType());
+    }
+
+    /*
+    * When is route or a favorite is tapped, calls this method
+     */
     @Override
-    public void onItemClick(View view, BusRoute busRoute) {
+    public void onItemClick(View view, BusRoute busRoute, int position, BusRouteTag tag) {
+        // When a favorite is clicked, add to favorites, remove from prev list
+        if (view instanceof MaterialButton) {
+
+            // Remove a route from it's list
+            switch (tag) {
+                case ON_CAMPUS:
+                    onList.remove(position);
+                    onCampusAdapter.notifyItemRemoved(position - 1);
+                    break;
+                case OFF_CAMPUS:
+                    offList.remove(position);
+                    offCampusAdapter.notifyItemRemoved(position);
+                    break;
+                case GAME_DAY:
+                    gameDayList.remove(position);
+                    gameDayAdapter.notifyItemRemoved(position);
+                    break;
+                case FAVORITES:
+
+                    // If it's a favorite then add it to the correct list
+                    switch (favList.get(position).tag) {
+                        case ON_CAMPUS:
+                            onList.add(busRoute);
+                            onCampusAdapter.notifyItemInserted(onList.size() - 1);
+                            break;
+                        case OFF_CAMPUS:
+                            offList.add(busRoute);
+                            offCampusAdapter.notifyItemInserted(onList.size() - 1);
+                            break;
+                        case GAME_DAY:
+                            gameDayList.add(busRoute);
+                            gameDayAdapter.notifyItemInserted(onList.size() - 1);
+                            break;
+                    }
+
+                    // Remove from the favorite list/set and save
+                    favList.remove(position);
+                    favAdapter.notifyItemRemoved(position);
+                    if (favList.size() == 1) {
+                        favRoutes.setVisibility(View.GONE);
+                        favoritesText.setVisibility(View.GONE);
+                    }
+                    favoritesSet.remove(busRoute.routeNumber);
+                    new Thread(this::saveFavorites).start();
+                    return;
+            }
+
+            // If not an unfavorite add it to the favorites list and save
+            favoritesSet.add(busRoute.routeNumber);
+            favList.add(busRoute);
+            favAdapter.notifyItemInserted(favList.size() - 1);
+            favRoutes.setVisibility(View.VISIBLE);
+            favoritesText.setVisibility(View.VISIBLE);
+            new Thread(this::saveFavorites).start();
+            return;  // skip showing the route if
+        }
+
         // When a route is clicked, close sheet, set route number and draw route
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         mMap.clear(); // Clear map first

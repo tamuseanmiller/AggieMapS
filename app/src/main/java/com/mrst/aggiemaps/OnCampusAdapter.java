@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
@@ -28,12 +30,14 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     private final Palette palette;
+    private BusRouteTag tag;
 
     // data is passed into the constructor
     OnCampusAdapter(Context context, List<BusRoute> data, BusRouteTag tag) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
         palette = new Palette(mInflater.getContext());
+        this.tag = tag;
     }
 
     @NonNull
@@ -56,7 +60,9 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holderView, int position) {
         OnCampusViewHolder holderOn = (OnCampusViewHolder) holderView;
-        holderOn.card.setLayoutParams(new LinearLayout.LayoutParams(holderOn.card.getLayoutParams().width, holderOn.card.getLayoutParams().height, getDeviceParams()));
+//        holderOn.card.setLayoutParams(new LinearLayout.LayoutParams((int)(holderOn.card.getLayoutParams().width * getDeviceParams()), (int)(holderOn.card.getLayoutParams().height * getDeviceParams())));
+//        holderOn.routeName.setTextSize(holderOn.routeName.getTextSize() * getDeviceParams());
+//        holderOn.routeNumber.setTextSize(holderOn.routeNumber.getTextSize() * getDeviceParams());
         if (position == 0) {
             BusRoute route = mData.get(position);
             holderOn.routeNumber.setText(route.routeNumber);
@@ -65,6 +71,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             holderOn.routeName.setText(route.routeName);
             holderOn.routeName.setSelected(true);
             holderOn.routeName.setTextColor(ContextCompat.getColor(mInflater.getContext(), R.color.white_60));
+            holderOn.favoriteButton.setVisibility(View.INVISIBLE);
         } else {
             BusRoute route = mData.get(position);
             holderOn.routeNumber.setText(route.routeNumber); // Set route number text
@@ -101,37 +108,22 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return mData.size();
     }
 
-    private int convertDpToPx(int dp){
-        DisplayMetrics displayMetrics = mInflater.getContext().getResources().getDisplayMetrics();
-        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
-
-    }
-
-    private int convertPxToDp(int px){
-        DisplayMetrics displayMetrics = mInflater.getContext().getResources().getDisplayMetrics();
-        return Math.round(px / (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
-    }
-
-    public float getDeviceParams() {
-        DisplayMetrics metrics = new DisplayMetrics();
-        ((Activity)mInflater.getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-        return (float) (metrics.density / 2.9750001);
-    }
-
     // stores and recycles views as they are scrolled off screen
     public class OnCampusViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView routeName;
         TextView routeNumber;
         MaterialCardView card;
+        MaterialButton favoriteButton;
 
         OnCampusViewHolder(View itemView) {
             super(itemView);
             routeName = itemView.findViewById(R.id.route_name);
             routeNumber = itemView.findViewById(R.id.route_number);
+            favoriteButton = itemView.findViewById(R.id.favorite_button);
             card = itemView.findViewById(R.id.route_card);
             itemView.setOnClickListener(this);
             card.setOnClickListener(this);
+            favoriteButton.setOnClickListener(this);
 
         }
 
@@ -139,7 +131,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onItemClick(view, mData.get(getAdapterPosition()));
+                mClickListener.onItemClick(view, mData.get(getAdapterPosition()), getAdapterPosition(), tag);
             }
         }
     }
@@ -156,7 +148,7 @@ public class OnCampusAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(View view, BusRoute busRoute);
+        void onItemClick(View view, BusRoute busRoute, int position, BusRouteTag tag);
 
     }
 }

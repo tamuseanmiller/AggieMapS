@@ -282,7 +282,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                             requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
                         } else {
                             while (busMarkers.get(finalI) == null) {
-
+                                if (!isAdded()) return;
                                 requireActivity().runOnUiThread(() -> {
                                     busMarkers.get(finalI).setPosition(new LatLng(x, y));
                                     try {
@@ -423,8 +423,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
         DisplayMetrics metrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        col = () -> 2;
-        if (metrics.heightPixels < convertDpToPx(15 + (241 * 3))) {
+        col = () -> 2; // 925
+        if (metrics.heightPixels < convertDpToPx((215 * 1) + 20 + 15 + 225)) {
             col = () -> 1;
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
@@ -432,7 +432,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx(15 + (241 * 2))) {
+        } else if (metrics.heightPixels < convertDpToPx((215 * 2) + 20 + 15 + 225)) {
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             col = () -> 1;
@@ -440,7 +440,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx(15 + (241 * 1))) {
+        } else if (metrics.heightPixels < convertDpToPx((215 * 3) + 20 + 15 + 225)) {
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));

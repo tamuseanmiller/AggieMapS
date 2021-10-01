@@ -271,7 +271,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             boolean first = true;
             ArrayList<Marker> busMarkers = new ArrayList<>();
             try {
-                while (true) {
+//                while (true) {
                     // Add buses
                     Request request = new Request.Builder()
                             .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/buses")
@@ -297,8 +297,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                             marker.position(new LatLng(x, y));
                             requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
                         } else {
-                            while (busMarkers.get(finalI) == null) {
+                            while (busMarkers.get(finalI) != null) {
                                 if (!isAdded()) return;
+//                                if (busMarkers.get(finalI) == null) break;
                                 requireActivity().runOnUiThread(() -> {
                                     busMarkers.get(finalI).setPosition(new LatLng(x, y));
                                     try {
@@ -317,15 +318,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 e.printStackTrace();
                             }
                         });
-
+ 
                     }
                     first = false;
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+//                    try {
+//                        Thread.sleep(5000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
             } catch (JSONException | IOException jsonException) {
                 jsonException.printStackTrace();
             }

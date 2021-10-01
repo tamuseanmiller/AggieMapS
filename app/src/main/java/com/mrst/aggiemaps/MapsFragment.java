@@ -8,6 +8,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -555,6 +556,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         TextView time = new TextView(getActivity());
                         time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
                         time.setPadding(0, 10, 50, 10);
+
+                        // Add strikethrough and red to times that have passed
+                        if (LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
+                            time.setPaintFlags(time.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                            time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.red_300));
+                        }
 
                         // If the value is null, just leave it empty
                         if (value.equals("null")) value = "";

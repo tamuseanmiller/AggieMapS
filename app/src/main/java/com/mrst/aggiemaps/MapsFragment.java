@@ -9,10 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +24,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -61,10 +62,7 @@ import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -522,6 +520,21 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
             JSONArray timetableArray = new JSONArray(str);
             int numRows = 0;
+            TableRow headerRow = new TableRow(getActivity());
+            for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
+                String header = timetableArray.getJSONObject(0).names().getString(i).substring(36);
+                headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                TextView headerTV = new TextView(getActivity());
+                headerTV.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                headerTV.setPadding(0, 10, 40, 10);
+                Typeface face = ResourcesCompat.getFont(requireActivity(), R.font.roboto_bold);
+                headerTV.setTypeface(face);
+                headerTV.setText(header);
+                requireActivity().runOnUiThread(() -> {
+                    headerRow.addView(headerTV);
+                });
+            }
+            requireActivity().runOnUiThread(() -> tlTimetable.addView(headerRow));
             for (int i = 0; i < timetableArray.length(); i++) {
                 JSONObject row = timetableArray.getJSONObject(i);
 
@@ -531,7 +544,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                     TextView time = new TextView(getActivity());
                     time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                    time.setPadding(10, 10, 10, 10);
+                    time.setPadding(0, 10, 10, 10);
                     time.setText(row.getString(" "));
                     requireActivity().runOnUiThread(() -> {
                         tr.addView(time);
@@ -564,7 +577,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         time.setPadding(0, 10, 50, 10);
 
                         // Add strikethrough and red to times that have passed
-                        if (LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
+                        if (!value.equals("null") && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
                             time.setPaintFlags(time.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                             time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.red_300));
                         }

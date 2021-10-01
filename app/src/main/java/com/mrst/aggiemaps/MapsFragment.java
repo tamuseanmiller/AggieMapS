@@ -233,11 +233,12 @@ public class MapsFragment extends Fragment {
             locationPermissionGranted = true;
         } else {
             Log.e("TEST", "Request Permission");
-            ActivityCompat.requestPermissions((Activity) this.getContext(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -346,6 +347,7 @@ public class MapsFragment extends Fragment {
             mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
 
             // Turn on the My Location layer and the related control on the map.
+            getLocationPermission();
             updateLocationUI();
 
             // Get the current location of the device and set the position of the map.

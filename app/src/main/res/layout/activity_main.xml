@@ -14,7 +14,7 @@
         android:elevation="0.1dp"
         android:stateListAnimator="@null">
 
-        <!--         Simple MaterialToolbar extension -->
+        <!-- Simple MaterialToolbar extension -->
         <com.lapism.search.widget.MaterialSearchBar
             android:id="@+id/material_search_bar"
             android:layout_width="match_parent"

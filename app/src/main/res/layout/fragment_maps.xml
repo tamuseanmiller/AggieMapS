@@ -82,7 +82,7 @@
                 app:pressedTranslationZ="3dp"
                 app:rippleColor="@color/red_700"
                 app:srcCompat="@drawable/timetable"
-                app:tint="@color/background" />
+                app:tint="@color/white" />
 
             <!--     Buses Button      -->
             <androidx.recyclerview.widget.RecyclerView

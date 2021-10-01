@@ -396,7 +396,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
-        client = new OkHttpClient.Builder() // Create OkHttpClient to be used in API requests
+        client = new OkHttpClient.Builder()  // Create OkHttpClient to be used in API requests
                 .cache(new Cache(new File(requireActivity().getCacheDir(), "http_cache"),
                         50L * 1024L * 1024L))
                 .build();
@@ -520,34 +520,44 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
             JSONArray timetableArray = new JSONArray(str);
+            int numRows = 0;
             for (int i = 0; i < timetableArray.length(); i++) {
                 JSONObject row = timetableArray.getJSONObject(i);
 
                 // If no service is scheduled for this date
                 if (row.getString(row.names().getString(0)).equals("No Service Is Scheduled For This Date")) {
+                    TableRow tr = new TableRow(getActivity());
+                    tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                     TextView time = new TextView(getActivity());
                     time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
                     time.setPadding(10, 10, 10, 10);
                     time.setText(row.getString(" "));
-                    requireActivity().runOnUiThread(() -> tlTimetable.addView(time));
+                    requireActivity().runOnUiThread(() -> {
+                        tr.addView(time);
+                        tlTimetable.addView(tr);
+                    });
                     return;
                 }
 
+                // Find the current closest row for this date and start there
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US);
                 String lastTime = row.getString(row.names().getString(row.names().length() - 1));
-                LocalTime input = LocalTime.now();
+                LocalTime input;
                 if (!lastTime.equals("null")) {
                     input = LocalTime.parse(lastTime, formatter);
-                }
-                if (!input.isBefore(LocalTime.now())) {
+                } else continue;
+                if (!input.isBefore(LocalTime.now()) && numRows++ <= 4) {
                     TableRow tr = new TableRow(getActivity());
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
                     Iterator<String> keys = row.keys();
                     while (keys.hasNext()) {
                         String value = row.getString(keys.next());
                         TextView time = new TextView(getActivity());
-                        time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                        time.setPadding(10, 10, 10, 10);
+                        time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+                        time.setPadding(0, 10, 50, 10);
+
+                        // If the value is null, just leave it empty
+                        if (value.equals("null")) value = "";
                         time.setText(value);
                         requireActivity().runOnUiThread(() -> tr.addView(time));
                     }

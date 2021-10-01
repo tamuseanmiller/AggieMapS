@@ -544,12 +544,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US);
                 String lastTime = row.getString(row.names().getString(row.names().length() - 1));
                 LocalTime input;
+
+                // Check to see if the last value in the list is null, if so skip it
                 if (!lastTime.equals("null")) {
                     input = LocalTime.parse(lastTime, formatter);
                 } else continue;
+
+                // Only show 5 rows and only show rows that are after the current time
                 if (!input.isBefore(LocalTime.now()) && numRows++ <= 4) {
                     TableRow tr = new TableRow(getActivity());
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                    // Iterate through all JSONObject keys
                     Iterator<String> keys = row.keys();
                     while (keys.hasNext()) {
                         String value = row.getString(keys.next());

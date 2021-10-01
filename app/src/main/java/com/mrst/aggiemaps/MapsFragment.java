@@ -560,7 +560,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     while (keys.hasNext()) {
                         String value = row.getString(keys.next());
                         TextView time = new TextView(getActivity());
-                        time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f);
+                        time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
                         time.setPadding(0, 10, 50, 10);
 
                         // Add strikethrough and red to times that have passed

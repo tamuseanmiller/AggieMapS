@@ -232,8 +232,7 @@ public class MapsFragment extends Fragment {
                 == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
         } else {
-            Log.e("TEST", "Request Permission");
-            ActivityCompat.requestPermissions((Activity) this.getContext(),
+            requestPermissions(
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
@@ -243,17 +242,13 @@ public class MapsFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        Log.e("TEST", "In Req Permission");
         locationPermissionGranted = false;
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
-                Log.e("Req Code", String.valueOf(requestCode));
-
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true;
-                    Log.e("locationPermission", String.valueOf(locationPermissionGranted));
                 }
             }
         }

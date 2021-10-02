@@ -103,6 +103,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private TableLayout tlTimetable;
     private String currentRouteNo;
     private FloatingActionButton fabTimetable;
+    public static List<BusRoute> busRoutes;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -273,55 +274,55 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             ArrayList<Marker> busMarkers = new ArrayList<>();
             try {
 //                while (true) {
-                    // Add buses
-                    Request request = new Request.Builder()
-                            .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/buses")
-                            .build();
-                    Response response = client.newCall(request).execute();
-                    ResponseBody body = response.body();
-                    String str = body.string();
-                    JSONArray buses = new JSONArray(str);
+                // Add buses
+                Request request = new Request.Builder()
+                        .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/buses")
+                        .build();
+                Response response = client.newCall(request).execute();
+                ResponseBody body = response.body();
+                String str = body.string();
+                JSONArray buses = new JSONArray(str);
 
-                    for (int i = 0; i < buses.length(); i++) {
-                        busMarkers.add(null);
-                        JSONObject currentBus = buses.getJSONObject(i);
-                        Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"), currentBus.getDouble("lat"));
-                        double x = p.getY();
-                        double y = p.getX();
-                        int finalI = i;
-                        if (first) {
-                            MarkerOptions marker = new MarkerOptions();
-                            marker.icon(BitmapFromVector(requireActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
-                            marker.zIndex(100);
-                            marker.anchor(0.5F, 0.8F);
-                            marker.rotation((float) currentBus.getDouble("direction") - 90);
-                            marker.position(new LatLng(x, y));
-                            requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
-                        } else {
-                            while (busMarkers.get(finalI) != null) {
-                                if (!isAdded()) return;
+                for (int i = 0; i < buses.length(); i++) {
+                    busMarkers.add(null);
+                    JSONObject currentBus = buses.getJSONObject(i);
+                    Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"), currentBus.getDouble("lat"));
+                    double x = p.getY();
+                    double y = p.getX();
+                    int finalI = i;
+                    if (first) {
+                        MarkerOptions marker = new MarkerOptions();
+                        marker.icon(BitmapFromVector(requireActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
+                        marker.zIndex(100);
+                        marker.anchor(0.5F, 0.8F);
+                        marker.rotation((float) currentBus.getDouble("direction") - 90);
+                        marker.position(new LatLng(x, y));
+                        requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
+                    } else {
+                        while (busMarkers.get(finalI) != null) {
+                            if (!isAdded()) return;
 //                                if (busMarkers.get(finalI) == null) break;
-                                requireActivity().runOnUiThread(() -> {
-                                    busMarkers.get(finalI).setPosition(new LatLng(x, y));
-                                    try {
-                                        busMarkers.get(finalI).setRotation((float) currentBus.getDouble("direction") - 90);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                });
-                            }
+                            requireActivity().runOnUiThread(() -> {
+                                busMarkers.get(finalI).setPosition(new LatLng(x, y));
+                                try {
+                                    busMarkers.get(finalI).setRotation((float) currentBus.getDouble("direction") - 90);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            });
                         }
-                        if (!isAdded()) return;
-                        requireActivity().runOnUiThread(() -> {
-                            try {
-                                busMarkers.get(finalI).setTitle(currentBus.getString("occupancy"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        });
- 
                     }
-                    first = false;
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        try {
+                            busMarkers.get(finalI).setTitle(currentBus.getString("occupancy"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+                }
+                first = false;
 //                    try {
 //                        Thread.sleep(5000);
 //                    } catch (InterruptedException e) {
@@ -625,6 +626,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             onList = new ArrayList<>();
             offList = new ArrayList<>();
             gameDayList = new ArrayList<>();
+            busRoutes = new ArrayList<>();
             favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.FAVORITES));
             onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.ON_CAMPUS));
             offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.OFF_CAMPUS));
@@ -706,6 +708,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        busRoutes.addAll(favList);
+        busRoutes.addAll(onList);
+        busRoutes.addAll(offList);
+        busRoutes.addAll(gameDayList);
     }
 
     /*

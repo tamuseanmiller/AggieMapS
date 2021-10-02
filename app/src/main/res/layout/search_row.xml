@@ -19,12 +19,14 @@
         app:fabCustomSize="40dp"
         app:elevation="0dp"
         app:borderWidth="0dp"
-        android:backgroundTint="@color/red_60"
+        android:backgroundTint="@color/red_300"
         app:tint="@color/foreground"
         android:stateListAnimator="@null"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/arrow_right_top"
         android:layout_marginEnd="16dp"
+        android:clickable="false"
+        android:focusable="false"
         android:contentDescription="@string/directional_arrow" />
 
     <TextView

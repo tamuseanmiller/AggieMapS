@@ -5,7 +5,6 @@ import static android.content.ContentValues.TAG;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -17,6 +16,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,7 +32,6 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.gson.internal.bind.ArrayTypeAdapter;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -51,18 +50,21 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
     private OkHttpClient client;  // Client to make API requests
     private GISSearchAdapter gisSearchAdapter;
     private GoogleSearchAdapter googleSearchAdapter;
+    private BusRoutesSearchAdapter busRoutesSearchAdapter;
     private ArrayList<SearchResult> gisSearchResults;
     private ArrayList<SearchResult> googleSearchResults;
     private PlacesClient placesClient;
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
+    private RecyclerView busRoutesSearchRecycler;
+    private ArrayList<SearchResult> busRoutesSearchResults;
 
     enum SearchTag {
         CATEGORY,
@@ -147,23 +149,50 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Set recyclers
         gisSearchResults = new ArrayList<>();
         googleSearchResults = new ArrayList<>();
+        busRoutesSearchResults = new ArrayList<>();
+        NestedScrollView nSV = new NestedScrollView(this);
         LinearLayout ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
         gisSearchAdapter = new GISSearchAdapter(this, gisSearchResults);
         gisSearchAdapter.setClickListener(this);
         googleSearchAdapter = new GoogleSearchAdapter(this, googleSearchResults);
         googleSearchAdapter.setClickListener(this);
+        busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesSearchResults);
+        busRoutesSearchAdapter.setClickListener(this);
         gisSearchRecycler = new RecyclerView(this);
-        gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this));
+        gisSearchRecycler.suppressLayout(true);
+        gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
         gisSearchRecycler.setAdapter(gisSearchAdapter);
         googleSearchRecycler = new RecyclerView(this);
-        googleSearchRecycler.setLayoutManager(new LinearLayoutManager(this));
+        googleSearchRecycler.suppressLayout(true);
+        googleSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
         googleSearchRecycler.setAdapter(googleSearchAdapter);
+        busRoutesSearchRecycler = new RecyclerView(this);
+        busRoutesSearchRecycler.suppressLayout(true);
+        busRoutesSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
+        busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
         ll.addView(gisSearchRecycler);
+        ll.addView(busRoutesSearchRecycler);
         ll.addView(googleSearchRecycler);
+        nSV.addView(ll);
 
         // Set SearchView Settings
-        materialSearchView.addView(ll);
+        materialSearchView.addView(nSV);
         Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
         navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
         materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
@@ -183,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
                 queryGIS(charSequence); // Query GIS, Google
+                queryBusRoutes(charSequence);
                 queryGoogle(charSequence, token);
                 return true;
             }
@@ -190,7 +220,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             @Override
             public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
-                queryGIS(charSequence); // Query GIS, Google
+                queryGIS(charSequence); // Query GIS, Google, Bus Routes
+                queryBusRoutes(charSequence);
                 queryGoogle(charSequence, token);
                 return true;
             }
@@ -199,6 +230,41 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.setOnFocusChangeListener(v -> {
 
         });
+    }
+
+    /*
+     * Queries List of Bus Routes
+     */
+    private void queryBusRoutes(CharSequence charSequence) {
+        new Thread(() -> {
+
+            // Initialize temporary array and add the category
+            ArrayList<SearchResult> tempList = new ArrayList<>();
+            tempList.add(new SearchResult("Bus Routes", "", 0, null, SearchTag.CATEGORY, null));
+
+            // Loop through every bus route, check to see if the
+            // name or number contains the given char sequence
+            for (int i = 1; i < MapsFragment.busRoutes.size(); i++) {
+                String routeNumber = MapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
+                String routeName = MapsFragment.busRoutes.get(i).routeName.toLowerCase();
+                if (routeNumber.contains(charSequence) || routeName.contains(charSequence))
+                    tempList.add(new SearchResult(MapsFragment.busRoutes.get(i).routeNumber, MapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
+            }
+
+            // If no bus routes, clear it
+            if (tempList.size() == 1) {
+                tempList.clear();
+            }
+
+            // Set all values
+            runOnUiThread(() -> {
+                busRoutesSearchResults.clear();
+                busRoutesSearchResults.addAll(tempList);
+                busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesSearchResults);
+                busRoutesSearchAdapter.setClickListener(this);
+                busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
+            });
+        }).start();
     }
 
     /*
@@ -358,6 +424,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
         clearFocusOnSearch();
+    }
+
+    /*
+     * When a Bus Route Search Result is tapped, show the bus route
+     */
+    @Override
+    public void onBusRouteClick(View view, int position) {
+        MapsFragment.mMap.clear();
     }
 
 }

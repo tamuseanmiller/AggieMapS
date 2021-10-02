@@ -32,6 +32,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.gson.internal.bind.ArrayTypeAdapter;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -181,26 +182,16 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
-
-                // Delays the query call so that the recyclers can keep up
-                // This is just a fix for fast typing
-                gisSearchRecycler.post(() -> {
-                    queryGIS(charSequence); // Query GIS, Google
-                    queryGoogle(charSequence, token);
-                });
+                queryGIS(charSequence); // Query GIS, Google
+                queryGoogle(charSequence, token);
                 return true;
             }
 
             @Override
             public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
                 if (charSequence.length() == 0) return true;
-
-                // Delays the query call so that the recyclers can keep up
-                // This is just a fix for fast typing
-                gisSearchRecycler.post(() -> {
-                    queryGIS(charSequence); // Query GIS, Google
-                    queryGoogle(charSequence, token);
-                });
+                queryGIS(charSequence); // Query GIS, Google
+                queryGoogle(charSequence, token);
                 return true;
             }
         });
@@ -228,12 +219,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 .build();
 
         placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
+            ArrayList<SearchResult> tempList = new ArrayList<>();
             if (!response.getAutocompletePredictions().isEmpty()) {
-                int size = googleSearchResults.size();
-                googleSearchResults.clear();
-                googleSearchAdapter.notifyItemRangeRemoved(0, size);
-                googleSearchResults.add(new SearchResult("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
-                googleSearchAdapter.notifyItemInserted(googleSearchResults.size() - 1);
+                tempList.add(new SearchResult("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
             }
             for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
                 Log.i(TAG, prediction.getPlaceId());
@@ -246,8 +234,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(prediction.getPlaceId(), placeFields);
 
                 placesClient.fetchPlace(placeRequest).addOnSuccessListener((placeResponse) -> {
-                    googleSearchResults.add(new SearchResult(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
-                    googleSearchAdapter.notifyItemInserted(googleSearchResults.size() - 1);
+                    tempList.add(new SearchResult(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
+                    googleSearchResults.clear();
+                    googleSearchResults.addAll(tempList);
+                    googleSearchAdapter = new GoogleSearchAdapter(this, googleSearchResults);
+                    googleSearchAdapter.setClickListener(this);
+                    googleSearchRecycler.setAdapter(googleSearchAdapter);
                 });
             }
 
@@ -280,13 +272,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     "featureEncoding=esriDefault&f=pjson");
             try {
                 if (resp != null) {
-                    int size = gisSearchResults.size();
-                    gisSearchResults.clear();
+                    ArrayList<SearchResult> tempList = new ArrayList<>();
                     JSONObject jsonObject = new JSONObject(resp);
                     JSONArray features = jsonObject.getJSONArray("features");
                     for (int i = 0; i < features.length(); i++) {
                         if (i == 0)
-                            gisSearchResults.add(new SearchResult("On Campus", "", 0, null, SearchTag.CATEGORY, null));
+                            tempList.add(new SearchResult("On Campus", "", 0, null, SearchTag.CATEGORY, null));
                         String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
                         String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                         double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
@@ -294,9 +285,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         if (address.equals("null"))
                             address = lat + ", " + lng; // If no address, use lat/lng instead
                         String finalAddress = address;
-                        gisSearchResults.add(new SearchResult(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
+                        tempList.add(new SearchResult(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
                     }
-                    runOnUiThread(() -> gisSearchAdapter.notifyDataSetChanged());
+                    runOnUiThread(() -> {
+                        gisSearchResults.clear();
+                        gisSearchResults.addAll(tempList);
+                        gisSearchAdapter = new GISSearchAdapter(this, gisSearchResults);
+                        gisSearchAdapter.setClickListener(this);
+                        gisSearchRecycler.setAdapter(gisSearchAdapter);
+                    });
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

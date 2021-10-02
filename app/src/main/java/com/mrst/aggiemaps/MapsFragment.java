@@ -523,7 +523,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
             JSONArray timetableArray = new JSONArray(str);
             int numRows = 0;
-            
+
             // If no service is scheduled for this date
             if (timetableArray.getJSONObject(0).getString(timetableArray.getJSONObject(0).names().getString(0)).equals("No Service Is Scheduled For This Date")) {
                 TableRow tr = new TableRow(getActivity());

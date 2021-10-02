@@ -432,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onBusRouteClick(View view, int position) {
         MapsFragment.mMap.clear();
+        clearFocusOnSearch();
     }
 
 }

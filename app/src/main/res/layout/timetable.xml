@@ -60,7 +60,7 @@
                         android:layout_marginStart="40dp"
                         android:fontFamily="sans-serif-medium"
                         android:text="@string/time_table"
-                        android:textColor="@color/red_300"
+                        android:textColor="@color/accent"
                         android:textSize="15sp" />
 
                 </com.google.android.material.card.MaterialCardView>

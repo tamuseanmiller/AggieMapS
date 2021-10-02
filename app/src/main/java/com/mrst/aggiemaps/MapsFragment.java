@@ -269,72 +269,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to draw all buses on a given route
      */
     private void drawBusesOnRoute(String routeNo) {
-        new Thread(() -> {
-            boolean first = true;
-            ArrayList<Marker> busMarkers = new ArrayList<>();
-            try {
-//                while (true) {
-                // Add buses
-                Request request = new Request.Builder()
-                        .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/buses")
-                        .build();
-                Response response = client.newCall(request).execute();
-                ResponseBody body = response.body();
-                String str = body.string();
-                JSONArray buses = new JSONArray(str);
 
-                for (int i = 0; i < buses.length(); i++) {
-                    busMarkers.add(null);
-                    JSONObject currentBus = buses.getJSONObject(i);
-                    Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"), currentBus.getDouble("lat"));
-                    double x = p.getY();
-                    double y = p.getX();
-                    int finalI = i;
-                    if (first) {
-                        MarkerOptions marker = new MarkerOptions();
-                        marker.icon(BitmapFromVector(requireActivity(), R.drawable.bus_side, ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
-                        marker.zIndex(100);
-                        marker.anchor(0.5F, 0.8F);
-                        marker.rotation((float) currentBus.getDouble("direction") - 90);
-                        marker.position(new LatLng(x, y));
-                        requireActivity().runOnUiThread(() -> busMarkers.set(finalI, mMap.addMarker(marker)));
-                    } else {
-                        while (busMarkers.get(finalI) != null) {
-                            if (!isAdded()) return;
-//                                if (busMarkers.get(finalI) == null) break;
-                            requireActivity().runOnUiThread(() -> {
-                                busMarkers.get(finalI).setPosition(new LatLng(x, y));
-                                try {
-                                    busMarkers.get(finalI).setRotation((float) currentBus.getDouble("direction") - 90);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-                    }
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        try {
-                            busMarkers.get(finalI).setTitle(currentBus.getString("occupancy"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    });
-
-                }
-                first = false;
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-            } catch (JSONException | IOException jsonException) {
-                jsonException.printStackTrace();
-            }
-
-
-        }).start();
     }
 
     /*

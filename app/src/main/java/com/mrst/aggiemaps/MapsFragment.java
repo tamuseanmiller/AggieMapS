@@ -1,16 +1,11 @@
 package com.mrst.aggiemaps;
 
-import static android.content.Context.MODE_PRIVATE;
 import static android.content.ContentValues.TAG;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
+import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -18,21 +13,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.os.Handler;
-import android.os.Parcelable;
-import android.telephony.IccOpenLogicalChannelResponse;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,14 +45,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -74,18 +59,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.net.PlacesClient;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -108,10 +81,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.concurrent.Executor;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.Cache;
@@ -120,11 +89,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
 public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickListener, FavAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener, SwipeAdapter.ItemClickListener {
 
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
     private OkHttpClient client;  // Client to make API requests
-    public static GoogleMap mMap;       // The Map itself
     private BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
     private OnCampusAdapter onCampusAdapter;
@@ -145,13 +113,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private String currentRouteNo;
     private FloatingActionButton fabTimetable;
     public static List<BusRoute> busRoutes;
-    private GoogleMap mMap;       // The Map itself
+    public static GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers = new ArrayList<>();
 
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private boolean  locationPermissionGranted;
+    private boolean locationPermissionGranted;
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
@@ -214,39 +182,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Taken from somewhere similar to here
      * https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
      */
-    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color) {
+    private BitmapDescriptor BitmapFromVector(Context context, int vectorResId, int color, int modifySize) {
         // below line is use to generate a drawable.
         Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
-
-        // below line is use to set bounds to our vector drawable.
-        assert vectorDrawable != null;
-        vectorDrawable.setBounds(0, 0, vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight());
-        vectorDrawable.setTintList(ColorStateList.valueOf(color));
-
-        // below line is use to create a bitmap for our
-        // drawable which we have added.
-
-        if (vectorDrawable != null){
-            Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(), vectorDrawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-
-            // below line is use to add bitmap in our canvas.
-            Canvas canvas = new Canvas(bitmap);
-
-            // below line is use to draw our
-            // vector drawable in canvas.
-            vectorDrawable.draw(canvas);
-
-            // after generating our bitmap we are returning our bitmap.
-            return BitmapDescriptorFactory.fromBitmap(bitmap);
-        }
-        return null;
-    }
-
-
-    /*
-     * Method to draw a bus route on the map
-     */
-    private void drawBusRoute(String routeNo) {
 
         // below line is use to set bounds to our vector drawable.
         assert vectorDrawable != null;
@@ -362,35 +300,37 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Get the direction and use it to rotate the bus icon and add this to the marker.
             // Get the occupancy to show bus occupancy.
             for (int i = 0; i < busData_jsonArray.length(); i++) {
-                busMarkers.add(null);
                 // Retrieving Data
                 JSONObject currentBus = busData_jsonArray.getJSONObject(i);
                 Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"),
                         currentBus.getDouble("lat"));
-                Float busDirection = (float) currentBus.getDouble("direction") - 90;
+                float busDirection = (float) currentBus.getDouble("direction") - 90;
                 String occupancy = currentBus.getString("occupancy");
                 int finalI = i;
-                requireActivity().runOnUiThread(() -> {
-                    // Initialize Markers
-                    if (busMarkers.get(finalI) == null) {
-                        MarkerOptions marker = new MarkerOptions();
-                        marker.flat(true);
-                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
-                                ContextCompat.getColor(requireActivity(), R.color.white)));
-                        marker.zIndex(100);
-                        marker.anchor(0.5F, 0.8F);
-                        marker.position(new LatLng(p.getY(), p.getX()));
-                        marker.rotation(busDirection);
-                        marker.title("Occupancy: "+occupancy);
-                        busMarkers.set(finalI, mMap.addMarker(marker));
-                    }
-                    // Update the existing Markers
-                    else {
+                if (!isAdded()) return;
+                // Initialize Markers
+                if (busMarkers.isEmpty()) {
+                    MarkerOptions marker = new MarkerOptions();
+                    marker.flat(true);
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
+                            ContextCompat.getColor(requireActivity(), R.color.white), 0));
+                    marker.zIndex(100);
+                    marker.anchor(0.5F, 0.8F);
+                    marker.position(new LatLng(p.getY(), p.getX()));
+                    marker.rotation(busDirection);
+                    marker.title("Occupancy: " + occupancy);
+                    requireActivity().runOnUiThread(() -> {
+                        busMarkers.add(mMap.addMarker(marker));
+                    });
+                }
+                // Update the existing Markers
+                else {
+                    requireActivity().runOnUiThread(() -> {
                         busMarkers.get(finalI).setPosition(new LatLng(p.getY(), p.getX()));
                         busMarkers.get(finalI).setRotation(busDirection);
-                        busMarkers.get(finalI).setTitle("Occupancy: "+occupancy);
-                    }
-                });
+                        busMarkers.get(finalI).setTitle("Occupancy: " + occupancy);
+                    });
+                }
             }
 
         } catch (JSONException e) {
@@ -413,7 +353,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        if (ContextCompat.checkSelfPermission(this.getContext(),
+        if (ContextCompat.checkSelfPermission(requireActivity(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
@@ -422,7 +362,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
-
 
 
     @Override
@@ -447,16 +386,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             return;
         }
         try {
+            getLocationPermission();
             if (locationPermissionGranted) {
                 mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.getUiSettings().setMapToolbarEnabled(false);
             } else {
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                mMap.getUiSettings().setMapToolbarEnabled(false);
                 lastKnownLocation = null;
-                getLocationPermission();
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -491,7 +432,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     }
                 });
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
@@ -525,29 +466,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
 
             // Turn on the My Location layer and the related control on the map.
-            getLocationPermission();
             updateLocationUI();
 
             // Get the current location of the device and set the position of the map.
             getDeviceLocation();
-
-            // Call drawBusesOnRoute repeatedly
-            handler.postDelayed(runnable = () -> {
-                handler.postDelayed(runnable, 3000);
-                // Calling the drawBusesOnRoute in a new thread
-                Thread t = new Thread(() -> {
-                    drawBusesOnRoute("04");
-                });
-                t.start();
-                try {
-                    t.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }, 3000);
         }
     };
 
@@ -579,8 +504,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
+
         // Construct a FusedLocationProviderClient.
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getContext());
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         client = new OkHttpClient.Builder()  // Create OkHttpClient to be used in API requests
                 .cache(new Cache(new File(requireActivity().getCacheDir(), "http_cache"),
@@ -1018,13 +944,20 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             }).start();
         } else {
             currentRouteNo = busRoute.routeNumber;
+
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
             new Thread(this::setUpTimeTable).start();
             fabTimetable.setVisibility(View.VISIBLE);
+
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();
-            drawBusesOnRoute(busRoute.routeNumber);
+
+            // Continuously draw the buses on the route
+            handler.post(runnable = () -> {
+                handler.postDelayed(runnable, 3000);
+                new Thread(() -> drawBusesOnRoute(busRoute.routeNumber)).start();
+            });
         }
     }
 

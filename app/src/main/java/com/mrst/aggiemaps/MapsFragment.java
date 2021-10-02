@@ -102,6 +102,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private RightSheetBehavior<View> rightSheetBehavior;
     private TableLayout tlTimetable;
     private String currentRouteNo;
+    private FloatingActionButton fabTimetable;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -498,7 +499,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         tlTimetable = mView.findViewById(R.id.tl_timetable);
 
         // Initialize the fab to open the timetable
-        FloatingActionButton fabTimetable = mView.findViewById(R.id.fab_timetable);
+        fabTimetable = mView.findViewById(R.id.fab_timetable);
+        fabTimetable.setVisibility(View.GONE);
         fabTimetable.setOnClickListener(v -> {
             if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
                 rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
@@ -521,6 +523,22 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
             JSONArray timetableArray = new JSONArray(str);
             int numRows = 0;
+            
+            // If no service is scheduled for this date
+            if (timetableArray.getJSONObject(0).getString(timetableArray.getJSONObject(0).names().getString(0)).equals("No Service Is Scheduled For This Date")) {
+                TableRow tr = new TableRow(getActivity());
+                tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                TextView time = new TextView(getActivity());
+                time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                time.setPadding(0, 10, 10, 10);
+                time.setText(timetableArray.getJSONObject(0).getString(" "));
+                requireActivity().runOnUiThread(() -> {
+                    tr.addView(time);
+                    tlTimetable.addView(tr);
+                });
+                return;
+            }
+
             TableRow headerRow = new TableRow(getActivity());
             for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
                 String header = timetableArray.getJSONObject(0).names().getString(i).substring(36);
@@ -538,21 +556,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             requireActivity().runOnUiThread(() -> tlTimetable.addView(headerRow));
             for (int i = 0; i < timetableArray.length(); i++) {
                 JSONObject row = timetableArray.getJSONObject(i);
-
-                // If no service is scheduled for this date
-                if (row.getString(row.names().getString(0)).equals("No Service Is Scheduled For This Date")) {
-                    TableRow tr = new TableRow(getActivity());
-                    tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                    TextView time = new TextView(getActivity());
-                    time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                    time.setPadding(0, 10, 10, 10);
-                    time.setText(row.getString(" "));
-                    requireActivity().runOnUiThread(() -> {
-                        tr.addView(time);
-                        tlTimetable.addView(tr);
-                    });
-                    return;
-                }
 
                 // Find the current closest row for this date and start there
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.US);
@@ -589,6 +592,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         requireActivity().runOnUiThread(() -> tr.addView(time));
                     }
                     requireActivity().runOnUiThread(() -> tlTimetable.addView(tr));
+                }
+                if (numRows == 0) {
+                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
+                } else {
+                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
                 }
             }
         } catch (JSONException e) {
@@ -788,6 +796,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         mMap.clear(); // Clear map first
         if (busRoute.routeNumber.equals("All")) {
+            fabTimetable.setVisibility(View.GONE);
             new Thread(() -> {
                 switch (busRoute.routeName) {
                     case "Favorites":
@@ -821,6 +830,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
             new Thread(this::setUpTimeTable).start();
+            fabTimetable.setVisibility(View.VISIBLE);
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();
             drawBusesOnRoute(busRoute.routeNumber);

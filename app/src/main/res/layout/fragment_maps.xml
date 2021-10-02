@@ -1,8 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsFragment" />
+    tools:context=".MapsFragment">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!--     Route Sheet      -->
+        <FrameLayout
+            android:id="@+id/standard_bottom_sheet"
+            style="@style/ThemeOverlay.App.BottomSheetDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="10dp"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            <!--     Vertical layout of route recycler and category name      -->
+            <include layout="@layout/route_selection" />
+
+            <!-- Bottom sheet contents. -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:backgroundTint="@color/background"
+                app:cardCornerRadius="25dp"
+                app:contentPadding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="45dp"
+                        android:layout_height="15dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="30dp"
+                        android:backgroundTint="@color/foreground"
+                        android:stateListAnimator="@null"
+                        app:cornerRadius="25dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </FrameLayout>
+
+        <!--     View for all the buttons on bottom right      -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_marginBottom="44dp"
+            android:orientation="vertical"
+            app:layout_anchorGravity="bottom|right|end">
+
+            <include layout="@layout/timetable" />
+
+            <!--     Timetable FAB      -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_timetable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="23dp"
+                android:layout_marginBottom="33dp"
+                android:backgroundTint="@color/red_300"
+                android:contentDescription="@string/shows_timetable"
+                android:elevation="2dp"
+                app:borderWidth="0dp"
+                app:elevation="2dp"
+                app:pressedTranslationZ="3dp"
+                app:rippleColor="@color/red_700"
+                app:srcCompat="@drawable/timetable"
+                app:tint="@color/white" />
+
+            <!--     Buses Button      -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/swipe_recycler"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="23dp" />
+
+        </LinearLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</fragment>

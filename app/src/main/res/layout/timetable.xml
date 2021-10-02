@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="33dp">
+
+    <!--     Timetable Sheet      -->
+    <FrameLayout
+        android:id="@+id/timetable_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/right_sheet_behavior">
+
+        <!-- Right sheet contents. -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/RightSheetCorners"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:backgroundTint="@color/background"
+            app:cardPreventCornerOverlap="false">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/drag_rec"
+                    android:layout_width="4dp"
+                    android:layout_height="55dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginBottom="13dp"
+                    android:backgroundTint="@color/foreground"
+                    android:stateListAnimator="@null"
+                    app:cornerRadius="25dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/route_card"
+                    style="@style/TitleBarCorners"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:backgroundTint="@color/foreground_30"
+                    android:clickable="false"
+                    android:focusable="false"
+                    app:cardElevation="0dp"
+                    app:cardPreventCornerOverlap="false"
+                    app:contentPadding="0dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="40dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/time_table"
+                        android:textColor="@color/red_300"
+                        android:textSize="15sp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <HorizontalScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:nestedScrollingEnabled="true"
+                    android:scrollbarSize="0dp"
+                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    app:layout_constraintTop_toBottomOf="@id/route_card">
+
+                    <TableLayout
+                        android:id="@+id/tl_timetable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:paddingEnd="40dp"
+                        android:layout_marginBottom="20dp"
+                        android:gravity="start"
+                        android:stretchColumns="*"/>
+
+                </HorizontalScrollView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

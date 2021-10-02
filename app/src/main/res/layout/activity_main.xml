@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:id="@+id/ll_maps"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"/>
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:elevation="0.1dp"
+        android:stateListAnimator="@null">
+
+        <!-- Simple MaterialToolbar extension -->
+        <com.lapism.search.widget.MaterialSearchBar
+            android:id="@+id/material_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="0dp"
+            app:layout_scrollFlags="enterAlways|snap" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/maps_fragment"
+        android:name="com.mrst.aggiemaps.MapsFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.lapism.search.widget.MaterialSearchView
+        android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.mrst.aggiemaps.MapsFragment"/>
+        app:layout_anchor="@id/material_search_bar"
+        android:elevation="0dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

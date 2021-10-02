@@ -5,13 +5,15 @@
     <color name="white">#FFFFFFFF</color>
     <color name="white_60">#99FFFFFF</color>
     <color name="all_color">#171717</color>
-    <color name="foreground">#37474F</color>
-    <color name="background">#FFFFFF</color>
-    <color name="foreground_60">#9937474F</color>
-    <color name="background_60">#99FFFFFF</color>
-    <color name="foreground_30">#1337474F</color>
+    <color name="foreground">#FFFFFF</color>
+    <color name="background">#37474F</color>
+    <color name="foreground_60">#99FFFFFF</color>
+    <color name="background_60">#9937474F</color>
+    <color name="foreground_30">#13FFFFFF</color>
     <color name="red_60">#99EF5350</color>
 
+    <!-- google's material design colours from
+    http://www.google.com/design/spec/style/color.html#color-ui-color-palette -->
 
     <color name="red_50">#FFEBEE</color>
     <color name="red_100">#FFCDD2</color>

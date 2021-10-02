@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_search"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/direction_icon"
+        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabCustomSize="40dp"
+        app:elevation="0dp"
+        app:borderWidth="0dp"
+        android:backgroundTint="@color/red_300"
+        app:tint="@color/foreground"
+        android:stateListAnimator="@null"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/arrow_right_top"
+        android:layout_marginEnd="16dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:contentDescription="@string/directional_arrow" />
+
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/direction_icon"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textColor="@color/foreground"
+        android:paddingBottom="3dp"/>
+
+    <TextView
+        android:id="@+id/subtitle_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title_text"
+        android:layout_gravity="center_vertical"
+        android:layout_toEndOf="@id/direction_icon"
+        android:textSize="14dp"
+        android:paddingEnd="16dp"
+        android:maxLines="2"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="@color/foreground_60"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/search_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/subtitle_text"
+        android:layout_marginTop="14dp"
+        android:visibility="invisible"
+        app:dividerInsetStart="65dp" />
+
+</RelativeLayout>
+

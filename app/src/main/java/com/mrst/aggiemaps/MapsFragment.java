@@ -56,6 +56,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rubensousa.decorator.ColumnProvider;
@@ -120,7 +121,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Runnable runnable;
     private ArrayList<Marker> busMarkers = new ArrayList<>();
     private FloatingActionButton fabMyLocation;
-    private MaterialButton tryAnotherDate;
+    private LinearProgressIndicator dateProgress;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
@@ -655,8 +656,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         });
 
         // Initialize Try Another Date Button
-        tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
+        MaterialButton tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
         tryAnotherDate.setOnClickListener(view -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
+
+        // Initialize the Progress Bar for after a user picks a date
+        dateProgress = mView.findViewById(R.id.date_progress);
+        dateProgress.setVisibility(View.INVISIBLE);
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
@@ -669,6 +674,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime) {
         try {
+            requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.VISIBLE));
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/" + viewMoreTime);
 
             // If nothing is returned
@@ -693,6 +699,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     tr.addView(time);
                     tlTimetable.addView(tr);
                     fabTimetable.setVisibility(View.VISIBLE);
+                    dateProgress.setVisibility(View.INVISIBLE);
                 });
                 return;
             }
@@ -760,7 +767,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
                 }
             }
+            requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.INVISIBLE));
         } catch (JSONException e) {
+            requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.INVISIBLE));
             e.printStackTrace();
         }
 

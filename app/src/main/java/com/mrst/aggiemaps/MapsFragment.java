@@ -58,10 +58,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
-<<<<<<< HEAD
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
-=======
->>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -634,17 +631,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
             }
         });
-
-<<<<<<< HEAD
-
-=======
         // Initialize the my current location FAB
         fabMyLocation = mView.findViewById(R.id.fab_mylocation);
         fabMyLocation.setVisibility(View.GONE);
         fabMyLocation.setOnClickListener(v -> {
             getDeviceLocation();
         });
->>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
@@ -657,10 +649,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime) {
         try {
-<<<<<<< HEAD
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/"+viewMoreTime);
-=======
-            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
 
             // If nothing is returned
             if (str == null) return;
@@ -668,7 +657,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
                 return;
             }
->>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
             JSONArray timetableArray = new JSONArray(str);
             int numRows = 0;
 
@@ -723,12 +711,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 requireActivity().runOnUiThread(() -> {
                     tr.addView(time);
                     tlTimetable.addView(tr);
-<<<<<<< HEAD
                     viewMoreRow.addView(viewMoreTimesButton);
                     tlTimetable.addView(viewMoreRow);
-=======
                     fabTimetable.setVisibility(View.VISIBLE);
->>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
                 });
                 return;
             }
@@ -1033,12 +1018,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
-<<<<<<< HEAD
+
             new Thread(() -> { setUpTimeTable(""); }).start();
-            fabTimetable.setVisibility(View.VISIBLE);
-=======
-            new Thread(this::setUpTimeTable).start();
->>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();

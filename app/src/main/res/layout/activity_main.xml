@@ -35,9 +35,8 @@
         android:id="@+id/material_search_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@id/material_search_bar"
-        android:elevation="0dp"/>
-
+        android:elevation="0dp"
+        app:layout_anchor="@id/material_search_bar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

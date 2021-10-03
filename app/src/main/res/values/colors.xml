@@ -11,6 +11,7 @@
     <color name="background_60">#99FFFFFF</color>
     <color name="foreground_30">#1337474F</color>
     <color name="red_60">#99EF5350</color>
+    <color name="accent">#E57373</color>
 
 
     <color name="red_50">#FFEBEE</color>

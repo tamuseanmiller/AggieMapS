@@ -58,7 +58,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
+<<<<<<< HEAD
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+=======
+>>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -124,6 +127,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers = new ArrayList<>();
+    private FloatingActionButton fabMyLocation;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
@@ -237,6 +241,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
             }
             return;
+
         }
         try {
             Request request = new Request.Builder()
@@ -307,6 +312,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Get the direction and use it to rotate the bus icon and add this to the marker.
             // Get the occupancy to show bus occupancy.
             for (int i = 0; i < busData_jsonArray.length(); i++) {
+                busMarkers.add(null);
                 // Retrieving Data
                 JSONObject currentBus = busData_jsonArray.getJSONObject(i);
                 Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"),
@@ -316,18 +322,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 int finalI = i;
                 if (!isAdded()) return;
                 // Initialize Markers
-                if (busMarkers.isEmpty()) {
+                if (busMarkers.get(i) == null) {
                     MarkerOptions marker = new MarkerOptions();
                     marker.flat(true);
                     marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
-                            ContextCompat.getColor(requireActivity(), R.color.white), 0));
+                            ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
                     marker.zIndex(100);
                     marker.anchor(0.5F, 0.8F);
                     marker.position(new LatLng(p.getY(), p.getX()));
                     marker.rotation(busDirection);
                     marker.title("Occupancy: " + occupancy);
                     requireActivity().runOnUiThread(() -> {
-                        busMarkers.add(mMap.addMarker(marker));
+                        busMarkers.set(finalI, mMap.addMarker(marker));
                     });
                 }
                 // Update the existing Markers
@@ -397,11 +403,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             if (locationPermissionGranted) {
                 mMap.setMyLocationEnabled(true);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mMap.getUiSettings().setMapToolbarEnabled(false);
+                mMap.getUiSettings().setMapToolbarEnabled(true);
+                fabMyLocation.setVisibility(View.VISIBLE);
             } else {
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 mMap.getUiSettings().setMapToolbarEnabled(false);
+                fabMyLocation.setVisibility(View.GONE);
                 lastKnownLocation = null;
             }
         } catch (SecurityException e) {
@@ -424,7 +432,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                             // Set the map's camera position to the current location of the device.
                             lastKnownLocation = task.getResult();
                             if (lastKnownLocation != null) {
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(lastKnownLocation.getLatitude(),
                                                 lastKnownLocation.getLongitude()), 14.0f));
                             }
@@ -432,7 +440,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
                             LatLng collegeStation = new LatLng(30.611812, -96.329767);
-                            mMap.moveCamera(CameraUpdateFactory
+                            mMap.animateCamera(CameraUpdateFactory
                                     .newLatLngZoom(collegeStation, 14.0f));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
@@ -627,7 +635,16 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             }
         });
 
+<<<<<<< HEAD
 
+=======
+        // Initialize the my current location FAB
+        fabMyLocation = mView.findViewById(R.id.fab_mylocation);
+        fabMyLocation.setVisibility(View.GONE);
+        fabMyLocation.setOnClickListener(v -> {
+            getDeviceLocation();
+        });
+>>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
@@ -640,7 +657,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime) {
         try {
+<<<<<<< HEAD
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/"+viewMoreTime);
+=======
+            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable");
+
+            // If nothing is returned
+            if (str == null) return;
+            if (str.equals("null")) {
+                requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
+                return;
+            }
+>>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
             JSONArray timetableArray = new JSONArray(str);
             int numRows = 0;
 
@@ -695,12 +723,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 requireActivity().runOnUiThread(() -> {
                     tr.addView(time);
                     tlTimetable.addView(tr);
+<<<<<<< HEAD
                     viewMoreRow.addView(viewMoreTimesButton);
                     tlTimetable.addView(viewMoreRow);
+=======
+                    fabTimetable.setVisibility(View.VISIBLE);
+>>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
                 });
                 return;
             }
 
+            // Add the stops as a header row to the table layout
             TableRow headerRow = new TableRow(getActivity());
             for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
                 String header = timetableArray.getJSONObject(0).names().getString(i).substring(36);
@@ -716,6 +749,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 });
             }
             requireActivity().runOnUiThread(() -> tlTimetable.addView(headerRow));
+
+            // Loop through every row
             for (int i = 0; i < timetableArray.length(); i++) {
                 JSONObject row = timetableArray.getJSONObject(i);
 
@@ -745,7 +780,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         // Add strikethrough and red to times that have passed
                         if (!value.equals("null") && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
                             time.setPaintFlags(time.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-                            time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.red_300));
+                            time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
                         }
 
                         // If the value is null, just leave it empty
@@ -758,7 +793,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 if (numRows == 0) {
                     requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
                 } else {
-                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
+//                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
                 }
             }
         } catch (JSONException e) {
@@ -998,8 +1033,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
+<<<<<<< HEAD
             new Thread(() -> { setUpTimeTable(""); }).start();
             fabTimetable.setVisibility(View.VISIBLE);
+=======
+            new Thread(this::setUpTimeTable).start();
+>>>>>>> df837d0b35a52064f5e00cafda741ea705f53e16
 
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();

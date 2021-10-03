@@ -26,7 +26,7 @@
         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Button.Circle"
         android:backgroundTint="@color/foreground"
         app:iconTint="@color/background"
-        app:rippleColor="@color/red_300"
+        app:rippleColor="@color/accent"
         android:contentDescription="@string/add_to_favorites"/>
 
     <com.google.android.material.card.MaterialCardView

@@ -19,7 +19,7 @@
         app:fabCustomSize="40dp"
         app:elevation="0dp"
         app:borderWidth="0dp"
-        android:backgroundTint="@color/red_300"
+        android:backgroundTint="@color/accent"
         app:tint="@color/foreground"
         android:stateListAnimator="@null"
         android:layout_centerVertical="true"

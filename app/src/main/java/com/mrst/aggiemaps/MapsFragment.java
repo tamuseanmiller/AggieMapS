@@ -680,33 +680,23 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         MaterialDatePicker.Builder.datePicker()
                                 .setTitleText("Select date")
                                 .build();
-                viewMoreTimesButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        datePicker.show(getActivity().getSupportFragmentManager(), "tag");
+                viewMoreTimesButton.setOnClickListener(view -> datePicker.show(getActivity().getSupportFragmentManager(), "tag"));
+                datePicker.addOnPositiveButtonClickListener(selection -> {
+                    String header = datePicker.getHeaderText();
+                    LocalDate ld;
+                    if(header.length()==11){
+                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+                        ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
+                    }else{
+                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                        ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
                     }
-                });
-                datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.O)
-                    @Override
-                    public void onPositiveButtonClick(Object selection) {
-                        String header = datePicker.getHeaderText();
-                        LocalDate ld;
-                        if(header.length()==11){
-                            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
-                            ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-                        }else{
-                            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-                            ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-                        }
-                        tlTimetable.removeAllViews();
-                        new Thread(() -> {
-                            setUpTimeTable(ld.toString());
-                        }).start();
+                    tlTimetable.removeAllViews();
+                    new Thread(() -> {
+                        setUpTimeTable(ld.toString());
+                    }).start();
 
-                    }
                 });
-
 
                 requireActivity().runOnUiThread(() -> {
                     tr.addView(time);
@@ -778,7 +768,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 if (numRows == 0) {
                     requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
                 } else {
-//                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
+                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
                 }
             }
         } catch (JSONException e) {

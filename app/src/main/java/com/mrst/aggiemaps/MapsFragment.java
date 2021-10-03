@@ -14,7 +14,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -23,14 +22,12 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
@@ -58,7 +55,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -77,7 +73,6 @@ import org.locationtech.proj4j.ProjCoordinate;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -125,6 +120,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Runnable runnable;
     private ArrayList<Marker> busMarkers = new ArrayList<>();
     private FloatingActionButton fabMyLocation;
+    private MaterialButton tryAnotherDate;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
@@ -631,12 +627,36 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
             }
         });
+
         // Initialize the my current location FAB
         fabMyLocation = mView.findViewById(R.id.fab_mylocation);
         fabMyLocation.setVisibility(View.GONE);
         fabMyLocation.setOnClickListener(v -> {
             getDeviceLocation();
         });
+
+        // Initialize the Date Picker for the TimeTable
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select date")
+                .build();
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            String header = datePicker.getHeaderText();
+            LocalDate ld;
+            if (header.length() == 11) {
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+                ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
+            } else {
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
+            }
+            tlTimetable.removeAllViews();
+            new Thread(() -> setUpTimeTable(ld.toString())).start();
+
+        });
+
+        // Initialize Try Another Date Button
+        tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
+        tryAnotherDate.setOnClickListener(view -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
@@ -649,7 +669,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime) {
         try {
-            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/"+viewMoreTime);
+            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/" + viewMoreTime);
 
             // If nothing is returned
             if (str == null) return;
@@ -668,41 +688,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 time.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
                 time.setPadding(0, 10, 10, 10);
                 time.setText(timetableArray.getJSONObject(0).getString(" "));
-                // Button to view more datetimes
-                TableRow viewMoreRow = new TableRow(getActivity());
-                viewMoreRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                Button viewMoreTimesButton = new Button(getActivity());
-                viewMoreTimesButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                viewMoreTimesButton.setPadding(0, 10, 10, 10);
-                viewMoreTimesButton.setText("View more");
-
-                MaterialDatePicker datePicker =
-                        MaterialDatePicker.Builder.datePicker()
-                                .setTitleText("Select date")
-                                .build();
-                viewMoreTimesButton.setOnClickListener(view -> datePicker.show(getActivity().getSupportFragmentManager(), "tag"));
-                datePicker.addOnPositiveButtonClickListener(selection -> {
-                    String header = datePicker.getHeaderText();
-                    LocalDate ld;
-                    if(header.length()==11){
-                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
-                        ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-                    }else{
-                        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-                        ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-                    }
-                    tlTimetable.removeAllViews();
-                    new Thread(() -> {
-                        setUpTimeTable(ld.toString());
-                    }).start();
-
-                });
 
                 requireActivity().runOnUiThread(() -> {
                     tr.addView(time);
                     tlTimetable.addView(tr);
-                    viewMoreRow.addView(viewMoreTimesButton);
-                    tlTimetable.addView(viewMoreRow);
                     fabTimetable.setVisibility(View.VISIBLE);
                 });
                 return;
@@ -1008,8 +997,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
-
-            new Thread(() -> { setUpTimeTable(""); }).start();
+            new Thread(() -> setUpTimeTable("")).start();
 
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color)).start();

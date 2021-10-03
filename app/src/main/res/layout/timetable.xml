@@ -24,6 +24,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
                 android:orientation="vertical">
 
                 <com.google.android.material.button.MaterialButton
@@ -31,7 +32,6 @@
                     android:layout_width="4dp"
                     android:layout_height="55dp"
                     android:layout_marginStart="20dp"
-                    android:layout_marginBottom="13dp"
                     android:backgroundTint="@color/foreground"
                     android:stateListAnimator="@null"
                     app:cornerRadius="25dp"
@@ -66,12 +66,12 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <HorizontalScrollView
+                    android:id="@+id/hSV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
-                    android:layout_marginBottom="20dp"
                     android:nestedScrollingEnabled="true"
                     android:scrollbarSize="0dp"
+                    android:layout_marginStart="20dp"
                     app:layout_constraintStart_toEndOf="@id/drag_rec"
                     app:layout_constraintTop_toBottomOf="@id/route_card">
 
@@ -86,6 +86,20 @@
                         android:stretchColumns="*"/>
 
                 </HorizontalScrollView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/try_another_date_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/hSV"
+                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    android:stateListAnimator="@null"
+                    android:text="@string/try_another_date"
+                    android:textColor="@color/background"
+                    android:backgroundTint="@color/accent"
+                    android:layout_marginTop="-10dp"
+                    android:layout_marginStart="20dp"
+                    app:cornerRadius="15dp"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

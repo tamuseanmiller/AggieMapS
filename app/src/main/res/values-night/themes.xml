@@ -13,10 +13,18 @@
         <!-- Status bar color. -->
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent
+        </item>
+    </style>
+
+    <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">25dp</item>
     </style>
 
     <style name="RightSheetCorners" parent="@style/Widget.MaterialComponents.CardView">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialCardView.RightSheet</item>
+        <item name="shapeAppearanceOverlay">
+            @style/ShapeAppearanceOverlay.MaterialCardView.RightSheet
+        </item>
     </style>
 
     <style name="ShapeAppearanceOverlay.MaterialCardView.RightSheet" parent="">
@@ -29,7 +37,9 @@
     </style>
 
     <style name="TitleBarCorners" parent="@style/Widget.MaterialComponents.CardView">
-        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MaterialCardView.TitleBar</item>
+        <item name="shapeAppearanceOverlay">
+            @style/ShapeAppearanceOverlay.MaterialCardView.TitleBar
+        </item>
     </style>
 
     <style name="ShapeAppearanceOverlay.MaterialCardView.TitleBar" parent="">

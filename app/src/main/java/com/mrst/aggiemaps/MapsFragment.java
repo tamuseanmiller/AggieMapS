@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -22,14 +23,17 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -128,6 +132,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+    private NestedScrollView nsv;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -514,6 +519,22 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
 
+        nsv = mView.findViewById(R.id.nsv);
+        nsv.setNestedScrollingEnabled(false);
+        nsv.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (view, i, i1, i2, i3) -> {
+            if (i1 == 0) {
+                // NestedScrollView reached top
+                if (!standardBottomSheetBehavior.isDraggable()) {
+                    // now draggable
+                    standardBottomSheetBehavior.setDraggable(true);
+                }
+            } else {
+                if (standardBottomSheetBehavior.isDraggable()) {
+                    standardBottomSheetBehavior.setDraggable(false);
+                }
+            }
+        });
+
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -588,8 +609,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            col = () -> 1;
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            col = () -> 3;
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 3, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
         } else {
             onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
@@ -601,13 +622,43 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
 
         // Set up the bottom sheet
-        View standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
+        FrameLayout standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
         standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
         standardBottomSheetBehavior.setHideable(false);
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(0);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        break;
+
+                    case BottomSheetBehavior.STATE_EXPANDED:
+                        nsv.setNestedScrollingEnabled(true);
+//                        standardBottomSheetBehavior.setDraggable(false);
+                        nsv.scrollTo(0, 1);
+//                        nsv.scrollTo(0, 0);
+                    break;
+
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                        standardBottomSheetBehavior.setDraggable(true);
+                    break;
+
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        nsv.setNestedScrollingEnabled(false);
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
 
         // Set up right sheet for timetable
         View sheet = mView.findViewById(R.id.timetable_sheet);
@@ -786,6 +837,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private void setUpBusRoutes() {
         try {
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");
+            if (str == null) return;  // TODO: Call dialog or retry
             JSONArray routes = new JSONArray(str);
             favoritesSet = new HashSet<>();  // Initialize the favorites set
             loadFavorites();  // Load the favorites set from sharedpreferences

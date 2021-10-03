@@ -17,12 +17,23 @@
             android:id="@+id/standard_bottom_sheet"
             style="@style/ThemeOverlay.App.BottomSheetDialog"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="900dp"
             android:elevation="10dp"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            android:overScrollMode="always">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nsv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:elevation="5dp"
+                android:fillViewport="true"
+                android:overScrollMode="never">
 
             <!--     Vertical layout of route recycler and category name      -->
             <include layout="@layout/route_selection" />
+
+            </androidx.core.widget.NestedScrollView>
 
             <!-- Bottom sheet contents. -->
 

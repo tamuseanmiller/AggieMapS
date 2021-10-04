@@ -18,9 +18,9 @@
             style="@style/ThemeOverlay.App.BottomSheetDialog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
             android:elevation="10dp"
             android:overScrollMode="always"
-            android:layout_gravity="bottom|center_horizontal"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
             <com.mrst.aggiemaps.NestedCoordinatorLayout
@@ -47,12 +47,12 @@
             <!-- Bottom sheet contents. -->
 
             <com.google.android.material.card.MaterialCardView
+                style="@style/BottomSheetCorners"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:backgroundTint="@color/background"
-                app:cardCornerRadius="25dp"
                 app:contentPadding="20dp">
 
                 <LinearLayout
@@ -76,15 +76,13 @@
         </FrameLayout>
 
         <!--     View for all the buttons on bottom right      -->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:layout_marginBottom="40dp"
             android:orientation="vertical"
             app:layout_anchorGravity="bottom|right|end">
-
-            <include layout="@layout/timetable" />
 
             <!--     My Location FAB      -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -99,10 +97,24 @@
                 android:elevation="2dp"
                 app:borderWidth="0dp"
                 app:elevation="2dp"
+                app:layout_constraintBottom_toTopOf="@id/fab_timetable"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:pressedTranslationZ="3dp"
                 app:rippleColor="@color/red_700"
                 app:srcCompat="@drawable/crosshairs_gps"
                 app:tint="@color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@id/fab_timetable"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:orientation="vertical"
+                android:elevation="3dp">
+
+            <include layout="@layout/timetable" />
+
+            </LinearLayout>
 
             <!--     Timetable FAB      -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -117,9 +129,11 @@
                 android:elevation="2dp"
                 app:borderWidth="0dp"
                 app:elevation="2dp"
+                app:layout_constraintBottom_toTopOf="@id/swipe_recycler"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:pressedTranslationZ="3dp"
                 app:rippleColor="@color/red_700"
-                app:srcCompat="@drawable/timetable"
+                app:srcCompat="@drawable/clock"
                 app:tint="@color/white" />
 
             <!--     Buses Button      -->
@@ -127,11 +141,12 @@
                 android:id="@+id/swipe_recycler"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
                 android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp" />
+                android:layout_marginEnd="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

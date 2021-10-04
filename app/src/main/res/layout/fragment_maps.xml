@@ -19,21 +19,29 @@
             android:layout_width="match_parent"
             android:layout_height="900dp"
             android:elevation="10dp"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            android:overScrollMode="always">
+            android:overScrollMode="always"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-            <androidx.core.widget.NestedScrollView
-                android:id="@+id/nsv"
+            <com.mrst.aggiemaps.NestedCoordinatorLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:elevation="5dp"
-                android:fillViewport="true"
-                android:overScrollMode="never">
+                android:elevation="5dp">
 
-            <!--     Vertical layout of route recycler and category name      -->
-            <include layout="@layout/route_selection" />
+                <!-- Change overscroll mode to never for disabling snapping to top when scrolled up -->
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/nsv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:elevation="5dp"
+                    android:fillViewport="true"
+                    android:overScrollMode="ifContentScrolls">
 
-            </androidx.core.widget.NestedScrollView>
+                    <!--     Vertical layout of route recycler and category name      -->
+                    <include layout="@layout/route_selection" />
+
+                </androidx.core.widget.NestedScrollView>
+
+            </com.mrst.aggiemaps.NestedCoordinatorLayout>
 
             <!-- Bottom sheet contents. -->
 

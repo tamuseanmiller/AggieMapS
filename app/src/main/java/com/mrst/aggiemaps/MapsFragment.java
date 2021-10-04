@@ -132,7 +132,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-    private NestedScrollView nsv;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -519,22 +518,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
 
-        nsv = mView.findViewById(R.id.nsv);
-        nsv.setNestedScrollingEnabled(false);
-        nsv.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (view, i, i1, i2, i3) -> {
-            if (i1 == 0) {
-                // NestedScrollView reached top
-                if (!standardBottomSheetBehavior.isDraggable()) {
-                    // now draggable
-                    standardBottomSheetBehavior.setDraggable(true);
-                }
-            } else {
-                if (standardBottomSheetBehavior.isDraggable()) {
-                    standardBottomSheetBehavior.setDraggable(false);
-                }
-            }
-        });
-
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -587,39 +570,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         DisplayMetrics metrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         col = () -> 2;
-        // Vary the number of rows based on screen height
-        if (metrics.heightPixels < convertDpToPx((215 * 1) + 20 + 15 + 325)) {
-            col = () -> 1;
-            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx((215 * 2) + 20 + 15 + 325)) {
-            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            col = () -> 1;
-            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else if (metrics.heightPixels < convertDpToPx((215 * 3) + 20 + 15 + 325)) {
-            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            col = () -> 3;
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 3, GridLayoutManager.HORIZONTAL, false));
-            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        } else {
-            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        }
+        onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+        gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
         // Set up the bottom sheet
         FrameLayout standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
@@ -629,36 +585,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(0);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
-        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                switch (newState) {
-                    case BottomSheetBehavior.STATE_HIDDEN:
-                    case BottomSheetBehavior.STATE_SETTLING:
-                        break;
-
-                    case BottomSheetBehavior.STATE_EXPANDED:
-                        nsv.setNestedScrollingEnabled(true);
-//                        standardBottomSheetBehavior.setDraggable(false);
-                        nsv.scrollTo(0, 1);
-//                        nsv.scrollTo(0, 0);
-                    break;
-
-                    case BottomSheetBehavior.STATE_COLLAPSED:
-                        standardBottomSheetBehavior.setDraggable(true);
-                    break;
-
-                    case BottomSheetBehavior.STATE_DRAGGING:
-                        nsv.setNestedScrollingEnabled(false);
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
-        });
 
         // Set up right sheet for timetable
         View sheet = mView.findViewById(R.id.timetable_sheet);
@@ -692,6 +618,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 .setTitleText("Select date")
                 .build();
         datePicker.addOnPositiveButtonClickListener(selection -> {
+            tlTimetable.removeAllViews();
             String header = datePicker.getHeaderText();
             LocalDate ld;
             if (header.length() == 11) {
@@ -701,7 +628,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
                 ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
             }
-            tlTimetable.removeAllViews();
             new Thread(() -> setUpTimeTable(ld.toString())).start();
 
         });
@@ -812,11 +738,24 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     }
                     requireActivity().runOnUiThread(() -> tlTimetable.addView(tr));
                 }
-                if (numRows == 0) {
-                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.GONE));
-                } else {
-                    requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
-                }
+            }
+
+            // If no more bus routes are going today
+            if (numRows == 0) {
+                TableRow noTimesLeftRow = new TableRow(getActivity());
+                TextView noTime = new TextView(getActivity());
+                noTime.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                noTime.setPadding(0, 10, 10, 10);
+                noTime.setText(R.string.no_more_buses);
+                requireActivity().runOnUiThread(() -> {
+                    tlTimetable.removeAllViews();
+                    noTimesLeftRow.addView(noTime);
+                    tlTimetable.addView(noTimesLeftRow);
+                });
+                requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
+
+            } else {
+                requireActivity().runOnUiThread(() -> fabTimetable.setVisibility(View.VISIBLE));
             }
             requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.INVISIBLE));
         } catch (JSONException e) {
@@ -824,11 +763,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             e.printStackTrace();
         }
 
-    }
-
-    private int convertDpToPx(int dp) {
-        DisplayMetrics displayMetrics = requireContext().getResources().getDisplayMetrics();
-        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /*

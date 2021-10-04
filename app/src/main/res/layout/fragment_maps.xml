@@ -17,9 +17,10 @@
             android:id="@+id/standard_bottom_sheet"
             style="@style/ThemeOverlay.App.BottomSheetDialog"
             android:layout_width="match_parent"
-            android:layout_height="900dp"
+            android:layout_height="wrap_content"
             android:elevation="10dp"
             android:overScrollMode="always"
+            android:layout_gravity="bottom|center_horizontal"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
             <com.mrst.aggiemaps.NestedCoordinatorLayout

@@ -14,7 +14,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -30,10 +29,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -579,12 +576,16 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Set up the bottom sheet
         FrameLayout standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
         standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
         standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
         standardBottomSheetBehavior.setHideable(false);
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(0);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+        standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
 
         // Set up right sheet for timetable
         View sheet = mView.findViewById(R.id.timetable_sheet);
@@ -763,6 +764,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             e.printStackTrace();
         }
 
+    }
+
+    private int convertDpToPx(int dp) {
+        DisplayMetrics displayMetrics = requireContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /*

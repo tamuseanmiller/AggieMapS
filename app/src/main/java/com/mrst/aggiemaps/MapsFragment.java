@@ -117,7 +117,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private List<BusRoute> gameDayList;
     private RightSheetBehavior<View> rightSheetBehavior;
     private TableLayout tlTimetable;
-    private String currentRouteNo;
+    public static String currentRouteNo;
     private FloatingActionButton fabTimetable;
     public static List<BusRoute> busRoutes;
     public static GoogleMap mMap;       // The Map itself
@@ -249,7 +249,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             builder.include(aggieBusRoute.northEastBound);
             builder.include(aggieBusRoute.southWestBound);
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
-            activity.runOnUiThread(() ->  mMap.animateCamera(cu));
+            activity.runOnUiThread(() -> mMap.animateCamera(cu));
 
             return;
 
@@ -302,7 +302,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             int padding = 70;
             LatLngBounds bounds = builder.build();
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            activity.runOnUiThread(() ->  mMap.animateCamera(cu));
+            activity.runOnUiThread(() -> mMap.animateCamera(cu));
 
             assert first != null;
             polylineOptions.add(first);
@@ -334,7 +334,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Get the direction and use it to rotate the bus icon and add this to the marker.
             // Get the occupancy to show bus occupancy.
             for (int i = 0; i < busData_jsonArray.length(); i++) {
-                busMarkers.add(null);
                 // Retrieving Data
                 JSONObject currentBus = busData_jsonArray.getJSONObject(i);
                 Point p = convertWebMercatorToLatLng(currentBus.getDouble("lng"),
@@ -344,28 +343,26 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 int finalI = i;
                 if (!isAdded()) return;
                 // Initialize Markers
-                if (busMarkers.get(i) == null) {
-                    MarkerOptions marker = new MarkerOptions();
-                    marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
-                            ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
-                    marker.zIndex(100);
-                    marker.anchor(0.5F, 0.8F);
-                    marker.position(new LatLng(p.getY(), p.getX()));
-                    marker.rotation(busDirection);
-                    marker.title("Occupancy: " + occupancy);
-                    requireActivity().runOnUiThread(() -> {
-                        busMarkers.set(finalI, mMap.addMarker(marker));
-                    });
-                }
-                // Update the existing Markers
-                else {
-                    requireActivity().runOnUiThread(() -> {
+                requireActivity().runOnUiThread(() -> {
+                    if (busMarkers.size() != busData_jsonArray.length()) {
+                        MarkerOptions marker = new MarkerOptions();
+                        marker.flat(true);
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
+                                ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
+                        marker.zIndex(100);
+                        marker.anchor(0.5F, 0.8F);
+                        marker.position(new LatLng(p.getY(), p.getX()));
+                        marker.rotation(busDirection);
+                        marker.title("Occupancy: " + occupancy);
+                        busMarkers.add(mMap.addMarker(marker));
+                    }
+                    // Update the existing Markers
+                    else {
                         busMarkers.get(finalI).setPosition(new LatLng(p.getY(), p.getX()));
                         busMarkers.get(finalI).setRotation(busDirection);
                         busMarkers.get(finalI).setTitle("Occupancy: " + occupancy);
-                    });
-                }
+                    }
+                });
             }
 
         } catch (JSONException e) {
@@ -1031,9 +1028,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color, requireActivity())).start();
 
             // Continuously draw the buses on the route
+            handler = new Handler();
+            busMarkers.clear();
             handler.post(runnable = () -> {
                 handler.postDelayed(runnable, 3000);
-                new Thread(() -> drawBusesOnRoute(busRoute.routeNumber)).start();
+                if (currentRouteNo.equals(busRoute.routeNumber))
+                    new Thread(() -> drawBusesOnRoute(busRoute.routeNumber)).start();
             });
         }
     }

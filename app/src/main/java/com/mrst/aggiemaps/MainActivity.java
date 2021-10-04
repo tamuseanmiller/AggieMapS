@@ -431,9 +431,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onBusRouteClick(View view, int position) {
+        // TODO: Add a call to drawBusesOnRoute
         MapsFragment.mMap.clear();
-        for (BusRoute i: MapsFragment.busRoutes) {
+        for (BusRoute i : MapsFragment.busRoutes) {
             if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
+                MapsFragment.currentRouteNo = i.routeNumber;
                 new Thread(() -> MapsFragment.drawBusRoute(i.routeNumber, i.color, this)).start();
             }
         }

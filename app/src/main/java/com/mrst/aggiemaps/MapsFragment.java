@@ -40,6 +40,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.esri.core.geometry.Point;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,6 +48,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -218,16 +220,20 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private void drawBusRoute(String routeNo, int color) {
 
         // Check for cached data
-        Map<String, AggiePolyline> route = AggiePolyline.getData(requireActivity());
+        Map<String, AggieBusRoute> route = AggieBusRoute.getData(requireActivity());
         if (route.containsKey(routeNo)) {
 
+            // Get AggiePolyline
+            AggieBusRoute aggieBusRoute = route.get(routeNo);
+            assert aggieBusRoute != null;
+
             // Draw polyline of route
-            PolylineOptions newPolyline = Objects.requireNonNull(route.get(routeNo)).polylineOptions;
+            PolylineOptions newPolyline = aggieBusRoute.polylineOptions;
             newPolyline.color(color);
             requireActivity().runOnUiThread(() -> mMap.addPolyline(newPolyline));
 
             // Draw stops
-            for (LatLng i : Objects.requireNonNull(route.get(routeNo)).stops) {
+            for (LatLng i : aggieBusRoute.stops) {
                 MarkerOptions marker = new MarkerOptions();
                 marker.flat(true);
                 marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
@@ -235,6 +241,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 marker.position(i);
                 requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
             }
+
+            // Zoom to bounds
+            int padding = 70;
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(aggieBusRoute.northEastBound);
+            builder.include(aggieBusRoute.southWestBound);
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
+            requireActivity().runOnUiThread(() ->  mMap.animateCamera(cu));
+
             return;
 
         }
@@ -245,6 +260,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             Response response = client.newCall(request).execute();
             ResponseBody body = response.body();
+
+            // Create a builder for bounds to zoom to
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
             String str = Objects.requireNonNull(body).string();
             JSONArray stops = new JSONArray(str);
@@ -263,6 +281,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 }
                 System.out.println(x + ", " + y);
                 polylineOptions.add(new LatLng(x, y));
+                builder.include(new LatLng(x, y));
 
                 // Add bus stop circles
                 if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
@@ -277,6 +296,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 }
             }
 
+            // Animate the camera to the new bounds
+            int padding = 70;
+            LatLngBounds bounds = builder.build();
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            requireActivity().runOnUiThread(() ->  mMap.animateCamera(cu));
+
             assert first != null;
             polylineOptions.add(first);
             polylineOptions.color(color);
@@ -285,7 +310,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             polylineOptions.pattern(null);
             polylineOptions.clickable(true);
             requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
-            AggiePolyline.writeData(requireActivity(), new AggiePolyline(polylineOptions, busStops), routeNo);
+            AggieBusRoute.writeData(requireActivity(), new AggieBusRoute(polylineOptions, busStops, bounds.northeast, bounds.southwest), routeNo);
         } catch (JSONException | IOException jsonException) {
             jsonException.printStackTrace();
         }

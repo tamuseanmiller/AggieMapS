@@ -23,6 +23,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -56,6 +57,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -609,7 +611,24 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         standardBottomSheetBehavior.setPeekHeight(0);
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
-        standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
+
+        // Set the max height of the bottom sheet by putting it below the searchbar
+        View view = getActivity().findViewById(R.id.main_app_bar);
+        if (view instanceof AppBarLayout) {
+            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+            if (viewTreeObserver.isAlive()) {
+                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        standardBottomSheetBehavior.setMaxHeight(height - view.getHeight() - convertDpToPx(16));
+                    }
+                });
+            }
+
+        } else {
+            standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
+        }
 
         // Set up right sheet for timetable
         View sheet = mView.findViewById(R.id.timetable_sheet);
@@ -659,7 +678,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Initialize Try Another Date Button
         MaterialButton tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
-        tryAnotherDate.setOnClickListener(view -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
+        tryAnotherDate.setOnClickListener(v -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
 
         // Initialize the Progress Bar for after a user picks a date
         dateProgress = mView.findViewById(R.id.date_progress);

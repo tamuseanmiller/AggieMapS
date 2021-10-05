@@ -121,7 +121,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private TableLayout tlTimetable;
     public static String currentRouteNo;
     private FloatingActionButton fabTimetable;
-    public static List<BusRoute> busRoutes;
+    public List<BusRoute> busRoutes;
     public static GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
@@ -220,7 +220,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to draw a bus route on the map
      */
-    public static void drawBusRoute(String routeNo, int color, Activity activity) {
+    public void drawBusRoute(String routeNo, int color, Activity activity) {
 
         // Check for cached data
         Map<String, AggieBusRoute> route = AggieBusRoute.getData(activity);
@@ -323,7 +323,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to draw all buses on a given route
      */
-    private void drawBusesOnRoute(String routeNo) {
+    public void drawBusesOnRoute(String routeNo) {
         try {
             // Get JSON Array of data from transportation API
             String API_url = "https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo +

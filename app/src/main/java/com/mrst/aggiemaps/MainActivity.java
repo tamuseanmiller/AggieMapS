@@ -244,11 +244,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
-            for (int i = 1; i < MapsFragment.busRoutes.size(); i++) {
-                String routeNumber = MapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
-                String routeName = MapsFragment.busRoutes.get(i).routeName.toLowerCase();
-                if (routeNumber.contains(charSequence) || routeName.contains(charSequence))
-                    tempList.add(new SearchResult(MapsFragment.busRoutes.get(i).routeNumber, MapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            if (mapsFragment != null) {
+                for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
+                    String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
+                    String routeName = mapsFragment.busRoutes.get(i).routeName.toLowerCase();
+                    if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all"))
+                        tempList.add(new SearchResult(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
+                }
             }
 
             // If no bus routes, clear it
@@ -433,10 +436,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public void onBusRouteClick(View view, int position) {
         // TODO: Add a call to drawBusesOnRoute
         MapsFragment.mMap.clear();
-        for (BusRoute i : MapsFragment.busRoutes) {
-            if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
-                MapsFragment.currentRouteNo = i.routeNumber;
-                new Thread(() -> MapsFragment.drawBusRoute(i.routeNumber, i.color, this)).start();
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+        if (mapsFragment != null) {
+            for (BusRoute i : mapsFragment.busRoutes) {
+                if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
+                    MapsFragment.currentRouteNo = i.routeNumber;
+                    new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
+                    new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, this)).start();
+                    break;
+                }
             }
         }
         clearFocusOnSearch();

@@ -705,6 +705,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 return;
             }
             JSONArray timetableArray = new JSONArray(str);
+            Log.e("TEST", timetableArray.toString());
             int numRows = 0;
 
             // If no service is scheduled for this date
@@ -770,7 +771,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         time.setPadding(0, 10, 50, 10);
 
                         // Add strikethrough and red to times that have passed
-                        if (!value.equals("null") && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
+                        if (!value.equals("null") && viewMoreTime.equals(LocalDate.now().toString()) && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
                             time.setPaintFlags(time.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                             time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
                         }
@@ -1041,7 +1042,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
-            new Thread(() -> setUpTimeTable("")).start();
+            new Thread(() -> setUpTimeTable(LocalDate.now().toString())).start();
 
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color, requireActivity())).start();

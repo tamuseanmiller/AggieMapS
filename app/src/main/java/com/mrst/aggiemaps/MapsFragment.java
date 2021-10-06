@@ -76,6 +76,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,6 +135,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
+
+    private View d;
+    private TextView stopText;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -676,6 +680,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         });
 
+        stopText = view.findViewById(R.id.viewMoreStop);
+
         // Initialize Try Another Date Button
         MaterialButton tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
         tryAnotherDate.setOnClickListener(v -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
@@ -695,6 +701,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime) {
         try {
+            Boolean isToday = viewMoreTime.equals(LocalDate.now().toString());
+
             requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.VISIBLE));
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/" + viewMoreTime);
 
@@ -757,8 +765,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     input = LocalTime.parse(lastTime, formatter);
                 } else continue;
 
+
                 // Only show 5 rows and only show rows that are after the current time
-                if (!input.isBefore(LocalTime.now()) && numRows++ <= 4) {
+                if(isToday && input.isBefore(LocalTime.now())){
+                    continue;
+                }
+                else if (numRows++ <= 4) {
                     TableRow tr = new TableRow(getActivity());
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
 
@@ -771,7 +783,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         time.setPadding(0, 10, 50, 10);
 
                         // Add strikethrough and red to times that have passed
-                        if (!value.equals("null") && viewMoreTime.equals(LocalDate.now().toString()) && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
+                        if (!value.equals("null") && isToday && LocalTime.parse(value, formatter).isBefore(LocalTime.now())) {
                             time.setPaintFlags(time.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                             time.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
                         }
@@ -784,6 +796,52 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     requireActivity().runOnUiThread(() -> tlTimetable.addView(tr));
                 }
             }
+            // Add the view Mote textViews as a footer row to the table layout
+            TableRow footerRow = new TableRow(getActivity());
+            for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
+                footerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                TextView vMoreTextView = new TextView(getActivity());
+                vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+                vMoreTextView.setPadding(0, 15, 10, 5);
+                vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
+                vMoreTextView.setText("VIEW MORE >");
+                requireActivity().runOnUiThread(() -> {
+                    footerRow.addView(vMoreTextView);
+                });
+                int finalI = i;
+                int finalI1 = i;
+                vMoreTextView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                        timelineDialogFragment dialog = new timelineDialogFragment();
+                        Bundle bundle = new Bundle();
+                        try {
+                            bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI1).substring(36));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        dialog.setArguments(bundle);
+                        dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
+                    }
+                });
+            }
+            requireActivity().runOnUiThread(() -> tlTimetable.addView(footerRow));
+
+//            TableRow viewMoreTimesRow = new TableRow(getActivity());
+//            TextView vMoreTextView = new TextView(getActivity());
+//            vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+//            vMoreTextView.setPadding(0, 15, 10, 5);
+//            vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
+//            vMoreTextView.setText("VIEW MORE >");
+//            requireActivity().runOnUiThread(() -> {
+//                viewMoreTimesRow.addView(vMoreTextView);
+//                tlTimetable.addView(viewMoreTimesRow);
+//            });
+
+
+
 
             // If no more bus routes are going today
             if (numRows == 0) {

@@ -126,7 +126,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public static GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
-    private ArrayList<Marker> busMarkers = new ArrayList<>();
+    private ArrayList<Marker> busMarkers;
     private FloatingActionButton fabMyLocation;
     private LinearProgressIndicator dateProgress;
 
@@ -339,6 +339,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // add it to the marker.
             // Get the direction and use it to rotate the bus icon and add this to the marker.
             // Get the occupancy to show bus occupancy.
+            if (!busMarkers.isEmpty() && busData_jsonArray.length() != busMarkers.size()) {
+                for (Marker marker : busMarkers) {
+                    requireActivity().runOnUiThread(marker::remove);
+                }
+                busMarkers.clear();
+            }
             for (int i = 0; i < busData_jsonArray.length(); i++) {
                 // Retrieving Data
                 JSONObject currentBus = busData_jsonArray.getJSONObject(i);
@@ -348,9 +354,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String occupancy = currentBus.getString("occupancy");
                 int finalI = i;
                 if (!isAdded()) return;
+
                 // Initialize Markers
                 requireActivity().runOnUiThread(() -> {
-                    if (busMarkers.size() != busData_jsonArray.length()) {
+                    if (busMarkers.size() < busData_jsonArray.length()) {
                         MarkerOptions marker = new MarkerOptions();
                         marker.flat(true);
                         marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
@@ -553,6 +560,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         50L * 1024L * 1024L))
                 .build();
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
+        busMarkers = new ArrayList<>();
 
         // Set up recyclers
         RecyclerView swipeRecycler = mView.findViewById(R.id.swipe_recycler);

@@ -441,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
                     MapsFragment.currentRouteNo = i.routeNumber;
                     new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
-                    new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, this)).start();
+                    new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true)).start();
                     break;
                 }
             }

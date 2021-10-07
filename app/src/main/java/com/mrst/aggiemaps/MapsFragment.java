@@ -222,6 +222,28 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
+     * Method to fetch and a bus route on the map
+     */
+    public JSONArray fetchBusRoute(String routeNo) {
+        try {
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/pattern")
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            ResponseBody body = response.body();
+
+            String str = Objects.requireNonNull(body).string();
+
+            return new JSONArray(str);
+        } catch (JSONException | IOException jsonException) {
+            jsonException.printStackTrace();
+        }
+        return null;
+    }
+
+    /*
      * Method to draw a bus route on the map
      */
     public void drawBusRoute(String routeNo, int color, boolean zoom) {

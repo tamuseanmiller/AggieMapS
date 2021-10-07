@@ -17,12 +17,12 @@ import java.util.List;
 
 public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static List<SearchResult> mData;
+    private static List<ListItem> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    GoogleSearchAdapter(Context context, List<SearchResult> data) {
+    GoogleSearchAdapter(Context context, List<ListItem> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -35,7 +35,7 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case 1:
                 return new GoogleSearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new GoogleSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+                return new GoogleSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }
@@ -128,7 +128,7 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     // convenience method for getting data at click position
-    SearchResult getItem(int id) {
+    ListItem getItem(int id) {
         return mData.get(id);
     }
 

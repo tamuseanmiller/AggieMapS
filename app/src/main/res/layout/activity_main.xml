@@ -7,6 +7,7 @@
     android:fitsSystemWindows="false"
     tools:context=".MainActivity">
 
+    <!-- Default Search Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/main_app_bar"
         android:layout_width="match_parent"
@@ -38,6 +39,48 @@
         android:layout_height="match_parent"
         android:elevation="0dp"
         app:layout_anchor="@id/material_search_bar" />
+
+    <!-- Source Search Bar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/src_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:elevation="0.1dp"
+        android:visibility="gone"
+        android:stateListAnimator="@null">
+
+        <!-- Simple MaterialToolbar extension -->
+        <com.lapism.search.widget.MaterialSearchBar
+            android:id="@+id/src_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="0dp"
+            app:layout_scrollFlags="enterAlways|snap" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Destination Search Bar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/dest_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:elevation="0.1dp"
+        android:visibility="gone"
+        android:stateListAnimator="@null">
+
+        <!-- Simple MaterialToolbar extension -->
+        <com.lapism.search.widget.MaterialSearchBar
+            android:id="@+id/dest_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="0dp"
+            app:layout_scrollFlags="enterAlways|snap" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -58,13 +58,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private GISSearchAdapter gisSearchAdapter;
     private GoogleSearchAdapter googleSearchAdapter;
     private BusRoutesSearchAdapter busRoutesSearchAdapter;
-    private ArrayList<SearchResult> gisSearchResults;
-    private ArrayList<SearchResult> googleSearchResults;
+    private ArrayList<ListItem> gisListItems;
+    private ArrayList<ListItem> googleListItems;
     private PlacesClient placesClient;
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
-    private ArrayList<SearchResult> busRoutesSearchResults;
+    private ArrayList<ListItem> busRoutesListItems;
+    private MaterialSearchBar srcSearchBar;
+    private MaterialSearchBar destSearchBar;
 
     enum SearchTag {
         CATEGORY,
@@ -138,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             nav.setTint(getColor(R.color.foreground));
             actionBar.setIcon(nav);
         }
-        setSupportActionBar(null);
 
         // Set Default Search Bar Settings
         materialSearchBar.setHint("Aggie MapS");
@@ -148,17 +149,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch());
 
         // Set recyclers
-        gisSearchResults = new ArrayList<>();
-        googleSearchResults = new ArrayList<>();
-        busRoutesSearchResults = new ArrayList<>();
+        gisListItems = new ArrayList<>();
+        googleListItems = new ArrayList<>();
+        busRoutesListItems = new ArrayList<>();
         NestedScrollView nSV = new NestedScrollView(this);
         LinearLayout ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
-        gisSearchAdapter = new GISSearchAdapter(this, gisSearchResults);
+        gisSearchAdapter = new GISSearchAdapter(this, gisListItems);
         gisSearchAdapter.setClickListener(this);
-        googleSearchAdapter = new GoogleSearchAdapter(this, googleSearchResults);
+        googleSearchAdapter = new GoogleSearchAdapter(this, googleListItems);
         googleSearchAdapter.setClickListener(this);
-        busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesSearchResults);
+        busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
         busRoutesSearchAdapter.setClickListener(this);
         gisSearchRecycler = new RecyclerView(this);
         gisSearchRecycler.suppressLayout(true);
@@ -229,7 +230,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         });
 
         /*
-        * Initialize UI for Directions
+        * TODO: Initialize UI for Directions
+        *  Look above for help, most of this has been done once already above
         * 1. Create new ArrayList of SearchResults
         * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
         * 3. Set toolbar and action bar
@@ -240,6 +242,26 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         * 8. Set the settings of the BottomSheetBehavior
          */
 
+        // 2. Initialize SearchBars
+        srcSearchBar = findViewById(R.id.src_search_bar);
+        destSearchBar = findViewById(R.id.dest_search_bar);
+
+        // 3. Set toolbar and action bar
+        toolbar = srcSearchBar.getToolbar();
+        setSupportActionBar(toolbar);
+        actionBar = getSupportActionBar();
+        if (nav != null && actionBar != null) {
+            nav.setTint(getColor(R.color.foreground));
+            actionBar.setIcon(nav);
+        }
+        toolbar = destSearchBar.getToolbar();
+        setSupportActionBar(toolbar);
+        actionBar = getSupportActionBar();
+        if (nav != null && actionBar != null) {
+            nav.setTint(getColor(R.color.foreground));
+            actionBar.setIcon(nav);
+        }
+
     }
 
     /*
@@ -249,8 +271,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         new Thread(() -> {
 
             // Initialize temporary array and add the category
-            ArrayList<SearchResult> tempList = new ArrayList<>();
-            tempList.add(new SearchResult("Bus Routes", "", 0, null, SearchTag.CATEGORY, null));
+            ArrayList<ListItem> tempList = new ArrayList<>();
+            tempList.add(new ListItem("Bus Routes", "", 0, null, SearchTag.CATEGORY, null));
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
@@ -260,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
                     String routeName = mapsFragment.busRoutes.get(i).routeName.toLowerCase();
                     if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all"))
-                        tempList.add(new SearchResult(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
+                        tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
                 }
             }
 
@@ -271,9 +293,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Set all values
             runOnUiThread(() -> {
-                busRoutesSearchResults.clear();
-                busRoutesSearchResults.addAll(tempList);
-                busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesSearchResults);
+                busRoutesListItems.clear();
+                busRoutesListItems.addAll(tempList);
+                busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
                 busRoutesSearchAdapter.setClickListener(this);
                 busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
             });
@@ -298,9 +320,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 .build();
 
         placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
-            ArrayList<SearchResult> tempList = new ArrayList<>();
+            ArrayList<ListItem> tempList = new ArrayList<>();
             if (!response.getAutocompletePredictions().isEmpty()) {
-                tempList.add(new SearchResult("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
+                tempList.add(new ListItem("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
             }
             for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
                 Log.i(TAG, prediction.getPlaceId());
@@ -313,10 +335,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(prediction.getPlaceId(), placeFields);
 
                 placesClient.fetchPlace(placeRequest).addOnSuccessListener((placeResponse) -> {
-                    tempList.add(new SearchResult(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
-                    googleSearchResults.clear();
-                    googleSearchResults.addAll(tempList);
-                    googleSearchAdapter = new GoogleSearchAdapter(this, googleSearchResults);
+                    tempList.add(new ListItem(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
+                    googleListItems.clear();
+                    googleListItems.addAll(tempList);
+                    googleSearchAdapter = new GoogleSearchAdapter(this, googleListItems);
                     googleSearchAdapter.setClickListener(this);
                     googleSearchRecycler.setAdapter(googleSearchAdapter);
                 });
@@ -351,12 +373,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     "featureEncoding=esriDefault&f=pjson");
             try {
                 if (resp != null) {
-                    ArrayList<SearchResult> tempList = new ArrayList<>();
+                    ArrayList<ListItem> tempList = new ArrayList<>();
                     JSONObject jsonObject = new JSONObject(resp);
                     JSONArray features = jsonObject.getJSONArray("features");
                     for (int i = 0; i < features.length(); i++) {
                         if (i == 0)
-                            tempList.add(new SearchResult("On Campus", "", 0, null, SearchTag.CATEGORY, null));
+                            tempList.add(new ListItem("On Campus", "", 0, null, SearchTag.CATEGORY, null));
                         String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
                         String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                         double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
@@ -364,12 +386,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         if (address.equals("null"))
                             address = lat + ", " + lng; // If no address, use lat/lng instead
                         String finalAddress = address;
-                        tempList.add(new SearchResult(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
+                        tempList.add(new ListItem(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
                     }
                     runOnUiThread(() -> {
-                        gisSearchResults.clear();
-                        gisSearchResults.addAll(tempList);
-                        gisSearchAdapter = new GISSearchAdapter(this, gisSearchResults);
+                        gisListItems.clear();
+                        gisListItems.addAll(tempList);
+                        gisSearchAdapter = new GISSearchAdapter(this, gisListItems);
                         gisSearchAdapter.setClickListener(this);
                         gisSearchRecycler.setAdapter(gisSearchAdapter);
                     });
@@ -422,20 +444,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
-
-        // Get rid of this
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
-
-        // After animation, show the two new searchviews
-
-        // Start a progress indicator in one of the searchviews
-
-        // Get Trip Plan
-
-        // Parse the trip plan into the BottomBar
-
-        // Change the visibility of the BottomBar
-
+        enterDirectionsMode();
 
         clearFocusOnSearch();
     }
@@ -450,17 +460,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(googleSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
-
-        // After animation, show the two new searchviews
-
-        // Start a progress indicator in one of the searchviews
-
-        // Get Trip Plan
-
-        // Parse the trip plan into the BottomBar
-
-        // Change the visibility of the BottomBar
-        
+        enterDirectionsMode();
 
         clearFocusOnSearch();
     }
@@ -483,6 +483,42 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         }
         clearFocusOnSearch();
+    }
+
+    /*
+    * TODO: Method to enter the directions screen from the main activity
+     */
+    public void enterDirectionsMode() {
+        // Set the visibility of the default searchbar to "gone"
+
+        // Set the visibility of the src,dest searchbars to "visible"
+
+        // Get rid of buses button, timetable button, and find me button
+
+        // Start a progress indicator in one of the searchviews
+
+        // Get Trip Plan
+
+        // Parse the trip plan into the BottomBar
+
+        // Change the visibility of the BottomBar to "visible"
+
+        // End the progress indicator
+
+    }
+
+    /*
+     * TODO: Method to exit the directions screen from the main activity
+     */
+    public void exitDirectionsMode() {
+        // Set the visibility of the default searchbar to "visible"
+
+        // Set the visibility of the src,dest searchbars to "gone"
+
+        // Add back the buses button, timetable button, and find me button
+
+        // Change the visibility of the BottomBar to "gone"
+
     }
 
 }

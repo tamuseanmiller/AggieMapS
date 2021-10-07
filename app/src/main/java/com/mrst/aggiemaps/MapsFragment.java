@@ -3,7 +3,6 @@ package com.mrst.aggiemaps;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -76,7 +75,6 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -818,7 +816,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     public void onClick(View view) {
 
                         vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
-                        timelineDialogFragment dialog = new timelineDialogFragment();
+                        TimelineDialogFragment dialog = new TimelineDialogFragment();
                         Bundle bundle = new Bundle();
                         try {
                             bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI1).substring(36));

@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar = findViewById(R.id.material_search_bar);
         materialSearchView = findViewById(R.id.material_search_view);
 
-        // Set the toolbar and actionbar
+        // Set the default toolbar and actionbar
         Toolbar toolbar = materialSearchBar.getToolbar();
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -138,8 +138,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             nav.setTint(getColor(R.color.foreground));
             actionBar.setIcon(nav);
         }
+        setSupportActionBar(null);
 
-        // Set Search Bar Settings
+        // Set Default Search Bar Settings
         materialSearchBar.setHint("Aggie MapS");
         materialSearchBar.setElevation(5);
         materialSearchBar.setBackgroundColor(getColor(R.color.background));
@@ -227,9 +228,18 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
 
-        materialSearchView.setOnFocusChangeListener(v -> {
+        /*
+        * Initialize UI for Directions
+        * 1. Create new ArrayList of SearchResults
+        * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
+        * 3. Set toolbar and action bar
+        * 4. Create the views for the SearchView
+        * 5. Set the SearchView Settings
+        * 6. Initialize the BottomSheet
+        * 7. Get the BottomSheetBehavior
+        * 8. Set the settings of the BottomSheetBehavior
+         */
 
-        });
     }
 
     /*
@@ -412,7 +422,21 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
+
+        // Get rid of this
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
+
+        // After animation, show the two new searchviews
+
+        // Start a progress indicator in one of the searchviews
+
+        // Get Trip Plan
+
+        // Parse the trip plan into the BottomBar
+
+        // Change the visibility of the BottomBar
+
+
         clearFocusOnSearch();
     }
 
@@ -426,6 +450,18 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(googleSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
+
+        // After animation, show the two new searchviews
+
+        // Start a progress indicator in one of the searchviews
+
+        // Get Trip Plan
+
+        // Parse the trip plan into the BottomBar
+
+        // Change the visibility of the BottomBar
+        
+
         clearFocusOnSearch();
     }
 

@@ -85,12 +85,11 @@
     <!-- Direction Sheet -->
     <FrameLayout
         android:id="@+id/directions_bottom_sheet"
-        style="@style/ThemeOverlay.App.BottomSheetDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
         android:elevation="10dp"
         android:overScrollMode="always"
+        android:visibility="gone"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <com.mrst.aggiemaps.NestedCoordinatorLayout
@@ -112,8 +111,6 @@
                     style="@style/BottomSheetCorners"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
                     android:backgroundTint="@color/background"
                     app:contentPadding="20dp">
 

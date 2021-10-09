@@ -80,6 +80,7 @@ import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -717,7 +718,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 return;
             }
             JSONArray timetableArray = new JSONArray(str);
-            Log.e("TEST", timetableArray.toString());
             int numRows = 0;
 
             // If no service is scheduled for this date
@@ -802,46 +802,48 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Add the view Mote textViews as a footer row to the table layout
             TableRow footerRow = new TableRow(getActivity());
             for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
+
                 footerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                 TextView vMoreTextView = new TextView(getActivity());
-                vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
+                vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
                 vMoreTextView.setPadding(0, 15, 10, 5);
                 vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
-                vMoreTextView.setText("VIEW MORE >");
+                vMoreTextView.setText("VIEW MORE");
                 requireActivity().runOnUiThread(() -> {
                     footerRow.addView(vMoreTextView);
                 });
                 int finalI = i;
-                int finalI1 = i;
-                vMoreTextView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                        vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
-                        timelineDialogFragment dialog = new timelineDialogFragment();
-                        Bundle bundle = new Bundle();
+                vMoreTextView.setOnClickListener(view -> {
+                    ArrayList<String> times = new ArrayList<>();
+                    int numCol=0;
+                    String key="";
+                    for (int j = 0; j < timetableArray.length(); j++) {
                         try {
-                            bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI1).substring(36));
+                            JSONObject row = timetableArray.getJSONObject(j);
+                            Iterator<String> keys = row.keys();
+                            while(keys.hasNext() && numCol <= finalI){
+                                key = keys.next();
+                                numCol++;
+                            }
+                            times.add(row.getString(key));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        dialog.setArguments(bundle);
-                        dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
                     }
+                    vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                    timelineDialogFragment dialog = new timelineDialogFragment();
+                    Bundle bundle = new Bundle();
+                    try {
+                        bundle.putStringArrayList("timesArray", times);
+                        bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI).substring(36));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    dialog.setArguments(bundle);
+                    dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
                 });
             }
             requireActivity().runOnUiThread(() -> tlTimetable.addView(footerRow));
-
-//            TableRow viewMoreTimesRow = new TableRow(getActivity());
-//            TextView vMoreTextView = new TextView(getActivity());
-//            vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f);
-//            vMoreTextView.setPadding(0, 15, 10, 5);
-//            vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
-//            vMoreTextView.setText("VIEW MORE >");
-//            requireActivity().runOnUiThread(() -> {
-//                viewMoreTimesRow.addView(vMoreTextView);
-//                tlTimetable.addView(viewMoreTimesRow);
-//            });
 
 
             // If no more bus routes are going today

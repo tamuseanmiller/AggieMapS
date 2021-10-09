@@ -121,6 +121,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private List<BusRoute> gameDayList;
     private RightSheetBehavior<View> rightSheetBehavior;
     private TableLayout tlTimetable;
+    private TableLayout tl_times;
+    private TextView viewMoreBtn;
     public static String currentRouteNo;
     private FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
@@ -647,6 +649,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         rightSheetBehavior.setPeekWidth(0);
         rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
         tlTimetable = mView.findViewById(R.id.tl_timetable);
+        tl_times = mView.findViewById(R.id.tl_times);
+        viewMoreBtn = mView.findViewById(R.id.viewMoreBtn);
 
         // Initialize the fab to open the timetable
         fabTimetable = mView.findViewById(R.id.fab_timetable);
@@ -672,6 +676,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 .build();
         datePicker.addOnPositiveButtonClickListener(selection -> {
             tlTimetable.removeAllViews();
+            tl_times.removeAllViews();
             String header = datePicker.getHeaderText();
             LocalDate ld;
             if (header.length() == 11) {
@@ -681,8 +686,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
                 ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
             }
-            new Thread(() -> setUpTimeTable(ld.toString())).start();
-
+            new Thread(() ->{
+                setUpTimeTable(ld.toString(), true);
+            }).start();
         });
 
         stopText = view.findViewById(R.id.viewMoreStop);
@@ -704,11 +710,19 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to set the values within the table layout for the timetable
      */
-    private void setUpTimeTable(String viewMoreTime) {
+    private void setUpTimeTable(String viewMoreTime, boolean viewAll) {
         try {
+            Log.e("TESTVIEW", String.valueOf(viewAll));
+            int viewTimesAmt = 4;
+            if (viewAll){
+                viewTimesAmt=900;
+            }
+
             Boolean isToday = viewMoreTime.equals(LocalDate.now().toString());
 
-            requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.VISIBLE));
+            requireActivity().runOnUiThread(() ->{
+                dateProgress.setVisibility(View.VISIBLE);
+            });
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/" + viewMoreTime);
 
             // If nothing is returned
@@ -734,26 +748,43 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     tlTimetable.addView(tr);
                     fabTimetable.setVisibility(View.VISIBLE);
                     dateProgress.setVisibility(View.INVISIBLE);
+                    viewMoreBtn.setVisibility(viewMoreBtn.GONE);
                 });
                 return;
             }
 
             // Add the stops as a header row to the table layout
             TableRow headerRow = new TableRow(getActivity());
+            TableRow invisHeaderRow= new TableRow(getActivity());
             for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
                 String header = timetableArray.getJSONObject(0).names().getString(i).substring(36);
                 headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
                 TextView headerTV = new TextView(getActivity());
                 headerTV.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
                 headerTV.setPadding(0, 10, 40, 10);
                 Typeface face = ResourcesCompat.getFont(requireActivity(), R.font.roboto_bold);
                 headerTV.setTypeface(face);
                 headerTV.setText(header);
+
+                invisHeaderRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                invisHeaderRow.setVisibility(View.INVISIBLE);
+                TextView invisHeaderTV = new TextView(getActivity());
+                invisHeaderTV.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+                invisHeaderTV.setPadding(0, 10, 40, 10);
+                Typeface face2 = ResourcesCompat.getFont(requireActivity(), R.font.roboto_bold);
+                invisHeaderTV.setTypeface(face2);
+                invisHeaderTV.setText(header);
+
                 requireActivity().runOnUiThread(() -> {
                     headerRow.addView(headerTV);
+                    invisHeaderRow.addView(invisHeaderTV);
                 });
             }
-            requireActivity().runOnUiThread(() -> tlTimetable.addView(headerRow));
+            requireActivity().runOnUiThread(() -> {
+                tlTimetable.addView(headerRow);
+                tl_times.addView(invisHeaderRow);
+            });
 
             // Loop through every row
             for (int i = 0; i < timetableArray.length(); i++) {
@@ -773,7 +804,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 // Only show 5 rows and only show rows that are after the current time
                 if (isToday && input.isBefore(LocalTime.now())) {
                     continue;
-                } else if (numRows++ <= 4) {
+                } else if (numRows++ <= viewTimesAmt) {
                     TableRow tr = new TableRow(getActivity());
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
 
@@ -796,55 +827,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         time.setText(value);
                         requireActivity().runOnUiThread(() -> tr.addView(time));
                     }
-                    requireActivity().runOnUiThread(() -> tlTimetable.addView(tr));
+                    requireActivity().runOnUiThread(() -> tl_times.addView(tr));
                 }
             }
-            // Add the view Mote textViews as a footer row to the table layout
-            TableRow footerRow = new TableRow(getActivity());
-            for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
-
-                footerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                TextView vMoreTextView = new TextView(getActivity());
-                vMoreTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-                vMoreTextView.setPadding(0, 15, 10, 5);
-                vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.accent));
-                vMoreTextView.setText("VIEW MORE");
-                requireActivity().runOnUiThread(() -> {
-                    footerRow.addView(vMoreTextView);
+            requireActivity().runOnUiThread(() -> {
+                viewMoreBtn.setOnClickListener(view1 -> {
+                    tlTimetable.removeAllViews();
+                    tl_times.removeAllViews();
+                    viewMoreBtn.setVisibility(View.GONE);
+                    new Thread(() -> setUpTimeTable(viewMoreTime, true)).start();
                 });
-                int finalI = i;
-                vMoreTextView.setOnClickListener(view -> {
-                    ArrayList<String> times = new ArrayList<>();
-                    int numCol=0;
-                    String key="";
-                    for (int j = 0; j < timetableArray.length(); j++) {
-                        try {
-                            JSONObject row = timetableArray.getJSONObject(j);
-                            Iterator<String> keys = row.keys();
-                            while(keys.hasNext() && numCol <= finalI){
-                                key = keys.next();
-                                numCol++;
-                            }
-                            times.add(row.getString(key));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
-                    timelineDialogFragment dialog = new timelineDialogFragment();
-                    Bundle bundle = new Bundle();
-                    try {
-                        bundle.putStringArrayList("timesArray", times);
-                        bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI).substring(36));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    dialog.setArguments(bundle);
-                    dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
-                });
-            }
-            requireActivity().runOnUiThread(() -> tlTimetable.addView(footerRow));
-
+            });
 
             // If no more bus routes are going today
             if (numRows == 0) {
@@ -855,6 +848,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 noTime.setText(R.string.no_more_buses);
                 requireActivity().runOnUiThread(() -> {
                     tlTimetable.removeAllViews();
+                    tl_times.removeAllViews();
                     noTimesLeftRow.addView(noTime);
                     tlTimetable.addView(noTimesLeftRow);
                 });
@@ -1103,7 +1097,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set the values for the timetable right sheet
             tlTimetable.removeAllViews();
-            new Thread(() -> setUpTimeTable(LocalDate.now().toString())).start();
+            tl_times.removeAllViews();
+            new Thread(() -> setUpTimeTable(LocalDate.now().toString(), false)).start();
 
             // Draw the route
             new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color, true)).start();

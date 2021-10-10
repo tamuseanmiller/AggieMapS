@@ -13,4 +13,6 @@
     <string name="time_table">Time Table</string>
     <string name="try_another_date">Try Another Date</string>
     <string name="no_more_buses">No more buses are running today</string>
+    <string name="voice_to_text">Voice to text</string>
+    <string name="settings">Settings</string>
 </resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_microphone"
+        android:title="@string/voice_to_text"
+        android:icon="@drawable/microphone_outline"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
+    <item android:id="@+id/action_settings"
+        android:title="@string/settings"
+        android:icon="@drawable/cog_outline"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
+</menu>

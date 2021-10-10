@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:elevation="0.1dp"
+        android:fitsSystemWindows="true"
         android:stateListAnimator="@null">
 
         <!-- Simple MaterialToolbar extension -->
@@ -37,6 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="0dp"
+        android:fitsSystemWindows="true"
         app:layout_anchor="@id/material_search_bar" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

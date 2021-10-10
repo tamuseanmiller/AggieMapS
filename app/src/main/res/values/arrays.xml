@@ -1,0 +1,40 @@
+<resources>
+    <!-- Theme Preference -->
+    <string-array name="theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>System Theme</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+        <item>system_theme</item>
+    </string-array>
+
+    <!-- Light Map Preference -->
+    <string-array name="light_map_entries">
+        <item>Light</item>
+        <item>Classic</item>
+        <item>Retro</item>
+    </string-array>
+
+    <string-array name="light_map_values">
+        <item>light</item>
+        <item>classic</item>
+        <item>retro</item>
+    </string-array>
+
+    <!-- Dark Map Preference -->
+    <string-array name="dark_map_entries">
+        <item>Sin City</item>
+        <item>Night</item>
+        <item>Dark</item>
+    </string-array>
+
+    <string-array name="dark_map_values">
+        <item>sin_city</item>
+        <item>night</item>
+        <item>dark</item>
+    </string-array>
+</resources>

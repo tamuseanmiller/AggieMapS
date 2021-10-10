@@ -12,6 +12,7 @@
     <color name="foreground_30">#13FFFFFF</color>
     <color name="red_60">#99EF5350</color>
     <color name="accent">#E57373</color>
+    <color name="accentDark">#ce6868</color>
 
     <!-- google's material design colours from
     http://www.google.com/design/spec/style/color.html#color-ui-color-palette -->

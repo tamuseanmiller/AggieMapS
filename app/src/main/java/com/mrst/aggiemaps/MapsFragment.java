@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
@@ -532,7 +534,42 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
+
+            // Set current map style
+            SharedPreferences sharedPref = requireActivity().getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
+            int currentNightMode = requireActivity().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+            // If light mode is on
+            if (currentNightMode == Configuration.UI_MODE_NIGHT_NO) {
+                String maps = sharedPref.getString("light_maps", "light");
+                switch (maps) {
+                    case "light":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
+                        break;
+                    case "retro":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.retro));
+                        break;
+                    case "classic":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.classic));
+                }
+            }
+            // If dark mode is on
+            else if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
+
+                String maps = sharedPref.getString("dark_maps", "night");
+                switch (maps) {
+                    case "dark":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.dark));
+                        break;
+                    case "sin_city":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+                        break;
+                    case "night":
+                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.night));
+                        break;
+                }
+            } else {
+                mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
+            }
 
             // Turn on the My Location layer and the related control on the map.
             updateLocationUI();
@@ -837,13 +874,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 int finalI = i;
                 vMoreTextView.setOnClickListener(view -> {
                     ArrayList<String> times = new ArrayList<>();
-                    int numCol=0;
-                    String key="";
+                    int numCol = 0;
+                    String key = "";
                     for (int j = 0; j < timetableArray.length(); j++) {
                         try {
                             JSONObject row = timetableArray.getJSONObject(j);
                             Iterator<String> keys = row.keys();
-                            while(keys.hasNext() && numCol <= finalI){
+                            while (keys.hasNext() && numCol <= finalI) {
                                 key = keys.next();
                                 numCol++;
                             }
@@ -915,6 +952,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offList = new ArrayList<>();
             gameDayList = new ArrayList<>();
             busRoutes = new ArrayList<>();
+
+            if (!isAdded()) return;
             favList.add(new BusRoute("All", "Favorites", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.FAVORITES));
             onList.add(new BusRoute("All", "On Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.ON_CAMPUS));
             offList.add(new BusRoute("All", "Off Campus", ContextCompat.getColor(requireActivity(), R.color.all_color), BusRouteTag.OFF_CAMPUS));
@@ -1017,6 +1056,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void loadFavorites() {
         Gson gson = new Gson();
+        if (!isAdded()) return;
         SharedPreferences sp = requireActivity().getSharedPreferences("RecordedFavorites", MODE_PRIVATE);
         String defValue = gson.toJson(new HashSet<String>());
         String json = sp.getString("favorites", defValue);

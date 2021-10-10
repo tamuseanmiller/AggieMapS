@@ -15,4 +15,6 @@
     <string name="no_more_buses">No more buses are running today</string>
     <string name="voice_to_text">Voice to text</string>
     <string name="settings">Settings</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    
 </resources>

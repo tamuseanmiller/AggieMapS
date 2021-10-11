@@ -534,12 +534,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         destSearchBar.setVisibility(View.VISIBLE);
 
         // Get rid of buses button, timetable button, and find me button
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+        mapsFragment.fabTimetable.setVisibility(View.INVISIBLE);
+        mapsFragment.fabMyLocation.setVisibility(View.INVISIBLE);
+        mapsFragment.swipeRecycler.setVisibility(View.INVISIBLE);
 
         // Start a progress indicator in one of the searchviews
         tripProgress.setVisibility(View.VISIBLE);
 
         // Get Trip Plan
         // Call Taha's function
+
 
         // Parse the trip plan into the BottomBar
         // For each item in the list

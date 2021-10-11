@@ -32,6 +32,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -45,12 +46,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, SearchResultsAdapter.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
@@ -67,6 +69,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private ArrayList<ListItem> busRoutesListItems;
     private MaterialSearchBar srcSearchBar;
     private MaterialSearchBar destSearchBar;
+    private BottomSheetBehavior<View> bottomSheetBehavior;
+    private SearchResultsAdapter searchResultsAdapter;
+    private ArrayList<ListItem> searchResultsItems;
 
     enum SearchTag {
         CATEGORY,
@@ -242,6 +247,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         * 8. Set the settings of the BottomSheetBehavior
          */
 
+        // 1. Create new ArrayList of SearchResults
+        searchResultsItems = new ArrayList<>();
+        searchResultsAdapter = new SearchResultsAdapter(this, searchResultsItems);
+
         // 2. Initialize SearchBars
         srcSearchBar = findViewById(R.id.src_search_bar);
         destSearchBar = findViewById(R.id.dest_search_bar);
@@ -262,6 +271,22 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             actionBar.setIcon(nav);
         }
 
+        // 4. Create the views for the SearchView
+        // reuse materialSearchView
+        // 5. Set the SearchView Settings
+        // reuse materialSearchView settings
+
+        // 6. Initialize the BottomSheet
+        View sheet = findViewById(R.id.directions_bottom_sheet);
+
+        // 7. Get the BottomSheetBehavior
+        bottomSheetBehavior = BottomSheetBehavior.from(sheet);
+
+        // 8. Set the settings of the BottomSheetBehavior
+        bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+        bottomSheetBehavior.setHideable(false);
+        bottomSheetBehavior.setPeekHeight(10);
+        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
     }
 
     /*
@@ -483,6 +508,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         }
         clearFocusOnSearch();
+    }
+
+    @Override
+    public void onSEARCHClick(View view, int position) {
+
     }
 
     /*

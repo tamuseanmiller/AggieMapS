@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private SearchResultsAdapter searchResultsAdapter;
     private ArrayList<ListItem> searchResultsItems;
+    private FrameLayout sheet;
 
     enum SearchTag {
         CATEGORY,
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.setVisibility(View.GONE);
         materialSearchBar.setVisibility(View.VISIBLE);
         showSystemUI();
+
     }
 
     private void requestFocusOnSearch() {
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.requestFocus();
         materialSearchBar.setVisibility(View.GONE);
         hideSystemUI();
+
     }
 
     /*
@@ -277,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // reuse materialSearchView settings
 
         // 6. Initialize the BottomSheet
-        View sheet = findViewById(R.id.directions_bottom_sheet);
+        sheet = findViewById(R.id.directions_bottom_sheet);
 
         // 7. Get the BottomSheetBehavior
         bottomSheetBehavior = BottomSheetBehavior.from(sheet);
@@ -285,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // 8. Set the settings of the BottomSheetBehavior
         bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
         bottomSheetBehavior.setHideable(false);
-        bottomSheetBehavior.setPeekHeight(10);
+        bottomSheetBehavior.setPeekHeight(100);
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
     }
 
@@ -519,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     * TODO: Method to enter the directions screen from the main activity
      */
     public void enterDirectionsMode() {
+
         // Set the visibility of the default searchbar to "gone"
 
         // Set the visibility of the src,dest searchbars to "visible"
@@ -532,7 +537,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Parse the trip plan into the BottomBar
 
         // Change the visibility of the BottomBar to "visible"
-
+        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
+        sheet.setVisibility(View.VISIBLE);
         // End the progress indicator
 
     }
@@ -542,13 +548,18 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     public void exitDirectionsMode() {
         // Set the visibility of the default searchbar to "visible"
-
+        materialSearchBar.setVisibility(View.VISIBLE);
         // Set the visibility of the src,dest searchbars to "gone"
-
+        srcSearchBar.setVisibility(View.GONE);
+        destSearchBar.setVisibility(View.GONE);
         // Add back the buses button, timetable button, and find me button
-
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+        mapsFragment.fabTimetable.setVisibility(View.VISIBLE);
+        mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
+        mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
         // Change the visibility of the BottomBar to "gone"
-
+        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
+        sheet.setVisibility(View.GONE);
     }
 
 }

@@ -119,13 +119,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private RightSheetBehavior<View> rightSheetBehavior;
     private TableLayout tlTimetable;
     public static String currentRouteNo;
-    private FloatingActionButton fabTimetable;
+    public FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
     public static GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers;
-    private FloatingActionButton fabMyLocation;
+    public FloatingActionButton fabMyLocation;
     private LinearProgressIndicator dateProgress;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -136,6 +136,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private View d;
     private TextView stopText;
+    public RecyclerView swipeRecycler;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -557,7 +558,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         busMarkers = new ArrayList<>();
 
         // Set up recyclers
-        RecyclerView swipeRecycler = mView.findViewById(R.id.swipe_recycler);
+        swipeRecycler = mView.findViewById(R.id.swipe_recycler);
         favRoutes = mView.findViewById(R.id.recycler_favorites);
         favAdapter = null;
         onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);

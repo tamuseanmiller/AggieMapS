@@ -129,6 +129,16 @@
                             android:stateListAnimator="@null"
                             app:cornerRadius="25dp" />
 
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="start"
+                            android:backgroundTint="@color/accent"
+                            app:cornerRadius="25dp"
+                            android:text="Directions"
+                            android:layout_marginBottom="100dp"
+                            />
+
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/directions_recycler"
                             android:layout_width="match_parent"

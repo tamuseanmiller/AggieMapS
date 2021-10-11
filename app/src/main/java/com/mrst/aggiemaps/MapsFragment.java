@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -141,6 +142,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private View d;
     private TextView stopText;
+    private ScrollView vScroll;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -651,6 +653,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         tlTimetable = mView.findViewById(R.id.tl_timetable);
         tl_times = mView.findViewById(R.id.tl_times);
         viewMoreBtn = mView.findViewById(R.id.viewMoreBtn);
+        vScroll = mView.findViewById(R.id.verticalScroll);
 
         // Initialize the fab to open the timetable
         fabTimetable = mView.findViewById(R.id.fab_timetable);
@@ -837,6 +840,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     viewMoreBtn.setVisibility(View.GONE);
                     new Thread(() -> setUpTimeTable(viewMoreTime, true)).start();
                 });
+                 if(viewAll){
+                     vScroll.post(()-> vScroll.scrollTo(0, 15));
+                 }
+                 else{
+                     vScroll.post(() -> vScroll.fullScroll(vScroll.FOCUS_DOWN));
+                 }
             });
 
             // If no more bus routes are going today

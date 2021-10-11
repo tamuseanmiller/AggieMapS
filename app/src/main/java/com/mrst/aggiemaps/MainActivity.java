@@ -34,6 +34,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private SearchResultsAdapter searchResultsAdapter;
     private ArrayList<ListItem> searchResultsItems;
     private FrameLayout sheet;
+    private CircularProgressIndicator tripProgress;
 
     enum SearchTag {
         CATEGORY,
@@ -525,21 +527,28 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public void enterDirectionsMode() {
 
         // Set the visibility of the default searchbar to "gone"
+        materialSearchBar.setVisibility(View.GONE);
 
         // Set the visibility of the src,dest searchbars to "visible"
+        srcSearchBar.setVisibility(View.VISIBLE);
+        destSearchBar.setVisibility(View.VISIBLE);
 
         // Get rid of buses button, timetable button, and find me button
 
         // Start a progress indicator in one of the searchviews
+        tripProgress.setVisibility(View.VISIBLE);
 
         // Get Trip Plan
+        // Call Taha's function
 
         // Parse the trip plan into the BottomBar
+        // For each item in the list
 
         // Change the visibility of the BottomBar to "visible"
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
         sheet.setVisibility(View.VISIBLE);
         // End the progress indicator
+        tripProgress.setVisibility(View.INVISIBLE);
 
     }
 

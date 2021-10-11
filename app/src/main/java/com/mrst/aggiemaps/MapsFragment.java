@@ -34,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -142,7 +143,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private View d;
     private TextView stopText;
-    private ScrollView vScroll;
+    private NestedScrollView vScroll;
 
     @Override
     public void onItemClick(View view, int position) {

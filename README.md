@@ -24,6 +24,12 @@ There is a current problem on some University campuses around the world, and tha
 
 ![Screenshots](pictures/screenshots.png)
 
+## Credits
+
+* [OKatrych's RightSheetBehavior](https://github.com/OKatrych/RightSheetBehavior)
+* [Decorator for RecyclerViews](https://github.com/rubensousa/Decorator)
+* [Search Component](https://github.com/lapism/search)
+
 
 ## References
 

@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private CircularProgressIndicator tripProgress;
     private AppBarLayout defaultSearchBar;
     private LinearLayout llSrcDestContainer;
+    private boolean inDirectionsMode;
 
     enum SearchTag {
         CATEGORY,
@@ -88,7 +89,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
         materialSearchView.setVisibility(View.GONE);
-        materialSearchBar.setVisibility(View.VISIBLE);
+        if (inDirectionsMode) {
+            llSrcDestContainer.setVisibility(View.VISIBLE);
+            sheet.setVisibility(View.VISIBLE);
+        } else {
+            materialSearchBar.setVisibility(View.VISIBLE);
+        }
         showSystemUI();
 
     }
@@ -97,6 +103,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchView.requestFocus();
         materialSearchBar.setVisibility(View.GONE);
+        llSrcDestContainer.setVisibility(View.GONE);
+        sheet.setVisibility(View.GONE);
         hideSystemUI();
 
     }
@@ -283,8 +291,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             actionBar.setIcon(nav);
         }
 
-        // 4. Create the views for the SearchView
-        // reuse materialSearchView
+        // 4. Create the views for the SearchBars
+        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch());
+        destSearchBar.setOnClickListener(v -> requestFocusOnSearch());
+
         // 5. Set the SearchView Settings
         // reuse materialSearchView settings
 
@@ -536,6 +546,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     public void enterDirectionsMode(String title) {
 
+        // Set the boolean value
+        inDirectionsMode = true;
+
         // Set the visibility of the default searchbar to "gone"
         defaultSearchBar.setVisibility(View.GONE);
 
@@ -563,7 +576,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // For each item in the list
 
         // Change the visibility of the BottomBar to "visible"
-        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
         sheet.setVisibility(View.VISIBLE);
 
         // End the progress indicator
@@ -575,6 +587,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      * TODO: Method to exit the directions screen from the main activity
      */
     public void exitDirectionsMode() {
+
+        // Set the boolean value to false
+        inDirectionsMode = false;
+
         // Set the visibility of the default searchbar to "visible"
         defaultSearchBar.setVisibility(View.VISIBLE);
 

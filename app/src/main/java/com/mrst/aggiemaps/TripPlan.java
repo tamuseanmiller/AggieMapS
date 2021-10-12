@@ -4,14 +4,15 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+// TODO: change maneuverType to enum in the future
 class Feature {
     private long length;
     private long time;
     private String text;
     private long eta;
-    private int maneuverType;
+    private String maneuverType;
 
-    public Feature(long length, long time, String text, long eta, int maneuverType) {
+    public Feature(long length, long time, String text, long eta, String maneuverType) {
         this.length = length;
         this.time = time;
         this.text = text;
@@ -35,7 +36,7 @@ class Feature {
         return eta;
     }
 
-    public int getManeuverType() {
+    public String getManeuverType() {
         return maneuverType;
     }
 }

@@ -9,10 +9,11 @@
 
     <!-- Circular progress indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/trip_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="true"
-        android:visibility="invisible"/>
+        android:visibility="invisible" />
 
     <!-- Default Search Bar -->
     <com.google.android.material.appbar.AppBarLayout
@@ -47,47 +48,105 @@
         android:elevation="0dp"
         app:layout_anchor="@id/material_search_bar" />
 
-    <!-- Source Search Bar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/src_app_bar"
+
+<!--  Source and Dest Search Bar Container  -->
+    <LinearLayout
+        android:id="@+id/ll_srcdest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:elevation="0.1dp"
-        android:stateListAnimator="@null"
-        android:visibility="gone">
+        android:layout_marginTop="32dp"
+        android:visibility="gone"
+        android:orientation="vertical">
 
-        <!-- Simple MaterialToolbar extension -->
-        <com.lapism.search.widget.MaterialSearchBar
-            android:id="@+id/src_search_bar"
+        <!-- Source Search Bar -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/src_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="0dp"
-            app:layout_scrollFlags="enterAlways|snap" />
+            android:background="@android:color/transparent"
+            android:elevation="0.1dp"
+            android:stateListAnimator="@null">
 
-    </com.google.android.material.appbar.AppBarLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-    <!-- Destination Search Bar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/dest_app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:elevation="0.1dp"
-        android:stateListAnimator="@null"
-        android:visibility="gone">
+                <!-- Simple MaterialToolbar extension -->
+                <com.lapism.search.widget.MaterialSearchBar
+                    android:id="@+id/src_search_bar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="6"
+                    app:layout_scrollFlags="enterAlways|snap" />
 
-        <!-- Simple MaterialToolbar extension -->
-        <com.lapism.search.widget.MaterialSearchBar
-            android:id="@+id/dest_search_bar"
+                <!--     Cancel FAB      -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_cancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/foreground"
+                    android:contentDescription="@string/shows_timetable"
+                    android:elevation="2dp"
+                    app:borderWidth="0dp"
+                    app:elevation="2dp"
+                    app:fabCustomSize="48dp"
+                    app:pressedTranslationZ="3dp"
+                    app:rippleColor="@color/red_700"
+                    app:srcCompat="@drawable/window_close"
+                    app:tint="@color/background" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- Destination Search Bar -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/dest_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="0dp"
-            app:layout_scrollFlags="enterAlways|snap" />
+            android:background="@android:color/transparent"
+            android:elevation="0.1dp"
+            android:stateListAnimator="@null">
 
-    </com.google.android.material.appbar.AppBarLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Simple MaterialToolbar extension -->
+                <com.lapism.search.widget.MaterialSearchBar
+                    android:id="@+id/dest_search_bar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="6"
+                    app:layout_scrollFlags="enterAlways|snap" />
+
+                <!--     Swap FAB      -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fab_swap"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/foreground"
+                    android:contentDescription="@string/shows_timetable"
+                    android:elevation="2dp"
+                    app:borderWidth="0dp"
+                    app:elevation="2dp"
+                    app:fabCustomSize="48dp"
+                    app:pressedTranslationZ="3dp"
+                    app:rippleColor="@color/red_700"
+                    app:srcCompat="@drawable/swap_vertical"
+                    app:tint="@color/background" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+    </LinearLayout>
 
     <!-- Direction Sheet -->
     <FrameLayout
@@ -140,17 +199,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="start"
-                            android:backgroundTint="@color/accent"
-                            app:cornerRadius="25dp"
-                            android:text="Directions"
                             android:layout_marginBottom="100dp"
-                            />
+                            android:backgroundTint="@color/accent"
+                            android:text="Directions"
+                            app:cornerRadius="25dp" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/directions_recycler"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:nestedScrollingEnabled="false"/>
+                            android:nestedScrollingEnabled="false" />
 
                     </LinearLayout>
 

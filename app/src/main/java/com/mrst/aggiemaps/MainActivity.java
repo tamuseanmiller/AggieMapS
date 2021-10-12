@@ -33,6 +33,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.lapism.search.widget.MaterialSearchBar;
@@ -54,7 +55,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, SearchResultsAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener {
 
     private MaterialSearchBar materialSearchBar;
     private MaterialSearchView materialSearchView;
@@ -76,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private ArrayList<ListItem> searchResultsItems;
     private FrameLayout sheet;
     private CircularProgressIndicator tripProgress;
+    private AppBarLayout defaultSearchBar;
+    private LinearLayout llSrcDestContainer;
 
     enum SearchTag {
         CATEGORY,
@@ -251,6 +254,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         * 6. Initialize the BottomSheet
         * 7. Get the BottomSheetBehavior
         * 8. Set the settings of the BottomSheetBehavior
+        * 9. Initialize Progress Indicator
+        * 10. Initialize Main App Bar
+        * 11. Initialize Source and Dest Container
          */
 
         // 1. Create new ArrayList of SearchResults
@@ -293,6 +299,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         bottomSheetBehavior.setHideable(false);
         bottomSheetBehavior.setPeekHeight(100);
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
+
+        // 9. Initialize Progress Indicator
+        tripProgress = findViewById(R.id.trip_progress);
+
+        // 10. Initialize Main App Bar
+        defaultSearchBar = findViewById(R.id.main_app_bar);
+
+        // 11. Initialize Source and Dest Container
+        llSrcDestContainer = findViewById(R.id.ll_srcdest);
     }
 
     /*
@@ -476,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(gisSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode();
+        enterDirectionsMode(gisSearchAdapter.getItem(position).title);
 
         clearFocusOnSearch();
     }
@@ -491,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(googleSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode();
+        enterDirectionsMode(googleSearchAdapter.getItem(position).title);
 
         clearFocusOnSearch();
     }
@@ -516,22 +531,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         clearFocusOnSearch();
     }
 
-    @Override
-    public void onSEARCHClick(View view, int position) {
-
-    }
-
     /*
     * TODO: Method to enter the directions screen from the main activity
      */
-    public void enterDirectionsMode() {
+    public void enterDirectionsMode(String title) {
 
         // Set the visibility of the default searchbar to "gone"
-        materialSearchBar.setVisibility(View.GONE);
+        defaultSearchBar.setVisibility(View.GONE);
 
         // Set the visibility of the src,dest searchbars to "visible"
-        srcSearchBar.setVisibility(View.VISIBLE);
-        destSearchBar.setVisibility(View.VISIBLE);
+        llSrcDestContainer.setVisibility(View.VISIBLE);
+
+        // Set text for src,dest
+        srcSearchBar.setText("Current location");
+        destSearchBar.setText(title);
 
         // Get rid of buses button, timetable button, and find me button
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
@@ -552,6 +565,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Change the visibility of the BottomBar to "visible"
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
         sheet.setVisibility(View.VISIBLE);
+
         // End the progress indicator
         tripProgress.setVisibility(View.INVISIBLE);
 
@@ -562,15 +576,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     public void exitDirectionsMode() {
         // Set the visibility of the default searchbar to "visible"
-        materialSearchBar.setVisibility(View.VISIBLE);
+        defaultSearchBar.setVisibility(View.VISIBLE);
+
         // Set the visibility of the src,dest searchbars to "gone"
-        srcSearchBar.setVisibility(View.GONE);
-        destSearchBar.setVisibility(View.GONE);
+        llSrcDestContainer.setVisibility(View.GONE);
+
         // Add back the buses button, timetable button, and find me button
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
         mapsFragment.fabTimetable.setVisibility(View.VISIBLE);
         mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
+
         // Change the visibility of the BottomBar to "gone"
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
         sheet.setVisibility(View.GONE);

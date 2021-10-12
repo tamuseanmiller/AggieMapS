@@ -13,4 +13,5 @@
     <string name="time_table">Time Table</string>
     <string name="try_another_date">Try Another Date</string>
     <string name="no_more_buses">No more buses are running today</string>
+    <string name="view_more">View more</string>
 </resources>

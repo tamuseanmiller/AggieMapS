@@ -20,11 +20,13 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -32,6 +34,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.widget.NestedScrollView;
@@ -144,6 +147,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private View d;
     private TextView stopText;
     private NestedScrollView vScroll;
+    private FrameLayout rightSheet;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -645,8 +649,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
 
         // Set up right sheet for timetable
-        View sheet = mView.findViewById(R.id.timetable_sheet);
-        rightSheetBehavior = RightSheetBehavior.from(sheet);
+        rightSheet = mView.findViewById(R.id.timetable_sheet);
+        rightSheetBehavior = RightSheetBehavior.from(rightSheet);
         rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
         rightSheetBehavior.setHideable(false);
         rightSheetBehavior.setPeekWidth(0);
@@ -690,7 +694,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
                 ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
             }
-            new Thread(() ->{
+            new Thread(() -> {
                 setUpTimeTable(ld.toString(), true);
             }).start();
         });
@@ -718,13 +722,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             Log.e("TESTVIEW", String.valueOf(viewAll));
             int viewTimesAmt = 4;
-            if (viewAll){
-                viewTimesAmt=900;
+            requireActivity().runOnUiThread(() -> viewMoreBtn.setVisibility(View.VISIBLE));
+            if (viewAll) {
+                viewTimesAmt = 900;
+                requireActivity().runOnUiThread(() -> viewMoreBtn.setVisibility(View.GONE));
             }
 
-            Boolean isToday = viewMoreTime.equals(LocalDate.now().toString());
+            boolean isToday = viewMoreTime.equals(LocalDate.now().toString());
 
-            requireActivity().runOnUiThread(() ->{
+            requireActivity().runOnUiThread(() -> {
                 dateProgress.setVisibility(View.VISIBLE);
             });
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Route/" + currentRouteNo + "/timetable/" + viewMoreTime);
@@ -752,14 +758,14 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     tlTimetable.addView(tr);
                     fabTimetable.setVisibility(View.VISIBLE);
                     dateProgress.setVisibility(View.INVISIBLE);
-                    viewMoreBtn.setVisibility(viewMoreBtn.GONE);
+                    viewMoreBtn.setVisibility(View.GONE);
                 });
                 return;
             }
 
             // Add the stops as a header row to the table layout
             TableRow headerRow = new TableRow(getActivity());
-            TableRow invisHeaderRow= new TableRow(getActivity());
+            TableRow invisHeaderRow = new TableRow(getActivity());
             for (int i = 0; i < timetableArray.getJSONObject(0).names().length(); i++) {
                 String header = timetableArray.getJSONObject(0).names().getString(i).substring(36);
                 headerRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -772,7 +778,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 headerTV.setText(header);
 
                 invisHeaderRow.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                invisHeaderRow.setVisibility(View.INVISIBLE);
+//                invisHeaderRow.setVisibility(View.INVISIBLE);
                 TextView invisHeaderTV = new TextView(getActivity());
                 invisHeaderTV.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
                 invisHeaderTV.setPadding(0, 10, 40, 10);
@@ -781,16 +787,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 invisHeaderTV.setText(header);
 
                 requireActivity().runOnUiThread(() -> {
-                    headerRow.addView(headerTV);
+//                    headerRow.addView(headerTV);
                     invisHeaderRow.addView(invisHeaderTV);
                 });
             }
             requireActivity().runOnUiThread(() -> {
-                tlTimetable.addView(headerRow);
+//                tlTimetable.addView(headerRow);
                 tl_times.addView(invisHeaderRow);
             });
 
             // Loop through every row
+            int cnt = 0;
             for (int i = 0; i < timetableArray.length(); i++) {
                 JSONObject row = timetableArray.getJSONObject(i);
 
@@ -804,10 +811,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     input = LocalTime.parse(lastTime, formatter);
                 } else continue;
 
-
                 // Only show 5 rows and only show rows that are after the current time
                 if (isToday && input.isBefore(LocalTime.now())) {
-                    continue;
+                    cnt++;
                 } else if (numRows++ <= viewTimesAmt) {
                     TableRow tr = new TableRow(getActivity());
                     tr.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -829,10 +835,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         // If the value is null, just leave it empty
                         if (value.equals("null")) value = "";
                         time.setText(value);
+
                         requireActivity().runOnUiThread(() -> tr.addView(time));
                     }
                     requireActivity().runOnUiThread(() -> tl_times.addView(tr));
-                }
+                } else break;
             }
             requireActivity().runOnUiThread(() -> {
                 viewMoreBtn.setOnClickListener(view1 -> {
@@ -841,13 +848,38 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     viewMoreBtn.setVisibility(View.GONE);
                     new Thread(() -> setUpTimeTable(viewMoreTime, true)).start();
                 });
-                 if(viewAll){
-                     vScroll.post(()-> vScroll.scrollTo(0, 15));
-                 }
-                 else{
-                     vScroll.post(() -> vScroll.fullScroll(vScroll.FOCUS_DOWN));
-                 }
+                if (viewAll) {
+                    vScroll.post(() -> vScroll.scrollTo(0, 15));
+                } else {
+                    vScroll.post(() -> vScroll.fullScroll(vScroll.FOCUS_DOWN));
+                }
+
+                // Set the max height of the time table if there are too many times
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int height = displayMetrics.heightPixels;
+                View view = getActivity().findViewById(R.id.main_app_bar);
+                if (view instanceof AppBarLayout) {
+                    ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+                    if (viewTreeObserver.isAlive()) {
+                        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                            @Override
+                            public void onGlobalLayout() {
+                                view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                if (tl_times.getChildCount() * convertDpToPx(35) > height - view.getHeight() - convertDpToPx(32) - fabTimetable.getHeight())
+                                    vScroll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height - view.getHeight() - convertDpToPx(300) - fabTimetable.getHeight()));
+                                else
+                                    vScroll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                            }
+                        });
+                    }
+                }
             });
+
+            // Edge case when no more rows to view
+            if (numRows + 1 >= timetableArray.length() - cnt) {
+                requireActivity().runOnUiThread(() -> viewMoreBtn.setVisibility(View.GONE));
+            }
 
             // If no more bus routes are going today
             if (numRows == 0) {
@@ -857,6 +889,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 noTime.setPadding(0, 10, 10, 10);
                 noTime.setText(R.string.no_more_buses);
                 requireActivity().runOnUiThread(() -> {
+                    viewMoreBtn.setVisibility(View.GONE);
                     tlTimetable.removeAllViews();
                     tl_times.removeAllViews();
                     noTimesLeftRow.addView(noTime);

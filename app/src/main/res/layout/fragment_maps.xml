@@ -112,7 +112,7 @@
                 android:orientation="vertical"
                 android:elevation="3dp">
 
-            <include layout="@layout/timetable" />
+                <include layout="@layout/timetable" />
 
             </LinearLayout>
 

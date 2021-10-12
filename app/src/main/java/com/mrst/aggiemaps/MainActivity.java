@@ -467,6 +467,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         if (materialSearchView.hasFocus()) {
             clearFocusOnSearch();
         }
+        else if(materialSearchBar.getVisibility()==View.GONE){
+            exitDirectionsMode();
+        }
     }
 
     /*

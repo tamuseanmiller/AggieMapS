@@ -187,6 +187,7 @@
 
                         <!-- Draggable rectangle -->
                         <com.google.android.material.button.MaterialButton
+                            android:id="@+id/drag_direction"
                             android:layout_width="45dp"
                             android:layout_height="15dp"
                             android:layout_gravity="center_horizontal"
@@ -195,14 +196,31 @@
                             android:stateListAnimator="@null"
                             app:cornerRadius="25dp" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="start"
-                            android:layout_marginBottom="100dp"
-                            android:backgroundTint="@color/accent"
-                            android:text="Directions"
-                            app:cornerRadius="25dp" />
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <TextView
+                                android:id="@+id/testText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentLeft="true"
+                                android:text="OCCUPANCY: "
+                                />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="10dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="start"
+                                android:backgroundTint="@color/accent"
+                                app:cornerRadius="20dp"
+                                android:text="Directions"
+                                android:layout_marginBottom="100dp"
+                                android:layout_toRightOf="@id/testText"
+                                android:layout_alignParentRight="true"
+                                />
+
+                        </RelativeLayout>
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/directions_recycler"

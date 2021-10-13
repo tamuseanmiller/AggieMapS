@@ -136,6 +136,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public RecyclerView swipeRecycler;
     public FrameLayout standardBottomSheet;
     public FloatingActionButton fab_directions;
+    public LatLng deviceLatLng;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -449,9 +450,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                             // Set the map's camera position to the current location of the device.
                             lastKnownLocation = task.getResult();
                             if (lastKnownLocation != null) {
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), 14.0f));
+                                deviceLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(deviceLatLng, 14.0f));
                             }
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");

@@ -1,6 +1,7 @@
 package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
+import static java.sql.Types.NULL;
 
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private String SearchBar;
     private String srcBarText = "";
     private String destBarText = "";
+    private RecyclerView directionsRecycler;
 
     enum SearchTag {
         CATEGORY,
@@ -341,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // 1. Create new ArrayList of SearchResults
         searchResultsItems = new ArrayList<>();
         searchResultsAdapter = new SearchResultsAdapter(this, searchResultsItems);
+        directionsRecycler = findViewById(R.id.directions_recycler);
 
         // 2. Initialize SearchBars
         srcSearchBar = findViewById(R.id.src_search_bar);
@@ -592,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(gisSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(gisSearchAdapter.getItem(position).title);
+        enterDirectionsMode(gisSearchAdapter.getItem(position));
 
         clearFocusOnSearch();
     }
@@ -607,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.title(googleSearchAdapter.getItem(position).title);
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(googleSearchAdapter.getItem(position).title);
+        enterDirectionsMode(googleSearchAdapter.getItem(position));
 
         clearFocusOnSearch();
     }
@@ -635,7 +638,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     /*
     * TODO: Method to enter the directions screen from the main activity
      */
-    public void enterDirectionsMode(String title) {
+    public void enterDirectionsMode(ListItem destItem) {
 
         // Set the boolean value
         inDirectionsMode = true;
@@ -647,23 +650,22 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         llSrcDestContainer.setVisibility(View.VISIBLE);
 
         // Set text for src,dest
-        if (!title.equals("")){
+        if (!destItem.title.equals("")){
             if (SearchBar.equals("main")){
                 srcSearchBar.setText("Current location");
-                destSearchBar.setText(title);
+                destSearchBar.setText(destItem.title);
                 srcBarText = "Current location";
-                destBarText = title;
+                destBarText = destItem.title;
             }
             else if (SearchBar.equals("src")){
-                srcSearchBar.setText(title);
-                srcBarText = title;
+                srcSearchBar.setText(destItem.title);
+                srcBarText = destItem.title;
             }
             else if (SearchBar.equals("dest")){
-                destSearchBar.setText(title);
-                destBarText = title;
+                destSearchBar.setText(destItem.title);
+                destBarText = destItem.title;
             }
         }
-
 
         // Get rid of buses button, timetable button, and find me button
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
@@ -674,16 +676,23 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Hide the routes bottomsheet if it is open
         mapsFragment.standardBottomSheet.setVisibility(View.GONE);
         mapsFragment.standardBottomSheetBehavior.setState(mapsFragment.standardBottomSheetBehavior.STATE_COLLAPSED);
-        if (!title.equals("")) {
+        if (!destItem.equals("")) {
             // Start a progress indicator in one of the searchviews
             tripProgress.setVisibility(View.VISIBLE);
 
-            // Get Trip Plan
-            // Call Taha's function
-
+            // Get Trip Plan and input into
+            TripPlan newTripPlan = getTripPlan(mapsFragment.deviceLatLng, destItem.position, 1);
+            ArrayList<ListItem> textDirections = new ArrayList<>();
+            ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
+            for(int i = 0; i < routeFeatures.size(); i++) {
+                Feature currFeature = routeFeatures.get(i);
+                // TODO: fix to add parsing direction type
+                textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, null, null));
+            }
 
             // Parse the trip plan into the BottomBar
-            // For each item in the list
+            searchResultsAdapter = new SearchResultsAdapter(this, textDirections);
+            directionsRecycler.setAdapter(searchResultsAdapter);
 
             // Change the visibility of the BottomBar to "visible"
 

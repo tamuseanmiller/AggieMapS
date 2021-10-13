@@ -378,15 +378,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
-    /*
-     * Method to create array of a route from two latlng coordinates
-     * returns a TripPlan obj
-     */
-    private TripPlan getTripPlan(LatLng src, LatLng dest, TripType type) {
-
-        return null;
-    }
-
     private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the

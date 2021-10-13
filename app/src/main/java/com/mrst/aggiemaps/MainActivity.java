@@ -25,6 +25,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
@@ -84,6 +85,70 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     enum SearchTag {
         CATEGORY,
         RESULT
+    }
+
+    /*
+     * Method to create array of a route from two latlng coordinates
+     * returns a TripPlan obj
+     */
+    private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
+        try {
+
+            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
+            String result = getApiCall(call);
+            System.out.println((result));
+            JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
+            ArrayList<Feature> features = new ArrayList<>();
+            for (int i=0; i < features_json.length(); i++) {
+                JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
+
+                // TODO: Add parsing for maneuver types into numbers
+                Feature new_feature = new Feature(attributes.getInt("length"), attributes.getInt("time"), attributes.getString("text"), attributes.getInt("ETA"), /*attributes.getString("maneuverType")*/1);
+                features.add(new_feature);
+            }
+//            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
+//            // parsing routes
+//            JSONObject spatialReference = new JSONObject(result).getJSONObject("routes").getJSONObject("spatialReference");
+//            String geometryType = new JSONObject(result).getJSONObject("routes").getString("geometryType");
+//            JSONObject attributes = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("attributes");
+//            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
+//            JSONArray directions = new JSONObject(result).getJSONArray("directions");
+
+            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
+            ArrayList<LatLng> geometry = new ArrayList<>();
+            for (int i=0; i< paths.length(); i++) {
+                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
+                geometry.add(new_latlng);
+            }
+
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.width(10);
+            polylineOptions.geodesic(true);
+            polylineOptions.pattern(null);
+            polylineOptions.clickable(true);
+
+            for (int i=0; i <paths.length(); i++) {
+                double lat = paths.getJSONArray(i).getDouble(0);
+                double lng = paths.getJSONArray(i).getDouble(1);
+                LatLng latlng = new LatLng(lng,lat);
+                polylineOptions.add(latlng);
+            }
+            runOnUiThread(() -> MapsFragment.mMap.addPolyline(polylineOptions));
+
+
+            double totalTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalTime");
+            double totalLength = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalLength");
+            double totalDriveTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalDriveTime");
+
+
+            TripPlan FinalRoute = new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
+            return FinalRoute;
+        }catch (JSONException e) {
+            Log.e("MYAPP", "unexpected JSON exception", e);
+            e.printStackTrace();
+            // Do something to recover ...
+        }
+        return null;
     }
 
     private void clearFocusOnSearch() {

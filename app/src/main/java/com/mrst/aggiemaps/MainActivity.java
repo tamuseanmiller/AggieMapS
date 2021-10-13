@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
             ArrayList<Feature> features = new ArrayList<>();
-            for (int i=0; i < features_json.length(); i++) {
+            for (int i = 0; i < features_json.length(); i++) {
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
 
                 // TODO: Add parsing for maneuver types into numbers
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
             ArrayList<LatLng> geometry = new ArrayList<>();
-            for (int i=0; i< paths.length(); i++) {
+            for (int i = 0; i < paths.length(); i++) {
                 LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
                 geometry.add(new_latlng);
             }
@@ -135,10 +135,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             polylineOptions.pattern(null);
             polylineOptions.clickable(true);
 
-            for (int i=0; i <paths.length(); i++) {
+            for (int i = 0; i < paths.length(); i++) {
                 double lat = paths.getJSONArray(i).getDouble(0);
                 double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng,lat);
+                LatLng latlng = new LatLng(lng, lat);
                 polylineOptions.add(latlng);
             }
             runOnUiThread(() -> MapsFragment.mMap.addPolyline(polylineOptions));
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             TripPlan FinalRoute = new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
             return FinalRoute;
-        }catch (JSONException e) {
+        } catch (JSONException e) {
             Log.e("MYAPP", "unexpected JSON exception", e);
             e.printStackTrace();
             // Do something to recover ...
@@ -325,19 +325,19 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         });
 
         /*
-        * TODO: Initialize UI for Directions
-        *  Look above for help, most of this has been done once already above
-        * 1. Create new ArrayList of SearchResults
-        * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
-        * 3. Set toolbar and action bar
-        * 4. Create the views for the SearchView
-        * 5. Set the SearchView Settings
-        * 6. Initialize the BottomSheet
-        * 7. Get the BottomSheetBehavior
-        * 8. Set the settings of the BottomSheetBehavior
-        * 9. Initialize Progress Indicator
-        * 10. Initialize Main App Bar
-        * 11. Initialize Source and Dest Container
+         * TODO: Initialize UI for Directions
+         *  Look above for help, most of this has been done once already above
+         * 1. Create new ArrayList of SearchResults
+         * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
+         * 3. Set toolbar and action bar
+         * 4. Create the views for the SearchView
+         * 5. Set the SearchView Settings
+         * 6. Initialize the BottomSheet
+         * 7. Get the BottomSheetBehavior
+         * 8. Set the settings of the BottomSheetBehavior
+         * 9. Initialize Progress Indicator
+         * 10. Initialize Main App Bar
+         * 11. Initialize Source and Dest Container
          */
 
         // 1. Create new ArrayList of SearchResults
@@ -400,13 +400,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         llSrcDestContainer = findViewById(R.id.ll_srcdest);
 
 
-
         // Initialize cancel fab and click listener
         fabCancel = findViewById(R.id.fab_cancel);
-        fabCancel.setOnClickListener(v-> exitDirectionsMode());
+        fabCancel.setOnClickListener(v -> exitDirectionsMode());
 
         fabSwap = findViewById(R.id.fab_swap);
-        fabSwap.setOnClickListener(v-> swapDirections());
+        fabSwap.setOnClickListener(v -> swapDirections());
 
     }
 
@@ -557,8 +556,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         Log.e("search bar test", String.valueOf(materialSearchBar.getVisibility()));
         if (materialSearchView.hasFocus()) {
             clearFocusOnSearch();
-        }
-        else if(materialSearchBar.getVisibility()==View.GONE){
+        } else if (materialSearchBar.getVisibility() == View.GONE) {
             exitDirectionsMode();
         }
     }
@@ -636,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * TODO: Method to enter the directions screen from the main activity
+     * TODO: Method to enter the directions screen from the main activity
      */
     public void enterDirectionsMode(ListItem destItem) {
 
@@ -650,18 +648,16 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         llSrcDestContainer.setVisibility(View.VISIBLE);
 
         // Set text for src,dest
-        if (!destItem.title.equals("")){
-            if (SearchBar.equals("main")){
+        if (!destItem.title.equals("")) {
+            if (SearchBar.equals("main")) {
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(destItem.title);
                 srcBarText = "Current location";
                 destBarText = destItem.title;
-            }
-            else if (SearchBar.equals("src")){
+            } else if (SearchBar.equals("src")) {
                 srcSearchBar.setText(destItem.title);
                 srcBarText = destItem.title;
-            }
-            else if (SearchBar.equals("dest")){
+            } else if (SearchBar.equals("dest")) {
                 destSearchBar.setText(destItem.title);
                 destBarText = destItem.title;
             }
@@ -681,18 +677,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             tripProgress.setVisibility(View.VISIBLE);
 
             // Get Trip Plan and input into
-            TripPlan newTripPlan = getTripPlan(mapsFragment.deviceLatLng, destItem.position, 1);
-            ArrayList<ListItem> textDirections = new ArrayList<>();
-            ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
-            for(int i = 0; i < routeFeatures.size(); i++) {
-                Feature currFeature = routeFeatures.get(i);
-                // TODO: fix to add parsing direction type
-                textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, null, null));
-            }
+            new Thread(() -> {
+                TripPlan newTripPlan = getTripPlan(mapsFragment.deviceLatLng, destItem.position, 1);
+                ArrayList<ListItem> textDirections = new ArrayList<>();
+                ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
+                for (int i = 0; i < routeFeatures.size(); i++) {
+                    Feature currFeature = routeFeatures.get(i);
+                    // TODO: fix to add parsing direction type
+                    textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, null, null));
+                }
 
-            // Parse the trip plan into the BottomBar
-            searchResultsAdapter = new SearchResultsAdapter(this, textDirections);
-            directionsRecycler.setAdapter(searchResultsAdapter);
+                // Parse the trip plan into the BottomBar
+                searchResultsAdapter = new SearchResultsAdapter(this, textDirections);
+                directionsRecycler.setAdapter(searchResultsAdapter);
+            }).start();
 
             // Change the visibility of the BottomBar to "visible"
 
@@ -728,12 +726,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         sheet.setVisibility(View.GONE);
     }
 
-    private void swapDirections(){
+    private void swapDirections() {
         srcSearchBar.setText(destBarText);
         destSearchBar.setText(srcBarText);
         String temp_text = srcBarText;
-        srcBarText=destBarText;
-        destBarText=temp_text;
+        srcBarText = destBarText;
+        destBarText = temp_text;
 
     }
 

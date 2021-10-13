@@ -443,24 +443,21 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            if (lastKnownLocation != null) {
-                                deviceLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(deviceLatLng, 14.0f));
-                            }
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            LatLng collegeStation = new LatLng(30.611812, -96.329767);
-                            mMap.animateCamera(CameraUpdateFactory
-                                    .newLatLngZoom(collegeStation, 14.0f));
-                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                locationResult.addOnCompleteListener(getActivity(), task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        lastKnownLocation = task.getResult();
+                        if (lastKnownLocation != null) {
+                            deviceLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(deviceLatLng, 14.0f));
                         }
+                    } else {
+                        Log.d(TAG, "Current location is null. Using defaults.");
+                        Log.e(TAG, "Exception: %s", task.getException());
+                        LatLng collegeStation = new LatLng(30.611812, -96.329767);
+                        mMap.animateCamera(CameraUpdateFactory
+                                .newLatLngZoom(collegeStation, 14.0f));
+                        mMap.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
             }
@@ -687,7 +684,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         new Thread(this::setUpBusRoutes).start();
 
         fab_directions = mView.findViewById(R.id.fab_directions);
-        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(""));
+        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(null));
 
         return mView;
     }

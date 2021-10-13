@@ -365,6 +365,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // 4. Create the views for the SearchBars
         srcSearchBar.setOnClickListener(v -> requestFocusOnSearch("src"));
         destSearchBar.setOnClickListener(v -> requestFocusOnSearch("dest"));
+        srcSearchBar.setElevation(5);
+        srcSearchBar.setBackgroundColor(getColor(R.color.background));
+        srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("src"));
+        destSearchBar.setElevation(5);
+        destSearchBar.setBackgroundColor(getColor(R.color.background));
+        destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("dest"));
 
         // 5. Set the SearchView Settings
         // reuse materialSearchView settings
@@ -398,9 +404,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         fabSwap = findViewById(R.id.fab_swap);
         fabSwap.setOnClickListener(v-> swapDirections());
-
-        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-//        mapsFragment.fab_directions.setOnClickListener( v->enterDirectionsMode(""));
 
     }
 

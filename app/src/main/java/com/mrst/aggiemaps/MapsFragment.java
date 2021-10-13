@@ -134,7 +134,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private static final String KEY_LOCATION = "location";
     private TextView stopText;
     public RecyclerView swipeRecycler;
-    public FrameLayout  standardBottomSheet;
+    public FrameLayout standardBottomSheet;
     public FloatingActionButton fab_directions;
 
     @Override
@@ -687,7 +687,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         new Thread(this::setUpBusRoutes).start();
 
         fab_directions = mView.findViewById(R.id.fab_directions);
-//        fab_directions.setOnClickListener(v-> Log.e("TEST", "DIRECTIONS WAS HERE"));
+        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(""));
 
         return mView;
     }

@@ -101,7 +101,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
     private OkHttpClient client;  // Client to make API requests
-    private BottomSheetBehavior<View> standardBottomSheetBehavior;
+    public BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
     private OnCampusAdapter onCampusAdapter;
     private OffCampusAdapter offCampusAdapter;
@@ -127,16 +127,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private ArrayList<Marker> busMarkers;
     public FloatingActionButton fabMyLocation;
     private LinearProgressIndicator dateProgress;
-
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-
-    private View d;
     private TextView stopText;
     public RecyclerView swipeRecycler;
+    public FrameLayout  standardBottomSheet;
+    public FloatingActionButton fab_directions;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -599,7 +598,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
         // Set up the bottom sheet
-        FrameLayout standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
+        standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
@@ -686,6 +685,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
+
+        fab_directions = mView.findViewById(R.id.fab_directions);
+//        fab_directions.setOnClickListener(v-> Log.e("TEST", "DIRECTIONS WAS HERE"));
 
         return mView;
     }

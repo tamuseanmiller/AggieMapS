@@ -36,6 +36,7 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
@@ -81,6 +82,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private AppBarLayout defaultSearchBar;
     private LinearLayout llSrcDestContainer;
     private boolean inDirectionsMode;
+    private FloatingActionButton fabCancel;
+    private FloatingActionButton fabSwap;
+    private String SearchBar;
+    private String srcBarText = "";
+    private String destBarText = "";
 
     enum SearchTag {
         CATEGORY,
@@ -164,14 +170,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
     }
 
-    private void requestFocusOnSearch() {
+    private void requestFocusOnSearch(String whichSearchBar) {
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchView.requestFocus();
         materialSearchBar.setVisibility(View.GONE);
         llSrcDestContainer.setVisibility(View.GONE);
         sheet.setVisibility(View.GONE);
         hideSystemUI();
-
+        SearchBar = whichSearchBar;
     }
 
     /*
@@ -232,8 +238,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar.setHint("Aggie MapS");
         materialSearchBar.setElevation(5);
         materialSearchBar.setBackgroundColor(getColor(R.color.background));
-        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch());
-        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch());
+        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch("main"));
+        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("main"));
 
         // Set recyclers
         gisListItems = new ArrayList<>();
@@ -357,8 +363,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         // 4. Create the views for the SearchBars
-        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch());
-        destSearchBar.setOnClickListener(v -> requestFocusOnSearch());
+        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch("src"));
+        destSearchBar.setOnClickListener(v -> requestFocusOnSearch("dest"));
 
         // 5. Set the SearchView Settings
         // reuse materialSearchView settings
@@ -383,6 +389,19 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // 11. Initialize Source and Dest Container
         llSrcDestContainer = findViewById(R.id.ll_srcdest);
+
+
+
+        // Initialize cancel fab and click listener
+        fabCancel = findViewById(R.id.fab_cancel);
+        fabCancel.setOnClickListener(v-> exitDirectionsMode());
+
+        fabSwap = findViewById(R.id.fab_swap);
+        fabSwap.setOnClickListener(v-> swapDirections());
+
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+//        mapsFragment.fab_directions.setOnClickListener( v->enterDirectionsMode(""));
+
     }
 
     /*
@@ -529,6 +548,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onBackPressed() {
+        Log.e("search bar test", String.valueOf(materialSearchBar.getVisibility()));
         if (materialSearchView.hasFocus()) {
             clearFocusOnSearch();
         }
@@ -618,62 +638,91 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         inDirectionsMode = true;
 
         // Set the visibility of the default searchbar to "gone"
-        defaultSearchBar.setVisibility(View.GONE);
+        materialSearchBar.setVisibility(View.GONE);
 
         // Set the visibility of the src,dest searchbars to "visible"
         llSrcDestContainer.setVisibility(View.VISIBLE);
 
         // Set text for src,dest
-        srcSearchBar.setText("Current location");
-        destSearchBar.setText(title);
+        if (!title.equals("")){
+            if (SearchBar.equals("main")){
+                srcSearchBar.setText("Current location");
+                destSearchBar.setText(title);
+                srcBarText = "Current location";
+                destBarText = title;
+            }
+            else if (SearchBar.equals("src")){
+                srcSearchBar.setText(title);
+                srcBarText = title;
+            }
+            else if (SearchBar.equals("dest")){
+                destSearchBar.setText(title);
+                destBarText = title;
+            }
+        }
+
 
         // Get rid of buses button, timetable button, and find me button
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-        mapsFragment.fabTimetable.setVisibility(View.INVISIBLE);
+        mapsFragment.fabTimetable.setVisibility(View.GONE);
         mapsFragment.fabMyLocation.setVisibility(View.INVISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.INVISIBLE);
 
-        // Start a progress indicator in one of the searchviews
-        tripProgress.setVisibility(View.VISIBLE);
+        // Hide the routes bottomsheet if it is open
+        mapsFragment.standardBottomSheet.setVisibility(View.GONE);
+        mapsFragment.standardBottomSheetBehavior.setState(mapsFragment.standardBottomSheetBehavior.STATE_COLLAPSED);
+        if (!title.equals("")) {
+            // Start a progress indicator in one of the searchviews
+            tripProgress.setVisibility(View.VISIBLE);
 
-        // Get Trip Plan
-        // Call Taha's function
+            // Get Trip Plan
+            // Call Taha's function
 
 
-        // Parse the trip plan into the BottomBar
-        // For each item in the list
+            // Parse the trip plan into the BottomBar
+            // For each item in the list
 
-        // Change the visibility of the BottomBar to "visible"
-        sheet.setVisibility(View.VISIBLE);
+            // Change the visibility of the BottomBar to "visible"
 
-        // End the progress indicator
-        tripProgress.setVisibility(View.INVISIBLE);
+            sheet.setVisibility(View.VISIBLE);
+            bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
 
+            // End the progress indicator
+            tripProgress.setVisibility(View.INVISIBLE);
+        }
     }
 
     /*
      * TODO: Method to exit the directions screen from the main activity
      */
     public void exitDirectionsMode() {
-
         // Set the boolean value to false
         inDirectionsMode = false;
 
         // Set the visibility of the default searchbar to "visible"
-        defaultSearchBar.setVisibility(View.VISIBLE);
+        materialSearchBar.setVisibility(View.VISIBLE);
 
         // Set the visibility of the src,dest searchbars to "gone"
         llSrcDestContainer.setVisibility(View.GONE);
 
-        // Add back the buses button, timetable button, and find me button
+        // Add back the buses button, timetable button, find me button, and close the bus routes bottom sheet.
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-        mapsFragment.fabTimetable.setVisibility(View.VISIBLE);
         mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
+        mapsFragment.standardBottomSheet.setVisibility(View.VISIBLE);
 
         // Change the visibility of the BottomBar to "gone"
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
         sheet.setVisibility(View.GONE);
+    }
+
+    private void swapDirections(){
+        srcSearchBar.setText(destBarText);
+        destSearchBar.setText(srcBarText);
+        String temp_text = srcBarText;
+        srcBarText=destBarText;
+        destBarText=temp_text;
+
     }
 
 }

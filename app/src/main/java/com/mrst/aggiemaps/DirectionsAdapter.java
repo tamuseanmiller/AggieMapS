@@ -15,14 +15,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class SearchResultsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static List<ListItem> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    SearchResultsAdapter(Context context, List<ListItem> data) {
+    DirectionsAdapter(Context context, List<ListItem> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -33,9 +33,9 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<RecyclerView.View
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
             case 1:
-                return new SearchResultsAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+                return new DirectionsAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new SearchResultsAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
+                return new DirectionsAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }

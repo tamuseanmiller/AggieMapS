@@ -683,6 +683,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
 
+        // Initialize directions fab
         fab_directions = mView.findViewById(R.id.fab_directions);
         fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(null));
 

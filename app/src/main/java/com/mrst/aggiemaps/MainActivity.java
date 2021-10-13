@@ -1,13 +1,14 @@
 package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
-import static java.sql.Types.NULL;
 
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private MaterialSearchBar srcSearchBar;
     private MaterialSearchBar destSearchBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
-    private SearchResultsAdapter searchResultsAdapter;
+    private DirectionsAdapter directionsAdapter;
     private ArrayList<ListItem> searchResultsItems;
     private FrameLayout sheet;
     private CircularProgressIndicator tripProgress;
@@ -93,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     enum SearchTag {
         CATEGORY,
         RESULT
+    }
+
+    private int convertDpToPx(int dp) {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /*
@@ -341,9 +347,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
          */
 
         // 1. Create new ArrayList of SearchResults
-        searchResultsItems = new ArrayList<>();
-        searchResultsAdapter = new SearchResultsAdapter(this, searchResultsItems);
+//        searchResultsItems = new ArrayList<>();
+//        directionsAdapter = new DirectionsAdapter(this, searchResultsItems);
         directionsRecycler = findViewById(R.id.directions_recycler);
+        directionsRecycler.setLayoutManager(new LinearLayoutManager(this));
 
         // 2. Initialize SearchBars
         srcSearchBar = findViewById(R.id.src_search_bar);
@@ -390,11 +397,29 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         bottomSheetBehavior.setPeekHeight(100);
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
 
+        // Set the max height of the bottom sheet by putting it below the searchbar
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        View destBar = findViewById(R.id.dest_app_bar);
+        View srcBar = findViewById(R.id.src_app_bar);
+//        bottomSheetBehavior.setMaxHeight(height - findViewById(R.id.main_app_bar).getHeight() * 2 - convertDpToPx(32));
+
         // 9. Initialize Progress Indicator
         tripProgress = findViewById(R.id.trip_progress);
 
         // 10. Initialize Main App Bar
         defaultSearchBar = findViewById(R.id.main_app_bar);
+        ViewTreeObserver viewTreeObserver = defaultSearchBar.getViewTreeObserver();
+        if (viewTreeObserver.isAlive()) {
+            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    defaultSearchBar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    bottomSheetBehavior.setMaxHeight(height - defaultSearchBar.getHeight() * 2);
+                }
+            });
+        }
 
         // 11. Initialize Source and Dest Container
         llSrcDestContainer = findViewById(R.id.ll_srcdest);
@@ -408,6 +433,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         fabSwap.setOnClickListener(v -> swapDirections());
 
     }
+
+
 
     /*
      * Queries List of Bus Routes
@@ -648,7 +675,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         llSrcDestContainer.setVisibility(View.VISIBLE);
 
         // Set text for src,dest
-        if (!destItem.title.equals("")) {
+        if (destItem != null) {
             if (SearchBar.equals("main")) {
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(destItem.title);
@@ -672,7 +699,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Hide the routes bottomsheet if it is open
         mapsFragment.standardBottomSheet.setVisibility(View.GONE);
         mapsFragment.standardBottomSheetBehavior.setState(mapsFragment.standardBottomSheetBehavior.STATE_COLLAPSED);
-        if (!destItem.equals("")) {
+        if (destItem != null) {
             // Start a progress indicator in one of the searchviews
             tripProgress.setVisibility(View.VISIBLE);
 
@@ -684,18 +711,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 for (int i = 0; i < routeFeatures.size(); i++) {
                     Feature currFeature = routeFeatures.get(i);
                     // TODO: fix to add parsing direction type
-                    textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, null, null));
+                    textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, SearchTag.RESULT, null));
                 }
 
                 // Parse the trip plan into the BottomBar
-                searchResultsAdapter = new SearchResultsAdapter(this, textDirections);
-                directionsRecycler.setAdapter(searchResultsAdapter);
+                runOnUiThread(() -> {
+                    directionsAdapter = new DirectionsAdapter(this, textDirections);
+                    directionsRecycler.setAdapter(directionsAdapter);
+                });
             }).start();
 
             // Change the visibility of the BottomBar to "visible"
 
             sheet.setVisibility(View.VISIBLE);
-            bottomSheetBehavior.setState(bottomSheetBehavior.STATE_EXPANDED);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
             // End the progress indicator
             tripProgress.setVisibility(View.INVISIBLE);

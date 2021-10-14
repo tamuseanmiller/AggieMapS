@@ -55,6 +55,7 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 holderList.subtitleText.setText(mData.get(position).subtitle);
                 if (mData.size() - 1 != position)
                     holderList.divider.setVisibility(View.VISIBLE);
+                holderList.directionIcon.setImageDrawable(mData.get(position).direction);
                 break;
         }
     }

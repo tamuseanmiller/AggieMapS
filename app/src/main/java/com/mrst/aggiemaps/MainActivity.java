@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private MaterialSearchBar destSearchBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private DirectionsAdapter directionsAdapter;
-    private ArrayList<ListItem> searchResultsItems;
     private FrameLayout sheet;
     private CircularProgressIndicator tripProgress;
     private AppBarLayout defaultSearchBar;
@@ -94,6 +93,77 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     enum SearchTag {
         CATEGORY,
         RESULT
+    }
+
+    enum ManeuverType {
+        Unknown,
+        Stop,
+        Straight,
+        BearLeft,
+        BearRight,
+        TurnLeft,
+        TurnRight,
+        SharpLeft,
+        SharpRight,
+        UTurn,
+        Ferry,
+        Roundabout,
+        HighwayMerge,
+        HighwayExit,
+        HighwayChange,
+        ForkCenter,
+        ForkLeft,
+        ForkRight,
+        Depart,
+        TripItem,
+        EndOfFerry,
+        RampRight,
+        RampLeft
+    }
+
+    private Drawable parseManeuverType(String maneuverType) {
+        switch(maneuverType) {
+            case "esriDMTStop":
+                return ContextCompat.getDrawable(this, R.drawable.close_octagon);
+            case "esriDMTStraight":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_up);
+            case "esriDMTBearLeft":
+            case "esriDMTRampLeft":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_top_left);
+            case "esriDMTBearRight":
+            case "esriDMTRampRight":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_top_right);
+            case "esriDMTTurnLeft":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_left_top);
+            case "esriDMTTurnRight":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_right_top);
+            case "esriDMTSharpLeft":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_left);
+            case "esriDMTSharpRight":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_right);
+            case "esriDMTUTurn":
+                return ContextCompat.getDrawable(this, R.drawable.arrow_u_down_left);
+            case "esriDMTFerry":
+            case "esriDMTEndOfFerry":
+                return ContextCompat.getDrawable(this, R.drawable.ferry);
+            case "esriDMTRoundabout":
+                return ContextCompat.getDrawable(this, R.drawable.rotate_left);
+            case "esriDMTHighwayMerge":
+                return ContextCompat.getDrawable(this, R.drawable.call_merge);
+            case "esriDMTHighwayExit":
+            case "esriDMTForkCenter":
+            case "esriDMTForkLeft":
+            case "esriDMTForkRight":
+                return ContextCompat.getDrawable(this, R.drawable.call_split);
+            case "esriDMTHighwayChange":
+                return ContextCompat.getDrawable(this, R.drawable.source_fork);
+            case "esriDMTDepart":
+                return ContextCompat.getDrawable(this, R.drawable.car);
+            case "esriDMTTripItem":
+                return ContextCompat.getDrawable(this, R.drawable.sign_direction);
+            default:
+                return ContextCompat.getDrawable(this, R.drawable.nuke);
+        }
     }
 
     private int convertDpToPx(int dp) {
@@ -112,12 +182,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             String result = getApiCall(call);
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
+
+            // Parse every feature
             ArrayList<Feature> features = new ArrayList<>();
             for (int i = 0; i < features_json.length(); i++) {
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
-
-                // TODO: Add parsing for maneuver types into numbers
-                Feature new_feature = new Feature(attributes.getInt("length"), attributes.getInt("time"), attributes.getString("text"), attributes.getInt("ETA"), /*attributes.getString("maneuverType")*/1);
+                Drawable manueverType = parseManeuverType(attributes.getString("maneuverType"));
+                int length = attributes.getInt("length");
+                int time = attributes.getInt("time");
+                String text = attributes.getString("text");
+                int ETA = attributes.getInt("ETA");
+                Feature new_feature = new Feature(length, time, text, ETA, manueverType);
                 features.add(new_feature);
             }
 //            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
@@ -128,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 //            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
 //            JSONArray directions = new JSONObject(result).getJSONArray("directions");
 
+            // Parse all of the geometry
             JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
             ArrayList<LatLng> geometry = new ArrayList<>();
             for (int i = 0; i < paths.length(); i++) {
@@ -135,12 +211,13 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 geometry.add(new_latlng);
             }
 
+            // Draw line
             PolylineOptions polylineOptions = new PolylineOptions();
             polylineOptions.width(10);
             polylineOptions.geodesic(true);
             polylineOptions.pattern(null);
             polylineOptions.clickable(true);
-
+            polylineOptions.color(ContextCompat.getColor(this, R.color.accent));
             for (int i = 0; i < paths.length(); i++) {
                 double lat = paths.getJSONArray(i).getDouble(0);
                 double lng = paths.getJSONArray(i).getDouble(1);
@@ -149,14 +226,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
             runOnUiThread(() -> MapsFragment.mMap.addPolyline(polylineOptions));
 
+            // Parse summary information
+            JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
+            double totalTime = summary.getDouble("totalTime");
+            double totalLength = summary.getDouble("totalLength");
+            double totalDriveTime = summary.getDouble("totalDriveTime");
 
-            double totalTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalTime");
-            double totalLength = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalLength");
-            double totalDriveTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalDriveTime");
 
-
-            TripPlan FinalRoute = new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
-            return FinalRoute;
+            return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
         } catch (JSONException e) {
             Log.e("MYAPP", "unexpected JSON exception", e);
             e.printStackTrace();
@@ -435,7 +512,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
 
-
     /*
      * Queries List of Bus Routes
      */
@@ -711,7 +787,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 for (int i = 0; i < routeFeatures.size(); i++) {
                     Feature currFeature = routeFeatures.get(i);
                     // TODO: fix to add parsing direction type
-                    textDirections.add(new ListItem(currFeature.getText(), Integer.toString(currFeature.getManeuverType()), 0, null, SearchTag.RESULT, null));
+                    textDirections.add(new ListItem(currFeature.getText(), String.valueOf(currFeature.getLength()), 0, currFeature.getManeuverType(), SearchTag.RESULT, null));
                 }
 
                 // Parse the trip plan into the BottomBar

@@ -2,8 +2,11 @@ package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -13,6 +16,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -40,6 +46,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -85,10 +92,40 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private boolean inDirectionsMode;
     private FloatingActionButton fabCancel;
     private FloatingActionButton fabSwap;
-    private String SearchBar;
+    private int SearchBar;
     private String srcBarText = "";
     private String destBarText = "";
     private RecyclerView directionsRecycler;
+    private static final int DEFAULT_DIRECTION = 0;
+    private static final int MAIN_SEARCH_BAR = 1;
+    private static final int SRC_SEARCH_BAR = 2;
+    private static final int DEST_SEARCH_BAR = 3;
+
+
+//    private void haveNetworkConnection() {
+//        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+//        System.out.println(activeNetwork);
+//        if (activeNetwork != null) {
+//            // connected to the internet
+//            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+//                // connected to wifi
+//            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+//                // connected to mobile data
+//            }
+//        } else {
+//            // not connected to the internet
+//            Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main),"Your network is unavailable. Check your data or wifi connection.",Snackbar.LENGTH_INDEFINITE);
+//            snackbar.setAction("RETRY", new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    haveNetworkConnection();
+//                }
+//            });
+//            snackbar.show();
+//        }
+//    }
+
 
     enum SearchTag {
         CATEGORY,
@@ -255,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
     }
 
-    private void requestFocusOnSearch(String whichSearchBar) {
+    private void requestFocusOnSearch(int whichSearchBar) {
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchView.requestFocus();
         materialSearchBar.setVisibility(View.GONE);
@@ -293,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         client = new OkHttpClient(); // Create OkHttpClient to be used in API request
-
+//        haveNetworkConnection();
         // Set the status bar to be transparent
         Window w = getWindow();
         w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -323,8 +360,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar.setHint("Aggie MapS");
         materialSearchBar.setElevation(5);
         materialSearchBar.setBackgroundColor(getColor(R.color.background));
-        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch("main"));
-        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("main"));
+        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
+        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
 
         // Set recyclers
         gisListItems = new ArrayList<>();
@@ -366,6 +403,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
         busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
+        RelativeLayout curLocationRow = (RelativeLayout) getLayoutInflater().inflate(R.layout.list_row, null);
+        TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
+        currTitleText.setText("Current location");
+        currTitleText.setOnClickListener(v -> {
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            mapsFragment.getDeviceLocation();
+            clearFocusOnSearch();
+        });
+        ll.addView(curLocationRow);
         ll.addView(gisSearchRecycler);
         ll.addView(busRoutesSearchRecycler);
         ll.addView(googleSearchRecycler);
@@ -450,14 +496,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         // 4. Create the views for the SearchBars
-        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch("src"));
-        destSearchBar.setOnClickListener(v -> requestFocusOnSearch("dest"));
+        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
+        destSearchBar.setOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
         srcSearchBar.setElevation(5);
         srcSearchBar.setBackgroundColor(getColor(R.color.background));
-        srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("src"));
+        srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
         destSearchBar.setElevation(5);
         destSearchBar.setBackgroundColor(getColor(R.color.background));
-        destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch("dest"));
+        destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
 
         // 5. Set the SearchView Settings
         // reuse materialSearchView settings
@@ -500,7 +546,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // 11. Initialize Source and Dest Container
         llSrcDestContainer = findViewById(R.id.ll_srcdest);
-
 
         // Initialize cancel fab and click listener
         fabCancel = findViewById(R.id.fab_cancel);
@@ -694,6 +739,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
+        // clear the map
+        MapsFragment.mMap.clear();
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
         enterDirectionsMode(gisSearchAdapter.getItem(position));
@@ -709,6 +756,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(googleSearchAdapter.getItem(position).position);
         selectedResult.title(googleSearchAdapter.getItem(position).title);
+        // clear the map
+        MapsFragment.mMap.clear();
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
         enterDirectionsMode(googleSearchAdapter.getItem(position));
@@ -740,7 +789,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      * TODO: Method to enter the directions screen from the main activity
      */
     public void enterDirectionsMode(ListItem destItem) {
-
         // Set the boolean value
         inDirectionsMode = true;
 
@@ -752,15 +800,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // Set text for src,dest
         if (destItem != null) {
-            if (SearchBar.equals("main")) {
+            if (SearchBar==MAIN_SEARCH_BAR){
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(destItem.title);
                 srcBarText = "Current location";
                 destBarText = destItem.title;
-            } else if (SearchBar.equals("src")) {
+            } else if (SearchBar==SRC_SEARCH_BAR){
                 srcSearchBar.setText(destItem.title);
                 srcBarText = destItem.title;
-            } else if (SearchBar.equals("dest")) {
+            } else if (SearchBar==DEST_SEARCH_BAR){
                 destSearchBar.setText(destItem.title);
                 destBarText = destItem.title;
             }
@@ -771,6 +819,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         mapsFragment.fabTimetable.setVisibility(View.GONE);
         mapsFragment.fabMyLocation.setVisibility(View.INVISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.INVISIBLE);
+        mapsFragment.fab_directions.setVisibility(View.INVISIBLE);
+        mapsFragment.fab_directions.setVisibility(View.INVISIBLE);
 
         // Hide the routes bottomsheet if it is open
         mapsFragment.standardBottomSheet.setVisibility(View.GONE);
@@ -824,7 +874,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
         mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
+        mapsFragment.fab_directions.setVisibility(View.VISIBLE);
         mapsFragment.standardBottomSheet.setVisibility(View.VISIBLE);
+
+        // clear the map
+        mapsFragment.mMap.clear();
 
         // Change the visibility of the BottomBar to "gone"
         bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);

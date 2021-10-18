@@ -39,6 +39,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.util.Pair;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -159,15 +160,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     class TripType {
-       public static final int WALK = 1;
-       public static final int WALK_ADA = 2;
-       public static final int DRIVE = 3;
-       public static final int DRIVE_ADA = 4;
-       public static final int BUS = 5;
-       public static final int BUS_ADA = 6;
-       public static final int BIKE = 7;
-       public static final int VISITOR_DRIVE = 8;
-       public static final int VISITOR_DRIVE_ADA = 9;
+        public static final int WALK = 1;
+        public static final int WALK_ADA = 2;
+        public static final int DRIVE = 3;
+        public static final int DRIVE_ADA = 4;
+        public static final int BUS = 5;
+        public static final int BUS_ADA = 6;
+        public static final int BIKE = 7;
+        public static final int VISITOR_DRIVE = 8;
+        public static final int VISITOR_DRIVE_ADA = 9;
 
     }
 
@@ -242,23 +243,103 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to fetch and a bus route on the map
      */
-    public JSONArray fetchBusRoute(String routeNo) {
+    public void updateBusRoute(String routeNo, int color, boolean zoom, boolean routeIsDrawn) {
         try {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/pattern")
-                    .build();
+            // Make the API call
+            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/pattern");
 
-            Response response = client.newCall(request).execute();
-            ResponseBody body = response.body();
+            // Create a builder for bounds to zoom to
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-            String str = Objects.requireNonNull(body).string();
+            // Parse the waypoints and stops
+            JSONArray stops = new JSONArray(str);
+            PolylineOptions polylineOptions = new PolylineOptions();
+            LatLng first = null;
 
-            return new JSONArray(str);
-        } catch (JSONException | IOException jsonException) {
+            ArrayList<Pair<String, LatLng>> busStops = new ArrayList<>();
+            for (int i = 0; i < stops.length(); i++) {
+
+                // Convert point and add to the polyline and builder
+                Point p = convertWebMercatorToLatLng(stops.getJSONObject(i).getDouble("Longtitude"),
+                        stops.getJSONObject(i).getDouble("Latitude"));
+                double y = p.getX();
+                double x = p.getY();
+                if (i == 0) {
+                    first = new LatLng(x, y);
+                }
+                Log.v("WAYPOINT/STOP", x + ", " + y);
+                polylineOptions.add(new LatLng(x, y));
+                builder.include(new LatLng(x, y));
+
+                // Add bus stop circles
+                if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
+                    MarkerOptions marker = new MarkerOptions();
+                    String title = stops.getJSONObject(i).getJSONObject("Stop").getString("Name");
+                    marker.flat(true);
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                    marker.title(title);
+                    marker.anchor(0.5F, 0.5F);
+                    marker.position(new LatLng(x, y));
+                    if (!routeIsDrawn)
+                        requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
+                    busStops.add(new Pair<>(title, new LatLng(x, y)));
+                }
+            }
+
+            // Animate the camera to the new bounds
+            int padding = 70;
+            LatLngBounds bounds = builder.build();
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            if (zoom && !routeIsDrawn) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+
+            // Draw polyline
+            assert first != null;
+            polylineOptions.add(first);
+            polylineOptions.color(color);
+            polylineOptions.width(10);
+            polylineOptions.geodesic(true);
+            polylineOptions.pattern(null);
+            polylineOptions.clickable(true);
+            AggieBusRoute newRoute = new AggieBusRoute(polylineOptions, busStops, bounds.northeast, bounds.southwest);
+            if (!routeIsDrawn) {
+                requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+                AggieBusRoute.writeData(requireActivity(), newRoute, routeNo);
+            }
+
+            Map<String, AggieBusRoute> route = AggieBusRoute.getData(requireActivity());
+            if (routeIsDrawn && currentRouteNo.equals(routeNo)) {
+
+                // Get AggiePolyline and check if the route doesn't already exist
+                AggieBusRoute aggieBusRoute = route.get(routeNo);
+                if (aggieBusRoute != null && !aggieBusRoute.equals(newRoute)) {
+                    Log.v("DRAW_ROUTE", "New Route Added");
+
+                    // Save the new route
+                    AggieBusRoute.writeData(requireActivity(), newRoute, routeNo);
+
+                    // Draw Polyline
+                    requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+
+                    // Draw Bus Stops
+                    for (Pair<String, LatLng> i : busStops) {
+                        MarkerOptions marker = new MarkerOptions();
+                        marker.flat(true);
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                        marker.anchor(0.5F, 0.5F);
+                        marker.position(i.second);
+                        marker.title(i.first);
+                        requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
+                    }
+
+                    // Zoom in
+                    if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+                }
+
+            }
+
+        } catch (JSONException jsonException) {
             jsonException.printStackTrace();
         }
-        return null;
     }
 
     /*
@@ -277,16 +358,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Draw polyline of route
             PolylineOptions newPolyline = aggieBusRoute.polylineOptions;
             newPolyline.color(color);
-            getActivity().runOnUiThread(() -> mMap.addPolyline(newPolyline));
+            requireActivity().runOnUiThread(() -> mMap.addPolyline(newPolyline));
 
             // Draw stops
-            for (LatLng i : aggieBusRoute.stops) {
+            for (Pair<String, LatLng> i : aggieBusRoute.stops) {
                 MarkerOptions marker = new MarkerOptions();
                 marker.flat(true);
                 marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
                 marker.anchor(0.5F, 0.5F);
-                marker.position(i);
-                getActivity().runOnUiThread(() -> mMap.addMarker(marker));
+                marker.title(i.first);
+                marker.position(i.second);
+                requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
             }
 
             // Zoom to bounds
@@ -295,69 +377,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             builder.include(aggieBusRoute.northEastBound);
             builder.include(aggieBusRoute.southWestBound);
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
-            if (zoom) getActivity().runOnUiThread(() -> mMap.animateCamera(cu));
-
-            return;
-
-        }
-        try {
-            // Make the API call
-            String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/route/" + routeNo + "/pattern");
-
-            // Create a builder for bounds to zoom to
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-            // Parse the waypoints and stops
-            JSONArray stops = new JSONArray(str);
-            PolylineOptions polylineOptions = new PolylineOptions();
-            LatLng first = null;
-
-            ArrayList<LatLng> busStops = new ArrayList<>();
-            for (int i = 0; i < stops.length(); i++) {
-
-                // Convert point and add to the polyline and builder
-                Point p = convertWebMercatorToLatLng(stops.getJSONObject(i).getDouble("Longtitude"),
-                        stops.getJSONObject(i).getDouble("Latitude"));
-                double y = p.getX();
-                double x = p.getY();
-                if (i == 0) {
-                    first = new LatLng(x, y);
-                }
-                Log.v("WAYPOINT/STOP", x + ", " + y);
-                polylineOptions.add(new LatLng(x, y));
-                builder.include(new LatLng(x, y));
-
-                // Add bus stop circles
-                if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
-                    MarkerOptions marker = new MarkerOptions();
-                    marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
-
-                    marker.anchor(0.5F, 0.5F);
-                    marker.position(new LatLng(x, y));
-                    requireActivity().runOnUiThread(() -> mMap.addMarker(marker));
-                    busStops.add(new LatLng(x, y));
-                }
-            }
-
-            // Animate the camera to the new bounds
-            int padding = 70;
-            LatLngBounds bounds = builder.build();
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
 
-            assert first != null;
-            polylineOptions.add(first);
-            polylineOptions.color(color);
-            polylineOptions.width(10);
-            polylineOptions.geodesic(true);
-            polylineOptions.pattern(null);
-            polylineOptions.clickable(true);
-            requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
-            AggieBusRoute.writeData(getActivity(), new AggieBusRoute(polylineOptions, busStops, bounds.northeast, bounds.southwest), routeNo);
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
-        }
+            updateBusRoute(routeNo, color, zoom, true);
+
+        } else updateBusRoute(routeNo, color, zoom, false);  // Always update route in the background
     }
 
 
@@ -432,7 +456,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
             ArrayList<Feature> features = new ArrayList<>();
-            for (int i=0; i < features_json.length(); i++) {
+            for (int i = 0; i < features_json.length(); i++) {
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
                 Feature new_feature = new Feature(attributes.getInt("length"), attributes.getInt("time"), attributes.getString("text"), attributes.getInt("ETA"), attributes.getString("maneuverType"));
                 features.add(new_feature);
@@ -447,7 +471,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
             ArrayList<LatLng> geometry = new ArrayList<>();
-            for (int i=0; i< paths.length(); i++) {
+            for (int i = 0; i < paths.length(); i++) {
                 LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
                 geometry.add(new_latlng);
             }
@@ -459,10 +483,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             polylineOptions.pattern(null);
             polylineOptions.clickable(true);
 
-            for (int i=0; i <paths.length(); i++) {
+            for (int i = 0; i < paths.length(); i++) {
                 double lat = paths.getJSONArray(i).getDouble(0);
                 double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng,lat);
+                LatLng latlng = new LatLng(lng, lat);
                 polylineOptions.add(latlng);
             }
             requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
@@ -473,11 +497,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             double totalDriveTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalDriveTime");
 
 
-            TripPlan FinalRoute = new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
-            return FinalRoute;
-        }catch (JSONException e) {
-            Log.e("MYAPP", "unexpected JSON exception", e);
-            // Do something to recover ...
+            return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -749,7 +771,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
 
         // Set the max height of the bottom sheet by putting it below the searchbar
-        View view = getActivity().findViewById(R.id.main_app_bar);
+        View view = requireActivity().findViewById(R.id.main_app_bar);
         if (view instanceof AppBarLayout) {
             ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
             if (viewTreeObserver.isAlive()) {
@@ -838,7 +860,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     private void setUpTimeTable(String viewMoreTime, boolean viewAll) {
         try {
-            Log.e("TESTVIEW", String.valueOf(viewAll));
             int viewTimesAmt = 4;
             requireActivity().runOnUiThread(() -> viewMoreBtn.setVisibility(View.VISIBLE));
             if (viewAll) {
@@ -969,14 +990,14 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 if (viewAll) {
                     vScroll.post(() -> vScroll.scrollTo(0, 15));
                 } else {
-                    vScroll.post(() -> vScroll.fullScroll(vScroll.FOCUS_DOWN));
+                    vScroll.post(() -> vScroll.fullScroll(View.FOCUS_DOWN));
                 }
 
                 // Set the max height of the time table if there are too many times
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 int height = displayMetrics.heightPixels;
-                View view = getActivity().findViewById(R.id.main_app_bar);
+                View view = requireActivity().findViewById(R.id.main_app_bar);
                 if (view instanceof AppBarLayout) {
                     ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
                     if (viewTreeObserver.isAlive()) {
@@ -1032,9 +1053,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
-     * Method to create and display all bus routes on the bottom sheet
+    * Method to update the list of bus routes in the bottom sheet
      */
-    private void setUpBusRoutes() {
+    private void updateBusRoutes() {
         try {
             String str = getApiCall("https://transport.tamu.edu/BusRoutesFeed/api/Routes");
             if (str == null) return;  // TODO: Call dialog or retry
@@ -1120,7 +1141,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusAdapter.setClickListener(this);
             gameDayAdapter.setClickListener(this);
 
-            // If no favorites don't show the list
+            // If no favorites, don't show the list
             if (favList.size() == 1) {
                 requireActivity().runOnUiThread(() -> {
                     favRoutes.setVisibility(View.GONE);
@@ -1136,6 +1157,51 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         busRoutes.addAll(onList);
         busRoutes.addAll(offList);
         busRoutes.addAll(gameDayList);
+        AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+        AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+    }
+
+    /*
+     * Method to create and display all bus routes on the bottom sheet
+     */
+    private void setUpBusRoutes() {
+        if (!isAdded()) return;
+        Map<String, AggieBusRoutes> cachedRoutes = AggieBusRoutes.getData(requireActivity());
+        if (cachedRoutes.containsKey("routes")) {
+            AggieBusRoutes aBRs = Objects.requireNonNull(cachedRoutes.get("routes"));
+            if (aBRs.favList != null) favList = aBRs.favList;
+            else favList = new ArrayList<>();
+            onList = aBRs.onList;
+            offList = aBRs.offList;
+            gameDayList = aBRs.gameDayList;
+
+            // Create adapters and add them to the recyclers
+            favAdapter = new FavAdapter(getActivity(), favList, BusRouteTag.FAVORITES);
+            onCampusAdapter = new OnCampusAdapter(getActivity(), onList, BusRouteTag.ON_CAMPUS);
+            offCampusAdapter = new OffCampusAdapter(getActivity(), offList, BusRouteTag.OFF_CAMPUS);
+            gameDayAdapter = new GameDayAdapter(getActivity(), gameDayList, BusRouteTag.GAME_DAY);
+            requireActivity().runOnUiThread(() -> {
+                favRoutes.setAdapter(favAdapter);
+                onCampusRoutes.setAdapter(onCampusAdapter);
+                offCampusRoutes.setAdapter(offCampusAdapter);
+                gameDayRoutes.setAdapter(gameDayAdapter);
+            });
+
+            // Set click listeners
+            favAdapter.setClickListener(this);
+            onCampusAdapter.setClickListener(this);
+            offCampusAdapter.setClickListener(this);
+            gameDayAdapter.setClickListener(this);
+
+            // If no favorites, don't show the list
+            if (favList.size() == 1) {
+                requireActivity().runOnUiThread(() -> {
+                    favRoutes.setVisibility(View.GONE);
+                    favoritesText.setVisibility(View.GONE);
+                });
+            }
+        }
+        updateBusRoutes();  // Always update the bus routes on start
     }
 
     /*
@@ -1169,7 +1235,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         // When a favorite is clicked, add to favorites, remove from prev list
         if (view instanceof MaterialButton) {
 
-            // Remove a route from it's list
+            // Remove a route from its list
             switch (tag) {
                 case ON_CAMPUS:
                     onList.remove(position);

@@ -44,6 +44,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
@@ -58,6 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import me.ibrahimsn.lib.SmoothBottomBar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -284,6 +286,28 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
 
+        // Set up BottomBar
+        SmoothBottomBar bottomBar = findViewById(R.id.bottom_bar);
+        bottomBar.setOnItemReselectedListener(i -> {
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        });
+
+        /*
+         * TODO: Initialize UI for Directions
+         *  Look above for help, most of this has been done once already above
+         * 1. Create new ArrayList of SearchResults
+         * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
+         * 3. Set toolbar and action bar
+         * 4. Create the views for the SearchView
+         * 5. Set the SearchView Settings
+         * 6. Initialize the BottomSheet
+         * 7. Get the BottomSheetBehavior
+         * 8. Set the settings of the BottomSheetBehavior
+         * 9. Initialize Progress Indicator
+         * 10. Initialize Main App Bar
+         * 11. Initialize Source and Dest Container
+         */
         materialSearchView.setOnFocusChangeListener(v -> {
 
         });
@@ -590,6 +614,5 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
         clearFocusOnSearch();
     }
-
 }
 

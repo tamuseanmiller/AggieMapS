@@ -112,7 +112,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
     private OkHttpClient client;  // Client to make API requests
-    private BottomSheetBehavior<View> standardBottomSheetBehavior;
+    public BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
     private OnCampusAdapter onCampusAdapter;
     private OffCampusAdapter offCampusAdapter;
@@ -379,7 +379,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
             if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
 
-            updateBusRoute(routeNo, color, zoom, true);
+            updateBusRoute(routeNo, color, false, true);
 
         } else updateBusRoute(routeNo, color, zoom, false);  // Always update route in the background
     }
@@ -1276,7 +1276,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         favoritesText.setVisibility(View.GONE);
                     }
                     favoritesSet.remove(busRoute.routeNumber);
-                    new Thread(this::saveFavorites).start();
+                    new Thread(() -> {
+                        AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+                        AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+                        saveFavorites();
+                    }).start();
                     return;
             }
 
@@ -1286,7 +1290,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             favAdapter.notifyItemInserted(favList.size() - 1);
             favRoutes.setVisibility(View.VISIBLE);
             favoritesText.setVisibility(View.VISIBLE);
-            new Thread(this::saveFavorites).start();
+            new Thread(() -> {
+                AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+                AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+                saveFavorites();
+            }).start();
             return;  // skip showing the route if
         }
 

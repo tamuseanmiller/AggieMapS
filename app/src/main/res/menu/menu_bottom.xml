@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/item1"
+        android:title="Automobile"
+        android:icon="@drawable/arrow_right_top"/>
+
+    <item
+        android:id="@+id/item2"
+        android:title="Bicycle"
+        android:icon="@drawable/clock"/>
+
+    <item
+        android:id="@+id/item0"
+        android:title="Buses"
+        android:icon="@drawable/bus"/>
+
+</menu>

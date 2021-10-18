@@ -42,5 +42,28 @@
         android:fitsSystemWindows="true"
         app:layout_anchor="@id/material_search_bar" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <me.ibrahimsn.lib.SmoothBottomBar
+            android:id="@+id/bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:backgroundColor="@color/background"
+            app:menu="@menu/menu_bottom"
+            app:indicatorColor="@color/foreground"
+            app:iconTintActive="@color/background"
+            app:iconTint="@color/foreground"
+            app:textColor="@color/background"
+            app:textSize="14sp"
+            app:sideMargins="20dp"
+            app:indicatorRadius="40dp"
+            app:itemPadding="12dp"
+            app:activeItem="2"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

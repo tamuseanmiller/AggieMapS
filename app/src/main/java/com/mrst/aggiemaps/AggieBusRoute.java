@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.navigation.NavType;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -19,17 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
-* Class used to cache polyline data, taken from
-* https://stackoverflow.com/questions/15502398/serialize-or-save-polylineoptions-in-android
+ * Class used to cache polyline data, taken from
+ * https://stackoverflow.com/questions/15502398/serialize-or-save-polylineoptions-in-android
  */
 public class AggieBusRoute {
 
     public PolylineOptions polylineOptions;
-    public ArrayList<LatLng> stops;
+    public ArrayList<Pair<String, LatLng>> stops;
     public LatLng northEastBound;
     public LatLng southWestBound;
 
-    public AggieBusRoute(PolylineOptions polylineOptions, ArrayList<LatLng> stops, LatLng northEastBound, LatLng southWestBound) {
+    public AggieBusRoute(PolylineOptions polylineOptions, ArrayList<Pair<String, LatLng>> stops, LatLng northEastBound, LatLng southWestBound) {
         this.polylineOptions = polylineOptions;
         this.stops = stops;
         this.northEastBound = northEastBound;
@@ -57,4 +59,12 @@ public class AggieBusRoute {
         return routes;
 
     }
+
+    public boolean equals(@NonNull AggieBusRoute newRoute) {
+        return newRoute.northEastBound == northEastBound &&
+                newRoute.southWestBound == southWestBound &&
+                newRoute.polylineOptions == polylineOptions &&
+                newRoute.stops == stops;
+    }
 }
+

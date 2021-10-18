@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
     android:layout_marginBottom="16dp">
 
     <!--     Timetable Sheet      -->
@@ -74,43 +75,93 @@
                     android:elevation="0dp"
                     android:indeterminate="true"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/route_card"/>
+                    app:layout_constraintTop_toBottomOf="@id/route_card" />
 
-                <HorizontalScrollView
-                    android:id="@+id/hSV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="true"
-                    android:scrollbarSize="0dp"
-                    android:layout_marginStart="20dp"
-                    app:layout_constraintStart_toEndOf="@id/drag_rec"
-                    app:layout_constraintTop_toBottomOf="@id/date_progress">
-
-                    <TableLayout
-                        android:id="@+id/tl_timetable"
+                    <HorizontalScrollView
+                        android:id="@+id/hSV"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:paddingEnd="40dp"
-                        android:layout_marginBottom="20dp"
-                        android:gravity="start"
-                        android:stretchColumns="*"/>
+                        android:nestedScrollingEnabled="true"
+                        android:scrollbarSize="0dp"
+                        app:layout_constraintStart_toEndOf="@id/drag_rec"
+                        app:layout_constraintTop_toBottomOf="@id/date_progress">
 
-                </HorizontalScrollView>
+                        <LinearLayout
+                            android:id="@+id/ll_table"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="13dp"
+                            android:orientation="vertical"
+                            android:layout_marginStart="20dp">
+
+                        <!-- This Table Layout is header followed by the table itself-->
+                        <TableLayout
+                            android:id="@+id/tl_timetable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="0dp"
+                            android:gravity="start"
+                            android:paddingEnd="40dp"
+                            android:stretchColumns="*" />
+
+                    <androidx.core.widget.NestedScrollView
+                        android:id="@+id/verticalScroll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fillViewport="true"
+                        android:overScrollMode="ifContentScrolls"
+                        android:fadeScrollbars="false">
+
+                            <TableLayout
+                                android:id="@+id/tl_times"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="start"
+                                android:paddingEnd="40dp"
+                                android:stretchColumns="*" />
+
+                    </androidx.core.widget.NestedScrollView>
+
+                        </LinearLayout>
+
+                    </HorizontalScrollView>
+
+<!--                </LinearLayout>-->
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/viewMoreBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="-16dp"
+                    android:layout_marginEnd="30dp"
+                    android:stateListAnimator="@null"
+                    android:background="@android:color/transparent"
+                    android:fontFamily="sans-serif-medium"
+                    app:icon="@drawable/chevron_right"
+                    app:iconPadding="-1dp"
+                    app:iconGravity="end"
+                    android:textAllCaps="false"
+                    app:iconTint="@color/foreground_60"
+                    android:text="@string/view_more"
+                    android:textColor="@color/foreground_60"
+                    android:textSize="16sp"
+                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    app:layout_constraintTop_toBottomOf="@id/hSV" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/try_another_date_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/hSV"
-                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    android:layout_marginStart="15dp"
+                    android:backgroundTint="@color/accent"
                     android:stateListAnimator="@null"
                     android:text="@string/try_another_date"
                     android:textColor="@color/white"
-                    android:backgroundTint="@color/accent"
-                    android:layout_marginTop="-10dp"
-                    android:layout_marginStart="20dp"
-                    app:cornerRadius="25dp"/>
+                    app:cornerRadius="25dp"
+                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    app:layout_constraintTop_toBottomOf="@id/viewMoreBtn" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

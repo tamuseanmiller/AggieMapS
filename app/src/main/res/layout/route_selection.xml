@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -22,13 +23,15 @@
         android:textColor="@color/foreground"
         android:textSize="17sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
         android:id="@+id/recycler_favorites"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:nestedScrollingEnabled="false"
         android:paddingBottom="16dp"
-        android:nestedScrollingEnabled="false"/>
+        app:msrv_gravity="start"
+        app:msrv_interval="2" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -42,13 +45,15 @@
         android:textColor="@color/foreground"
         android:textSize="17sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
         android:id="@+id/recycler_oncampus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:nestedScrollingEnabled="false"
         android:paddingBottom="16dp"
-        android:nestedScrollingEnabled="false"/>
+        app:msrv_gravity="start"
+        app:msrv_interval="2"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -62,13 +67,15 @@
         android:textColor="@color/foreground"
         android:textSize="17sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
         android:id="@+id/recycler_offcampus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:nestedScrollingEnabled="false"
         android:paddingBottom="16dp"
-        android:nestedScrollingEnabled="false"/>
+        app:msrv_gravity="start"
+        app:msrv_interval="2"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -82,12 +89,14 @@
         android:textColor="@color/foreground"
         android:textSize="17sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.takusemba.multisnaprecyclerview.MultiSnapRecyclerView
         android:id="@+id/recycler_gameday"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:nestedScrollingEnabled="false"
         android:paddingBottom="16dp"
-        android:nestedScrollingEnabled="false" />
+        app:msrv_gravity="start"
+        app:msrv_interval="2"/>
 
 </LinearLayout>

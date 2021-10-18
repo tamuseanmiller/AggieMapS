@@ -443,7 +443,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), task -> {
+                locationResult.addOnCompleteListener(requireActivity(), task -> {
                     if (task.isSuccessful()) {
                         // Set the map's camera position to the current location of the device.
                         lastKnownLocation = task.getResult();
@@ -455,6 +455,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         Log.d(TAG, "Current location is null. Using defaults.");
                         Log.e(TAG, "Exception: %s", task.getException());
                         LatLng collegeStation = new LatLng(30.611812, -96.329767);
+                        deviceLatLng = collegeStation;
                         mMap.animateCamera(CameraUpdateFactory
                                 .newLatLngZoom(collegeStation, 14.0f));
                         mMap.getUiSettings().setMyLocationButtonEnabled(false);
@@ -530,6 +531,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                              @Nullable Bundle savedInstanceState) {
 
         if (!isAdded()) return null;
+
+        // Set default latlng value
+        deviceLatLng = new LatLng(30.611812, -96.329767);
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);

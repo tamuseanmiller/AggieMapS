@@ -517,8 +517,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // 8. Set the settings of the BottomSheetBehavior
         bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
         bottomSheetBehavior.setHideable(false);
-        bottomSheetBehavior.setPeekHeight(100);
-        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetBehavior.setPeekHeight(findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(135));
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
         // Set the max height of the bottom sheet by putting it below the searchbar
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -824,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // Hide the routes bottomsheet if it is open
         mapsFragment.standardBottomSheet.setVisibility(View.GONE);
-        mapsFragment.standardBottomSheetBehavior.setState(mapsFragment.standardBottomSheetBehavior.STATE_COLLAPSED);
+        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         if (destItem != null) {
             // Start a progress indicator in one of the searchviews
             tripProgress.setVisibility(View.VISIBLE);
@@ -850,7 +850,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             // Change the visibility of the BottomBar to "visible"
 
             sheet.setVisibility(View.VISIBLE);
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
             // End the progress indicator
             tripProgress.setVisibility(View.INVISIBLE);

@@ -8,8 +8,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -27,8 +29,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,6 +44,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 
@@ -82,6 +83,26 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     enum SearchTag {
         CATEGORY,
         RESULT
+    }
+
+    // Checks if there is an internet connection. If not, it keeps checking for internet until it is connected.
+    int networkCheckCount = 1;
+    private void haveNetworkConnection() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null) {
+            if (networkCheckCount > 1) {
+                Toast.makeText(getApplicationContext(),"Connected!", Toast.LENGTH_LONG).show();
+            }
+        }
+       else {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main),"Your network is unavailable. Check your data or wifi connection.",Snackbar.LENGTH_INDEFINITE);
+            snackbar.setAction("RETRY", view -> {
+                haveNetworkConnection();
+                networkCheckCount += 1;
+            });
+            snackbar.show();
+       }
     }
 
     private void clearFocusOnSearch() {
@@ -123,11 +144,13 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
-
+        haveNetworkConnection();
         // Set current theme
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
         String theme = sharedPref.getString("theme", "system_theme");

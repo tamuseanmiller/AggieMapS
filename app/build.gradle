@@ -48,5 +48,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui:2.3.5"
     implementation "androidx.navigation:navigation-fragment:2.3.5"
     implementation 'io.github.lapism:search:1.0.0'
+    implementation 'com.github.AppIntro:AppIntro:6.1.0'
+    implementation 'com.guolindev.permissionx:permissionx:1.6.0'
 
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cl_main"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -28,11 +28,17 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/maps_fragment"
-        android:name="com.mrst.aggiemaps.MapsFragment"
+    <LinearLayout
+        android:id="@+id/ll_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"/>
+
+<!--    <androidx.fragment.app.FragmentContainerView-->
+<!--        android:id="@+id/maps_fragment"-->
+<!--        android:name="com.mrst.aggiemaps.MapsFragment"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
 
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
@@ -50,18 +56,19 @@
             android:id="@+id/bottom_bar"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:activeItem="2"
             app:backgroundColor="@color/background"
-            app:menu="@menu/menu_bottom"
-            app:indicatorColor="@color/foreground"
-            app:iconTintActive="@color/background"
+            app:iconSize="20dp"
             app:iconTint="@color/foreground"
-            app:textColor="@color/background"
-            app:textSize="14sp"
-            app:sideMargins="20dp"
+            app:iconTintActive="@color/background"
+            app:indicatorColor="@color/foreground"
             app:indicatorRadius="40dp"
             app:itemPadding="12dp"
-            app:activeItem="2"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:menu="@menu/menu_bottom"
+            app:sideMargins="20dp"
+            app:textColor="@color/background"
+            app:textSize="14sp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

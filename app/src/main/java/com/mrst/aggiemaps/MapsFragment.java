@@ -42,6 +42,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.core.util.Pair;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -788,6 +790,24 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         } else {
             standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
         }
+
+        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                if (slideOffset < 0.08) {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                } else {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                }
+            }
+        });
 
         // Set up right sheet for timetable
         rightSheet = mView.findViewById(R.id.timetable_sheet);

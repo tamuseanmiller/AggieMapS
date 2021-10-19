@@ -29,6 +29,9 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,6 +62,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import me.ibrahimsn.lib.OnItemSelectedListener;
 import me.ibrahimsn.lib.SmoothBottomBar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -81,6 +85,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
     private ArrayList<SearchResult> busRoutesSearchResults;
+    final MapsFragment mapsFragment1 = new MapsFragment();
+    final MapsFragment mapsFragment2 = new MapsFragment();
+    final BlankFragment blankFragment = new BlankFragment();
+    final Fragment[] active = {mapsFragment1};
 
     enum SearchTag {
         CATEGORY,
@@ -287,10 +295,30 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         });
 
         // Set up BottomBar
+        FragmentManager fm = getSupportFragmentManager();
+        fm.beginTransaction().add(R.id.ll_main, blankFragment, "0").hide(blankFragment).commit();
+        fm.beginTransaction().add(R.id.ll_main, mapsFragment2, "1").hide(mapsFragment2).commit();
+        fm.beginTransaction().add(R.id.ll_main, mapsFragment1, "2").commit();
+
         SmoothBottomBar bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.setOnItemReselectedListener(i -> {
-            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-            mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            if (i == 2) {
+                mapsFragment1.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            }
+        });
+
+        bottomBar.setOnItemSelectedListener((OnItemSelectedListener) i -> {
+            if (i == 1) {
+                fm.beginTransaction().hide(active[0]).show(mapsFragment2).commit();
+                active[0] = mapsFragment2;
+            } else if (i == 0) {
+                fm.beginTransaction().hide(active[0]).show(blankFragment).commit();
+                active[0] = blankFragment;
+            } else if (i == 2) {
+                fm.beginTransaction().hide(active[0]).show(mapsFragment1).commit();
+                active[0] = mapsFragment1;
+            }
+            return false;
         });
 
         /*
@@ -383,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
-            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
             if (mapsFragment != null) {
                 for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
@@ -601,7 +629,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onBusRouteClick(View view, int position) {
         MapsFragment.mMap.clear();
-        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+        MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
         if (mapsFragment != null) {
             for (BusRoute i : mapsFragment.busRoutes) {
                 if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {

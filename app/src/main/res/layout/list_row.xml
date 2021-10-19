@@ -18,15 +18,15 @@
         android:layout_height="wrap_content"
         app:fabCustomSize="40dp"
         app:elevation="0dp"
+        android:longClickable="false"
         app:borderWidth="0dp"
         android:backgroundTint="@color/accent"
-        app:tint="@color/foreground"
+        app:tint="@color/white"
         android:stateListAnimator="@null"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/arrow_right_top"
         android:layout_marginEnd="16dp"
-        android:clickable="false"
-        android:focusable="false"
+        android:enabled="false"
         android:contentDescription="@string/directional_arrow" />
 
     <TextView

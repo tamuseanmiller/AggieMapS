@@ -3,7 +3,6 @@ package com.mrst.aggiemaps;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -84,7 +83,6 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -112,7 +110,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
     private OkHttpClient client;  // Client to make API requests
-    private BottomSheetBehavior<View> standardBottomSheetBehavior;
+    public BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
     private OnCampusAdapter onCampusAdapter;
     private OffCampusAdapter offCampusAdapter;
@@ -132,25 +130,26 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private TableLayout tl_times;
     private TextView viewMoreBtn;
     public static String currentRouteNo;
-    private FloatingActionButton fabTimetable;
+    public FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
     public static GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers;
-    private FloatingActionButton fabMyLocation;
+    public FloatingActionButton fabMyLocation;
     private LinearProgressIndicator dateProgress;
-
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-
-    private View d;
     private TextView stopText;
     private NestedScrollView vScroll;
     private FrameLayout rightSheet;
+    public RecyclerView swipeRecycler;
+    public FrameLayout standardBottomSheet;
+    public FloatingActionButton fab_directions;
+    public LatLng deviceLatLng;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -444,67 +443,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
-    /*
-     * Method to create array of a route from two latlng coordinates
-     * returns a TripPlan obj
-     */
-    private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
-        try {
-
-            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
-            String result = getApiCall(call);
-
-            System.out.println((result));
-            JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
-            ArrayList<Feature> features = new ArrayList<>();
-            for (int i = 0; i < features_json.length(); i++) {
-                JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
-                Feature new_feature = new Feature(attributes.getInt("length"), attributes.getInt("time"), attributes.getString("text"), attributes.getInt("ETA"), attributes.getString("maneuverType"));
-                features.add(new_feature);
-            }
-//            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
-//            // parsing routes
-//            JSONObject spatialReference = new JSONObject(result).getJSONObject("routes").getJSONObject("spatialReference");
-//            String geometryType = new JSONObject(result).getJSONObject("routes").getString("geometryType");
-//            JSONObject attributes = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("attributes");
-//            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
-//            JSONArray directions = new JSONObject(result).getJSONArray("directions");
-
-            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
-            ArrayList<LatLng> geometry = new ArrayList<>();
-            for (int i = 0; i < paths.length(); i++) {
-                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
-                geometry.add(new_latlng);
-            }
-
-            PolylineOptions polylineOptions = new PolylineOptions();
-            //polylineOptions.color(color);
-            polylineOptions.width(10);
-            polylineOptions.geodesic(true);
-            polylineOptions.pattern(null);
-            polylineOptions.clickable(true);
-
-            for (int i = 0; i < paths.length(); i++) {
-                double lat = paths.getJSONArray(i).getDouble(0);
-                double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng, lat);
-                polylineOptions.add(latlng);
-            }
-            requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
-
-
-            double totalTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalTime");
-            double totalLength = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalLength");
-            double totalDriveTime = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary").getDouble("totalDriveTime");
-
-
-            return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
@@ -562,7 +500,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         }
     }
 
-    private void getDeviceLocation() {
+    public void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -570,25 +508,22 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            if (lastKnownLocation != null) {
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), 14.0f));
-                            }
-                        } else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-                            LatLng collegeStation = new LatLng(30.611812, -96.329767);
-                            mMap.animateCamera(CameraUpdateFactory
-                                    .newLatLngZoom(collegeStation, 14.0f));
-                            mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                locationResult.addOnCompleteListener(requireActivity(), task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        lastKnownLocation = task.getResult();
+                        if (lastKnownLocation != null) {
+                            deviceLatLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(deviceLatLng, 14.0f));
                         }
+                    } else {
+                        Log.d(TAG, "Current location is null. Using defaults.");
+                        Log.e(TAG, "Exception: %s", task.getException());
+                        LatLng collegeStation = new LatLng(30.611812, -96.329767);
+                        deviceLatLng = collegeStation;
+                        mMap.animateCamera(CameraUpdateFactory
+                                .newLatLngZoom(collegeStation, 14.0f));
+                        mMap.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
             }
@@ -697,6 +632,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         if (!isAdded()) return null;
 
+        // Set default latlng value
+        deviceLatLng = new LatLng(30.611812, -96.329767);
+
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
         // Construct a FusedLocationProviderClient.
@@ -710,7 +648,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         busMarkers = new ArrayList<>();
 
         // Set up recyclers
-        RecyclerView swipeRecycler = mView.findViewById(R.id.swipe_recycler);
+        swipeRecycler = mView.findViewById(R.id.swipe_recycler);
         favRoutes = mView.findViewById(R.id.recycler_favorites);
         favAdapter = null;
         onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
@@ -760,7 +698,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
         // Set up the bottom sheet
-        FrameLayout standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
+        standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
@@ -852,6 +790,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
+
+        // Initialize directions fab
+        fab_directions = mView.findViewById(R.id.fab_directions);
+        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(null));
 
         return mView;
     }
@@ -994,6 +936,16 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     vScroll.post(() -> vScroll.fullScroll(View.FOCUS_DOWN));
                 }
 
+                        vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                        TimelineDialogFragment dialog = new TimelineDialogFragment();
+                        Bundle bundle = new Bundle();
+                        try {
+                            bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI1).substring(36));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        dialog.setArguments(bundle);
+                        dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
                 // Set the max height of the time table if there are too many times
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

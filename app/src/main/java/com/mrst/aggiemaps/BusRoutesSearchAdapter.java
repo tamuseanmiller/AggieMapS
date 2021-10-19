@@ -17,12 +17,12 @@ import java.util.List;
 
 public class BusRoutesSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static List<SearchResult> mData;
+    private static List<ListItem> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    BusRoutesSearchAdapter(Context context, List<SearchResult> data) {
+    BusRoutesSearchAdapter(Context context, List<ListItem> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -34,7 +34,7 @@ public class BusRoutesSearchAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             case 1:
                 return new BusRoutesSearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new BusRoutesSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+                return new BusRoutesSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }
@@ -126,7 +126,7 @@ public class BusRoutesSearchAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     // convenience method for getting data at click position
-    SearchResult getItem(int id) {
+    ListItem getItem(int id) {
         return mData.get(id);
     }
 

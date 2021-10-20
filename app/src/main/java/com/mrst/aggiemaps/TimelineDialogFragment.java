@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-public class timelineDialogFragment extends DialogFragment {
+public class TimelineDialogFragment extends DialogFragment {
 
     private View view;
 

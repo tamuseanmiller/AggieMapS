@@ -17,12 +17,12 @@ import java.util.List;
 
 public class GISSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static List<SearchResult> mData;
+    private static List<ListItem> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    GISSearchAdapter(Context context, List<SearchResult> data) {
+    GISSearchAdapter(Context context, List<ListItem> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -35,7 +35,7 @@ public class GISSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             case 1:
                 return new GISSearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new GISSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.search_row, parent, false));
+                return new GISSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }
@@ -128,7 +128,7 @@ public class GISSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
     // convenience method for getting data at click position
-    SearchResult getItem(int id) {
+    ListItem getItem(int id) {
         return mData.get(id);
     }
 

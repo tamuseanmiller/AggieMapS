@@ -15,14 +15,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static List<ListItem> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    GoogleSearchAdapter(Context context, List<ListItem> data) {
+    DirectionsAdapter(Context context, List<ListItem> data) {
         this.mInflater = LayoutInflater.from(context);
         mData = data;
     }
@@ -33,9 +33,9 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
             case 1:
-                return new GoogleSearchAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+                return new DirectionsAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new GoogleSearchAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
+                return new DirectionsAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }
@@ -55,6 +55,7 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 holderList.subtitleText.setText(mData.get(position).subtitle);
                 if (mData.size() - 1 != position)
                     holderList.divider.setVisibility(View.VISIBLE);
+                holderList.directionIcon.setImageDrawable(mData.get(position).direction);
                 break;
         }
     }
@@ -106,7 +107,7 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public void onClick(View view) {
 
             if (mClickListener != null) {
-                mClickListener.onGoogleClick(view, getAdapterPosition());
+                mClickListener.onSEARCHClick(view, getAdapterPosition());
             }
         }
     }
@@ -139,7 +140,7 @@ public class GoogleSearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onGoogleClick(View view, int position);
+        void onSEARCHClick(View view, int position);
 
     }
 }

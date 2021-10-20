@@ -50,6 +50,7 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment:2.3.5"
     implementation 'io.github.lapism:search:1.0.0'
     implementation 'com.github.ibrahimsn98:SmoothBottomBar:1.7.8'
+    implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     // For control over item selection of both touch and mouse driven selection
@@ -58,4 +59,5 @@ dependencies {
     // navigation extensions
     implementation 'androidx.navigation:navigation-fragment-ktx:2.2.2'
     implementation 'androidx.navigation:navigation-ui-ktx:2.2.2'
+    implementation 'com.github.st235:expandablebottombar:1.4.0'
 }

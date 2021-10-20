@@ -13,6 +13,7 @@
     <string name="time_table">Time Table</string>
     <string name="try_another_date">Try Another Date</string>
     <string name="no_more_buses">No more buses are running today</string>
+    <string name="trip_type_for_route">Trip Type for Route</string>
     <string name="view_more">View more</string>
     <string name="voice_to_text">Voice to text</string>
     <string name="settings">Settings</string>

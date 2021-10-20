@@ -135,7 +135,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public static String currentRouteNo;
     public FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
-    public static GoogleMap mMap;       // The Map itself
+    public GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers;
@@ -144,8 +144,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
+    private final String KEY_CAMERA_POSITION = "camera_position";
+    private final String KEY_LOCATION = "location";
     private TextView stopText;
     public RecyclerView swipeRecycler;
     public FrameLayout standardBottomSheet;
@@ -575,13 +575,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String maps = sharedPref.getString("light_maps", "light");
                 switch (maps) {
                     case "light":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
                         break;
                     case "retro":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.retro));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.retro));
                         break;
                     case "classic":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.classic));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.classic));
                 }
             }
             // If dark mode is on
@@ -590,13 +590,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String maps = sharedPref.getString("dark_maps", "night");
                 switch (maps) {
                     case "dark":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.dark));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.dark));
                         break;
                     case "sin_city":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
                         break;
                     case "night":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.night));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.night));
                         break;
                 }
             } else {

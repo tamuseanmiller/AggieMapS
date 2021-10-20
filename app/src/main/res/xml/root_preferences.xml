@@ -8,6 +8,7 @@
             app:entryValues="@array/theme_values"
             app:key="theme"
             app:title="Default Theme"
+            app:icon="@drawable/brightness_6"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
@@ -16,6 +17,7 @@
             app:entryValues="@array/light_map_values"
             app:key="light_maps"
             app:title="Default Light Map Style"
+            app:icon="@drawable/map_outline"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
@@ -24,6 +26,7 @@
             app:entryValues="@array/dark_map_values"
             app:key="dark_maps"
             app:title="Default Dark Map Style"
+            app:icon="@drawable/map"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>

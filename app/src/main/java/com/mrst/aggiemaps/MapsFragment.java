@@ -147,9 +147,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private final String KEY_CAMERA_POSITION = "camera_position";
     private final String KEY_LOCATION = "location";
     private TextView stopText;
-    public RecyclerView swipeRecycler;
     public FrameLayout standardBottomSheet;
-    public FloatingActionButton fab_directions;
     public LatLng deviceLatLng;
     private NestedScrollView vScroll;
     private FrameLayout rightSheet;
@@ -652,8 +650,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
         busMarkers = new ArrayList<>();
 
-        // Set up recyclers
-        swipeRecycler = mView.findViewById(R.id.swipe_recycler);
         favRoutes = mView.findViewById(R.id.recycler_favorites);
         favAdapter = null;
         onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
@@ -662,31 +658,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         offCampusAdapter = null;
         gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
         gameDayAdapter = null;
-
-        // Set up the bus swiping action
-        swipeRecycler.setLayoutManager(new UnscrollableLinearLayoutManager(getActivity()));
-        List<String> l = new ArrayList<>();
-        l.add(" ");
-        SwipeAdapter swipeAdapter = new SwipeAdapter(getActivity(), l);
-        swipeRecycler.setAdapter(swipeAdapter);
-        swipeAdapter.setClickListener(this);
-
-        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-                if (rightSheetBehavior.getState() != RightSheetBehavior.STATE_COLLAPSED)
-                    rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
-                swipeAdapter.notifyItemChanged(0);
-            }
-        });
-        helper.attachToRecyclerView(null);
-        helper.attachToRecyclerView(swipeRecycler);
 
         // Set decorations for the recyclers
         ColumnProvider col = () -> 1;
@@ -813,10 +784,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
-
-        // Initialize directions fab
-        fab_directions = mView.findViewById(R.id.fab_directions);
-        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(null));
 
         return mView;
     }

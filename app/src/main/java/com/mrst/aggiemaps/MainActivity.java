@@ -463,8 +463,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
         currTitleText.setText("Current location");
         currTitleText.setOnClickListener(v -> {
-            MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
-            mapsFragment.getDeviceLocation();
+            mapsFragment1.getDeviceLocation();
             clearFocusOnSearch();
         });
         ll.addView(curLocationRow);
@@ -521,6 +520,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         fm.beginTransaction().add(R.id.ll_main, mapsFragment1, "2").commit();
 
         ExpandableBottomBar bottomBar = findViewById(R.id.bottom_bar);
+        bottomBar.getMenu().select(R.id.item0);
         bottomBar.setOnItemReselectedListener((i, j, k) -> {
             if (j.getId() == R.id.item0) {
                 mapsFragment1.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
@@ -583,6 +583,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             nav.setTint(getColor(R.color.foreground));
             actionBar.setIcon(nav);
         }
+        setSupportActionBar(materialSearchBar.getToolbar());
 
         // 4. Create the views for the SearchBars
         srcSearchBar.setOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));

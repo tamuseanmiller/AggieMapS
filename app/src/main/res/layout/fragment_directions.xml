@@ -1,108 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cl_main"
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    tools:context=".DirectionsFragment">
 
-    <!-- Circular progress indicator -->
-    <com.google.android.material.progressindicator.CircularProgressIndicator
-        android:id="@+id/trip_progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        android:visibility="invisible" />
-
-    <!-- Default Search Bar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/main_app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:elevation="0.1dp"
-        android:fitsSystemWindows="true"
-        android:stateListAnimator="@null">
-
-        <!-- Simple MaterialToolbar extension -->
-        <com.lapism.search.widget.MaterialSearchBar
-            android:id="@+id/material_search_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="0dp"
-            app:layout_scrollFlags="enterAlways|snap" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <LinearLayout
-        android:id="@+id/ll_main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"/>
-
-<!--    <androidx.fragment.app.FragmentContainerView-->
-<!--        android:id="@+id/maps_fragment"-->
-<!--        android:name="com.mrst.aggiemaps.MapsFragment"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
-
-    <com.lapism.search.widget.MaterialSearchView
-        android:id="@+id/material_search_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="0dp"
-        android:fitsSystemWindows="true"
-        app:layout_anchor="@id/material_search_bar" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <github.com.st235.lib_expandablebottombar.ExpandableBottomBar
-            android:id="@+id/bottom_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="70dp"
-            android:layout_margin="20dp"
-            app:exb_backgroundCornerRadius="60dp"
-            app:exb_itemInactiveColor="@color/background"
-            app:exb_items="@menu/menu_bottom"
-            app:exb_backgroundColor="@color/foreground"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"/>
-
-<!--        <me.ibrahimsn.lib.SmoothBottomBar-->
-<!--            android:id="@+id/bottom_bar"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="80dp"-->
-<!--            app:activeItem="2"-->
-<!--            app:backgroundColor="@color/background"-->
-<!--            app:iconSize="20dp"-->
-<!--            app:iconTint="@color/foreground"-->
-<!--            app:iconTintActive="@color/background"-->
-<!--            app:indicatorColor="@color/foreground"-->
-<!--            app:indicatorRadius="40dp"-->
-<!--            app:itemPadding="12dp"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:menu="@menu/menu_bottom"-->
-<!--            app:sideMargins="20dp"-->
-<!--            app:textColor="@color/background"-->
-<!--            app:textSize="14sp" />-->
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-<!--  Source and Dest Search Bar Container  -->
     <LinearLayout
         android:id="@+id/ll_srcdest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:visibility="gone"
         android:orientation="vertical">
 
         <!-- Source Search Bar -->
@@ -268,5 +182,6 @@
 
     </FrameLayout>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+</fragment>

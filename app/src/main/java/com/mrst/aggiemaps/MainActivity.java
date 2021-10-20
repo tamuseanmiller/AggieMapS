@@ -36,6 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -71,8 +72,6 @@ import java.util.List;
 import java.util.Objects;
 
 import github.com.st235.lib_expandablebottombar.ExpandableBottomBar;
-import github.com.st235.lib_expandablebottombar.MenuItemDescriptor;
-import me.ibrahimsn.lib.OnItemSelectedListener;
 import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -94,10 +93,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
-    final MapsFragment mapsFragment1 = new MapsFragment();
-    final MapsFragment mapsFragment2 = new MapsFragment();
+    final MapsFragment mapsFragment = new MapsFragment();
+    final DirectionsFragment directionsFragment = new DirectionsFragment();
     final BlankFragment blankFragment = new BlankFragment();
-    final Fragment[] active = {mapsFragment1};
+    Fragment active = mapsFragment;
     private ArrayList<ListItem> busRoutesListItems;
     private MaterialSearchBar srcSearchBar;
     private MaterialSearchBar destSearchBar;
@@ -463,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
         currTitleText.setText("Current location");
         currTitleText.setOnClickListener(v -> {
-            mapsFragment1.getDeviceLocation();
+            mapsFragment.getDeviceLocation();
             clearFocusOnSearch();
         });
         ll.addView(curLocationRow);
@@ -516,28 +515,28 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Set up BottomBar
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().add(R.id.ll_main, blankFragment, "0").hide(blankFragment).commit();
-        fm.beginTransaction().add(R.id.ll_main, mapsFragment2, "1").hide(mapsFragment2).commit();
-        fm.beginTransaction().add(R.id.ll_main, mapsFragment1, "2").commit();
+        fm.beginTransaction().add(R.id.ll_main, directionsFragment, "1").hide(directionsFragment).commit();
+        fm.beginTransaction().add(R.id.ll_main, mapsFragment, "2").commit();
 
         ExpandableBottomBar bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.getMenu().select(R.id.item0);
         bottomBar.setOnItemReselectedListener((i, j, k) -> {
             if (j.getId() == R.id.item0) {
-                mapsFragment1.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
             }
             return null;
         });
 
         bottomBar.setOnItemSelectedListener((i, j, k) -> {
             if (j.getId() == R.id.blank) {
-                fm.beginTransaction().hide(active[0]).show(mapsFragment2).commit();
-                active[0] = mapsFragment2;
+                fm.beginTransaction().hide(active).show(directionsFragment).commit();
+                active = directionsFragment;
             } else if (j.getId() == R.id.maps) {
-                fm.beginTransaction().hide(active[0]).show(blankFragment).commit();
-                active[0] = blankFragment;
+                fm.beginTransaction().hide(active).show(blankFragment).commit();
+                active = blankFragment;
             } else if (j.getId() == R.id.item0) {
-                fm.beginTransaction().hide(active[0]).show(mapsFragment1).commit();
-                active[0] = mapsFragment1;
+                fm.beginTransaction().hide(active).show(mapsFragment).commit();
+                active = mapsFragment;
             }
             return null;
         });
@@ -716,7 +715,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
-            MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
+            MapsFragment mapsFragment = (MapsFragment) this.mapsFragment;
             if (mapsFragment != null) {
                 for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
@@ -919,8 +918,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MapsFragment.mMap.clear();
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(gisSearchAdapter.getItem(position));
-
+        //enterDirectionsMode(gisSearchAdapter.getItem(position));
+        directionsFragment.createDirections(gisSearchAdapter.getItem(position));
         clearFocusOnSearch();
     }
 
@@ -936,7 +935,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MapsFragment.mMap.clear();
         MapsFragment.mMap.addMarker(selectedResult);
         MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(googleSearchAdapter.getItem(position));
+        //enterDirectionsMode(googleSearchAdapter.getItem(position));
+        directionsFragment.createDirections(googleSearchAdapter.getItem(position));
 
         clearFocusOnSearch();
     }
@@ -947,7 +947,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onBusRouteClick(View view, int position) {
         MapsFragment.mMap.clear();
-        MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
+        MapsFragment mapsFragment = (MapsFragment) this.mapsFragment;
         if (mapsFragment != null) {
             for (BusRoute i : mapsFragment.busRoutes) {
                 if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
@@ -991,7 +991,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         // Get rid of buses button, timetable button, and find me button
-        MapsFragment mapsFragment = (MapsFragment) mapsFragment1;
+        MapsFragment mapsFragment = (MapsFragment) this.mapsFragment;
         mapsFragment.fabTimetable.setVisibility(View.GONE);
         mapsFragment.fabMyLocation.setVisibility(View.INVISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.INVISIBLE);
@@ -1047,7 +1047,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         llSrcDestContainer.setVisibility(View.GONE);
 
         // Add back the buses button, timetable button, find me button, and close the bus routes bottom sheet.
-        MapsFragment mapsFragment = mapsFragment1;
+        MapsFragment mapsFragment = this.mapsFragment;
         mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
         mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
         mapsFragment.fab_directions.setVisibility(View.VISIBLE);

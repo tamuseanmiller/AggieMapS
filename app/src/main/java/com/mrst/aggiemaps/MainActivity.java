@@ -629,7 +629,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     RecognizerIntent.EXTRA_RESULTS);
             String spokenText = results.get(0);
             // Add the spoken text to the searchbar
-            requestFocusOnSearch();
+            requestFocusOnSearch(MAIN_SEARCH_BAR);
             materialSearchView.setTextQuery(spokenText, true);
         }
         super.onActivityResult(requestCode, resultCode, data);

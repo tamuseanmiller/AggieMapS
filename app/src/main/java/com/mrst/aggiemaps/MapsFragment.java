@@ -936,16 +936,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     vScroll.post(() -> vScroll.fullScroll(View.FOCUS_DOWN));
                 }
 
-                        vMoreTextView.setTextColor(ContextCompat.getColor(requireActivity(), R.color.foreground));
-                        TimelineDialogFragment dialog = new TimelineDialogFragment();
-                        Bundle bundle = new Bundle();
-                        try {
-                            bundle.putString("nextStop", timetableArray.getJSONObject(0).names().getString(finalI1).substring(36));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        dialog.setArguments(bundle);
-                        dialog.show(getActivity().getSupportFragmentManager(), "timeline dialog fragment");
                 // Set the max height of the time table if there are too many times
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

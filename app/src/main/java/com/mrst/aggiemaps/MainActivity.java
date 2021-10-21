@@ -42,6 +42,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.maps.CameraUpdate;
@@ -100,17 +102,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
-    final MapsFragment mapsFragment = new MapsFragment();
-    final DirectionsFragment directionsFragment = new DirectionsFragment();
-    final BlankFragment blankFragment = new BlankFragment();
     final SettingsFragment settingsFragment = new SettingsFragment();
-    Fragment active = mapsFragment;
     private ArrayList<ListItem> busRoutesListItems;
-    private MaterialSearchBar srcSearchBar;
-    private MaterialSearchBar destSearchBar;
     private AppBarLayout defaultSearchBar;
-    private ExpandableBottomBar bottomBar;
+    public ExpandableBottomBar bottomBar;
     public int whichSearchBar;
+    private ViewPager2 viewPager;
+
+    /**
+     * The pager adapter, which provides the pages to the view pager widget.
+     */
+    private FragmentStateAdapter pagerAdapter;
 
     public static final int MAIN_SEARCH_BAR = 1;
     public static final int SRC_SEARCH_BAR = 2;
@@ -247,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.clearFocus();
         materialSearchView.setVisibility(View.GONE);
         showSystemUI();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
 
         if (whichSearchBar > 1) {
             directionsFragment.clearFocusOnSearch();
@@ -385,6 +388,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
         currTitleText.setText("Current location");
         currTitleText.setOnClickListener(v -> {
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
             mapsFragment.getDeviceLocation();
             clearFocusOnSearch();
         });
@@ -435,12 +439,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
 
-        // Set up BottomBar
+        // Set up BottomBar with viewpager
+        viewPager = findViewById(R.id.pager);
+        pagerAdapter = new BottomPagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setUserInputEnabled(false);
+        viewPager.setOffscreenPageLimit(3);
+        pagerAdapter.createFragment(0);
+        pagerAdapter.createFragment(1);
+        pagerAdapter.createFragment(2);
+        viewPager.setCurrentItem(2);
+
+        // Add the settings fragment to the fragment manager
         FragmentManager fm = getSupportFragmentManager();
         fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commit();
-        fm.beginTransaction().add(R.id.ll_main, blankFragment, "0").hide(blankFragment).commit();
-        fm.beginTransaction().add(R.id.ll_main, directionsFragment, "1").hide(directionsFragment).commit();
-        fm.beginTransaction().add(R.id.ll_main, mapsFragment, "2").commit();
 
         // Create bottom bar
         bottomBar = findViewById(R.id.bottom_bar);
@@ -449,11 +461,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Get bus routes on tap
         bottomBar.setOnItemReselectedListener((i, j, k) -> {
             if (j.getId() == R.id.item0) {
-                if (active == settingsFragment) {
+
+                // If settings is visible, get rid of it and make the bar visible
+                if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
                     materialSearchBar.setVisibility(View.VISIBLE);
-                    fm.beginTransaction().hide(active).show(mapsFragment).commit();
-                    active = mapsFragment;
+                    fm.beginTransaction().hide(settingsFragment).commit();
                 } else {
+                    // Open the bus routes bottom sheet
+                    MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
                     mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 }
             }
@@ -462,18 +477,16 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // Switch between fragments on tap
         bottomBar.setOnItemSelectedListener((i, j, k) -> {
+            fm.beginTransaction().hide(settingsFragment).commit();
             if (j.getId() == R.id.blank) {
                 materialSearchBar.setVisibility(View.GONE);
-                fm.beginTransaction().hide(active).show(directionsFragment).commit();
-                active = directionsFragment;
+                viewPager.setCurrentItem(1);
             } else if (j.getId() == R.id.maps) {
                 materialSearchBar.setVisibility(View.GONE);
-                fm.beginTransaction().hide(active).show(blankFragment).commit();
-                active = blankFragment;
+                viewPager.setCurrentItem(0);
             } else if (j.getId() == R.id.item0) {
                 materialSearchBar.setVisibility(View.VISIBLE);
-                fm.beginTransaction().hide(active).show(mapsFragment).commit();
-                active = mapsFragment;
+                viewPager.setCurrentItem(2);
             }
             return null;
         });
@@ -527,8 +540,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 displaySpeechRecognizer();
                 break;
             case R.id.action_settings:
-                getSupportFragmentManager().beginTransaction().hide(active).show(settingsFragment).commit();
-                active = settingsFragment;
+                getSupportFragmentManager().beginTransaction().show(settingsFragment).commit();
                 break;
         }
         if (id == R.id.action_microphone) {
@@ -549,7 +561,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
-            MapsFragment mapsFragment = (MapsFragment) this.mapsFragment;
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
             if (mapsFragment != null) {
                 for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
@@ -687,8 +699,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         } else if (materialSearchBar.getVisibility() == View.GONE) {
             exitDirectionsMode();
         }
-        if (active == settingsFragment) {
-            getSupportFragmentManager().beginTransaction().hide(active).show(mapsFragment).commit();
+        // Hide settings fragment if open
+        if (!getSupportFragmentManager().findFragmentByTag("3").isHidden()) {
+            getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
         }
     }
 
@@ -752,6 +765,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
         clearFocusOnSearch();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
 
         // If not the main search bar, enter for directions
         if (whichSearchBar != MAIN_SEARCH_BAR) {
@@ -788,6 +803,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         selectedResult.position(googleSearchAdapter.getItem(position).position);
         selectedResult.title(googleSearchAdapter.getItem(position).title);
         clearFocusOnSearch();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
 
         // If not the main search bar, enter for directions
         if (whichSearchBar != MAIN_SEARCH_BAR) {
@@ -813,7 +830,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     public void switchTheme(String newValue) {
-        switch(newValue) {
+        switch (newValue) {
             case "light":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 break;
@@ -831,6 +848,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onBusRouteClick(View view, int position) {
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
         mapsFragment.mMap.clear();
         for (BusRoute i : mapsFragment.busRoutes) {
             if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
@@ -852,11 +870,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar.setVisibility(View.GONE);
 
         // Create the directions on the directions fragment
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         directionsFragment.createDirections(destItem);
 
         // Show the directions fragment
-        getSupportFragmentManager().beginTransaction().hide(active).show(directionsFragment).commit();
-        active = directionsFragment;
+        viewPager.setCurrentItem(1);
 
         // Set the bottom bar selection and visibility
         bottomBar.getMenu().select(R.id.blank);
@@ -870,8 +888,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public void exitDirectionsMode() {
 
         // Show the directions fragment
-        getSupportFragmentManager().beginTransaction().hide(active).show(mapsFragment).commit();
-        active = mapsFragment;
+        viewPager.setCurrentItem(2);
 
         // Set the bottom bar selection and visibility
         bottomBar.getMenu().select(R.id.item0);

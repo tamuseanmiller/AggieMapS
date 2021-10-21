@@ -13,6 +13,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -52,8 +53,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             return true;
         });
 
-        MapsFragment mapsFragment = ((MainActivity) requireActivity()).mapsFragment;
-        DirectionsFragment directionsFragment = ((MainActivity) requireActivity()).directionsFragment;
+        DirectionsFragment directionsFragment = (DirectionsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
         //assert mapsFragment != null;
 
         // Listen for light map style change
@@ -111,6 +112,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        view.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
         final RecyclerView rv = getListView(); // This holds the PreferenceScreen's items
         rv.setPadding(convertDpToPx(16), convertDpToPx(80), 0, 0);
         super.onViewCreated(view, savedInstanceState);

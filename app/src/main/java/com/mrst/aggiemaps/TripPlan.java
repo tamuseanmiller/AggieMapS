@@ -6,7 +6,6 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
-// TODO: change maneuverType to enum in the future
 class Feature {
     private double length;
     private double time;

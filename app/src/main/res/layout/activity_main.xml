@@ -8,6 +8,11 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <!-- Circular progress indicator -->
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/trip_progress"

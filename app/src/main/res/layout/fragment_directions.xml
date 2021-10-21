@@ -112,6 +112,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleSelection="true"
+                app:selectionRequired="true"
                 android:layout_marginStart="16dp">
 
                 <com.google.android.material.chip.Chip

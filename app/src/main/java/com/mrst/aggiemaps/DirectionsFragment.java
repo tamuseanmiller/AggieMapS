@@ -40,10 +40,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lapism.search.widget.MaterialSearchBar;
@@ -232,12 +234,12 @@ public class DirectionsFragment extends Fragment {
             }
 
             // Animate the camera to the new bounds
-            int padding = 70;
+            int padding = 400;
             LatLngBounds bounds = builder.build();
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
             requireActivity().runOnUiThread(() -> {
-                mMap.addPolyline(polylineOptions);  // Add polylin
+                mMap.addPolyline(polylineOptions);  // Add polyline
                 mMap.animateCamera(cu);
             });
 
@@ -320,7 +322,7 @@ public class DirectionsFragment extends Fragment {
          * user has installed Google Play services and returned to the app.
          */
         @Override
-        public void onMapReady(GoogleMap googleMap) {
+        public void onMapReady(@NonNull GoogleMap googleMap) {
             mMap = googleMap;
             LatLng collegeStation = new LatLng(30.611812, -96.329767);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(collegeStation, 13.0f));
@@ -366,6 +368,37 @@ public class DirectionsFragment extends Fragment {
 
             // Get the current location of the device and set the position of the map.
             getDeviceLocation();
+
+            // Setting a click event handler for the map
+            mMap.setOnMapClickListener(latLng -> {
+
+                // Creating a marker
+                MarkerOptions markerOptions = new MarkerOptions();
+
+                // Setting the position for the marker
+                markerOptions.position(latLng);
+
+                // Setting the title for the marker.
+                // This will be displayed on taping the marker
+                markerOptions.title(latLng.latitude + ", " + latLng.longitude);
+
+                // Placing a marker on the touched position
+                googleMap.addMarker(markerOptions);
+
+                // Add location to one of the bars
+                if (srcItem == null) {
+                    srcItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, null, MainActivity.SearchTag.RESULT, latLng);
+                    srcSearchBar.setText(srcItem.title);
+                } else if (destItem == null) {
+                    destItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, null, MainActivity.SearchTag.RESULT, latLng);
+                    destSearchBar.setText(destItem.title);
+                    createDirections(destItem);
+                } else {
+                    srcItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, null, MainActivity.SearchTag.RESULT, latLng);
+                    srcSearchBar.setText(srcItem.title);
+                    createDirections(srcItem);
+                }
+            });
         }
     };
 
@@ -530,7 +563,7 @@ public class DirectionsFragment extends Fragment {
         tripTypeGroup = mView.findViewById(R.id.trip_type_group);
         tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (sheet.getVisibility() == View.VISIBLE) {
-                ((MainActivity)requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
+                ((MainActivity) requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
                 createDirections(destItem);
             }
         });
@@ -598,6 +631,7 @@ public class DirectionsFragment extends Fragment {
     }
 
     public void createDirections(ListItem itemTapped) {
+        ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE);
         mMap.clear();
         if (itemTapped != null) {
             int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
@@ -620,17 +654,18 @@ public class DirectionsFragment extends Fragment {
                 // Get Trip Plan and input into
                 new Thread(() -> {
                     TripPlan newTripPlan;
-                    switch(tripTypeGroup.getCheckedChipId()) {
-                        case 1: // Car
+                    Chip c = tripTypeGroup.findViewById(tripTypeGroup.getCheckedChipId());
+                    switch (c.getText().toString()) {
+                        case "Car": // Car
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.DRIVE);
                             break;
-                        case 2: // Bus
+                        case "Bus": // Bus
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BUS);
                             break;
-                        case 3: // Bike
+                        case "Bike": // Bike
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BIKE);
                             break;
-                        case 4: // Walk
+                        case "Walk": // Walk
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.WALK);
                             break;
                         default:
@@ -647,7 +682,7 @@ public class DirectionsFragment extends Fragment {
 //                        if (distFt > 600) {
 //                            distText = Math.round((distFt / 5280.0) * 100.0) / 100.0 + " miles";
 //                        } else {
-                            distText = String.format("%.2f miles", distFt);
+                        distText = String.format("%.2f miles", distFt);
 //                        }
                         double timeSec = currFeature.getTime();
                         String timeText;
@@ -661,7 +696,7 @@ public class DirectionsFragment extends Fragment {
                         textDirections.add(new ListItem(currFeature.getText(), distText + timeText, 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
                     }
 
-                    // Parse the trip plan into the BottomBar
+                    // Parse the trip plan into the Bottom Sheet
                     requireActivity().runOnUiThread(() -> {
                         directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
                         directionsRecycler.setAdapter(directionsAdapter);

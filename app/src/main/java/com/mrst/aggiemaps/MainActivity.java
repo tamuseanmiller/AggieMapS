@@ -289,12 +289,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
-        client = new OkHttpClient();  // Create OkHttpClient to be used in API request
-        haveNetworkConnection();
         // Set current theme
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
         String theme = sharedPref.getString("theme", "system_theme");
@@ -309,6 +303,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+        client = new OkHttpClient();  // Create OkHttpClient to be used in API request
+        haveNetworkConnection();
 
         // Set the status bar to be transparent
         Window w = getWindow();
@@ -761,6 +760,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         } else {
             mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
             mapsFragment.mMap.addMarker(selectedResult);
+            Drawable directions = ContextCompat.getDrawable(this, R.drawable.directions);
+            directions.setTint(ContextCompat.getColor(this, R.color.foreground));
             mapsFragment.mMap.setOnMarkerClickListener(marker -> {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("Directions")
@@ -769,8 +770,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                             directionsFragment.mMap.addMarker(selectedResult);
                             enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, null, SearchTag.RESULT, marker.getPosition()));
                         })
-                        .setIcon(R.drawable.directions)
+                        .setIcon(directions)
                         .setCancelable(true)
+                        .setNegativeButton("No", null)
                         .show();
                 return false;
             });
@@ -807,6 +809,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         .show();
                 return false;
             });
+        }
+    }
+
+    public void switchTheme(String newValue) {
+        switch(newValue) {
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            case "system_theme":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
         }
     }
 

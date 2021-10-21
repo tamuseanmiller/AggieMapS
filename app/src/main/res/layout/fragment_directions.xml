@@ -108,61 +108,71 @@
             </com.google.android.material.appbar.AppBarLayout>
 
             <com.google.android.material.chip.ChipGroup
+                android:id="@+id/trip_type_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:singleSelection="true"
                 android:layout_marginStart="16dp">
 
                 <com.google.android.material.chip.Chip
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="true"
                     android:layout_marginEnd="5dp"
                     android:text="Car"
-                    android:textColor="@color/white"
-                    app:chipBackgroundColor="@color/accent"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
                     app:chipIcon="@drawable/car"
                     app:chipIconSize="18dp"
-                    app:chipIconTint="@color/white"
-                    app:chipStartPadding="5dp"
+                    app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
                     android:layout_marginEnd="5dp"
                     android:text="Bus"
-                    android:textColor="@color/background"
-                    app:chipBackgroundColor="@color/foreground"
                     app:chipIcon="@drawable/bus"
                     app:chipIconSize="18dp"
-                    app:chipIconTint="@color/background"
-                    app:chipStartPadding="5dp"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
                     android:layout_marginEnd="5dp"
                     android:text="Bike"
-                    android:textColor="@color/background"
-                    app:chipBackgroundColor="@color/foreground"
                     app:chipIcon="@drawable/bike"
                     app:chipIconSize="18dp"
-                    app:chipIconTint="@color/background"
-                    app:chipStartPadding="6dp"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
                     android:layout_marginEnd="5dp"
                     android:text="Walk"
-                    android:textColor="@color/background"
-                    app:chipBackgroundColor="@color/foreground"
                     app:chipIcon="@drawable/walk"
                     app:chipIconSize="18dp"
-                    app:chipIconTint="@color/background"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
                     app:iconEndPadding="-3dp"
-                    app:iconStartPadding="10dp" />
+                    app:iconStartPadding="5dp" />
 
             </com.google.android.material.chip.ChipGroup>
 

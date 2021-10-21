@@ -2,6 +2,8 @@ package com.mrst.aggiemaps;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
@@ -31,19 +34,21 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         int currentNightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         preferenceManager.findPreference("theme").setOnPreferenceChangeListener((preference, newValue) -> {
-            switch (newValue.toString()) {
-                case "light":
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    break;
-                case "dark":
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    break;
-                case "system_theme":
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                    break;
-            }
+            MainActivity mA = ((MainActivity) requireActivity());
             editor.putString("theme", newValue.toString());
             editor.apply();
+            new MaterialAlertDialogBuilder(requireActivity())
+                    .setCancelable(true)
+                    .setTitle("Restart")
+                    .setMessage("Would you like to restart to apply changes?")
+                    .setPositiveButton("Yes", (dialogInterface, i) -> {
+                        mA.switchTheme(newValue.toString());
+                        Intent intent = mA.getIntent();
+                        mA.finish();
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("Later", null)
+                    .show();
             return true;
         });
 
@@ -107,7 +112,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         final RecyclerView rv = getListView(); // This holds the PreferenceScreen's items
-        rv.setPadding(convertDpToPx(16),  convertDpToPx(80), 0, 0);
+        rv.setPadding(convertDpToPx(16), convertDpToPx(80), 0, 0);
         super.onViewCreated(view, savedInstanceState);
     }
 }

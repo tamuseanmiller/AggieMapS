@@ -15,24 +15,7 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent
         </item>
-    </style>
-
-    <!-- Settings activity theme. -->
-    <style name="Theme.AggieMapS.ActionBar" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/red_300</item>
-        <item name="colorPrimaryVariant">@color/red_500</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorPrimaryDark">@color/accentDark</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/pink_200</item>
-        <item name="colorSecondaryVariant">@color/pink_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
-        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.MediumComponent
-        </item>
+        <item name="preferenceTheme">@style/AggieMapS.Preference</item>
     </style>
 
     <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
@@ -100,6 +83,20 @@
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="contentPadding">0dp</item>
+    </style>
+
+    <style name="AggieMapS.Preference" parent="@style/PreferenceThemeOverlay.v14.Material">
+        <item name="android:tint">@color/foreground</item>
+    </style>
+
+    <style name="AggieMapS.Chip.Choice" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipIconVisible">true</item>
+        <item name="materialThemeOverlay">@style/s</item>
+
+    </style>
+
+    <style name="s">
+        <item name="elevationOverlayEnabled">false</item>
     </style>
 
 </resources>

@@ -24,8 +24,6 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,6 +43,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lapism.search.widget.MaterialSearchBar;
 
@@ -84,6 +83,7 @@ public class DirectionsFragment extends Fragment {
     private FloatingActionButton fabMyLocation;
     private ListItem srcItem;
     private ListItem destItem;
+    public ChipGroup tripTypeGroup;
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -521,6 +521,14 @@ public class DirectionsFragment extends Fragment {
         fabSwap = mView.findViewById(R.id.fab_swap);
         fabSwap.setOnClickListener(v -> swapDirections());
 
+        tripTypeGroup = mView.findViewById(R.id.trip_type_group);
+        tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (sheet.getVisibility() == View.VISIBLE) {
+                ((MainActivity)requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
+                createDirections(destItem);
+            }
+        });
+
         return mView;
     }
 
@@ -584,7 +592,23 @@ public class DirectionsFragment extends Fragment {
 
                 // Get Trip Plan and input into
                 new Thread(() -> {
-                    TripPlan newTripPlan = getTripPlan(srcItem.position, destItem.position, 1);
+                    TripPlan newTripPlan;
+                    switch(tripTypeGroup.getCheckedChipId()) {
+                        case 1: // Car
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.DRIVE);
+                            break;
+                        case 2: // Bus
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BUS);
+                            break;
+                        case 3: // Bike
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BIKE);
+                            break;
+                        case 4: // Walk
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.WALK);
+                            break;
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
+                    }
                     ArrayList<ListItem> textDirections = new ArrayList<>();
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
                     for (int i = 0; i < routeFeatures.size(); i++) {
@@ -597,8 +621,6 @@ public class DirectionsFragment extends Fragment {
                     requireActivity().runOnUiThread(() -> {
                         directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
                         directionsRecycler.setAdapter(directionsAdapter);
-                        srcSearchBar.setText("Current Location");
-                        destSearchBar.setText(itemTapped.title);
                     });
                 }).start();
 

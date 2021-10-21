@@ -190,8 +190,8 @@ public class DirectionsFragment extends Fragment {
             for (int i = 0; i < features_json.length(); i++) {
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
                 Drawable manueverType = parseManeuverType(attributes.getString("maneuverType"));
-                int length = attributes.getInt("length");
-                int time = attributes.getInt("time");
+                double length = attributes.getDouble("length");
+                double time = attributes.getDouble("time");
                 String text = attributes.getString("text");
                 int ETA = attributes.getInt("ETA");
                 Feature new_feature = new Feature(length, time, text, ETA, manueverType);
@@ -503,7 +503,7 @@ public class DirectionsFragment extends Fragment {
                     @Override
                     public void onGlobalLayout() {
                         view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2);
+                        bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() - convertDpToPx(16));
                     }
                 });
             }
@@ -642,19 +642,19 @@ public class DirectionsFragment extends Fragment {
                         Feature currFeature = routeFeatures.get(i);
 
                         // Convert feature length and time to readable formatted String
-                        long distFt = currFeature.getLength();
+                        double distFt = currFeature.getLength();
                         String distText;
-                        if (distFt > 600) {
-                            distText = Math.round((distFt / 5280.0) * 100.0) / 100.0 + " miles";
-                        } else {
-                            distText = distFt + " feet";
-                        }
-                        long timeSec = currFeature.getTime();
+//                        if (distFt > 600) {
+//                            distText = Math.round((distFt / 5280.0) * 100.0) / 100.0 + " miles";
+//                        } else {
+                            distText = String.format("%.2f miles", distFt);
+//                        }
+                        double timeSec = currFeature.getTime();
                         String timeText;
                         if (timeSec >= 120) {
-                            timeText = " (" + Math.round((timeSec / 60.0) * 10.0) / 10.0 + " minutes)";
+                            timeText = String.format(" (%.2f minutes)", Math.round((timeSec / 60.0) * 10.0) / 10.0);
                         } else {
-                            timeText = " (" + timeSec + " seconds)";
+                            timeText = String.format(" (%.2f seconds)", timeSec);
                         }
 
                         // Add list item

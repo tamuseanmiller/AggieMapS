@@ -8,13 +8,13 @@ import java.util.ArrayList;
 
 // TODO: change maneuverType to enum in the future
 class Feature {
-    private long length;
-    private long time;
+    private double length;
+    private double time;
     private String text;
     private long eta;
     private Drawable maneuverType;
 
-    public Feature(long length, long time, String text, long eta, Drawable maneuverType) {
+    public Feature(double length, double time, String text, long eta, Drawable maneuverType) {
         this.length = length;
         this.time = time;
         this.text = text;
@@ -22,11 +22,11 @@ class Feature {
         this.maneuverType = maneuverType;
     }
 
-    public long getLength() {
+    public double getLength() {
         return length;
     }
 
-    public long getTime() {
+    public double getTime() {
         return time;
     }
 

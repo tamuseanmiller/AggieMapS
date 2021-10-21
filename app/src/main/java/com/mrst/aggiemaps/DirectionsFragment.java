@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,6 +85,9 @@ public class DirectionsFragment extends Fragment {
     private ListItem srcItem;
     private ListItem destItem;
     public ChipGroup tripTypeGroup;
+    private TextView tripTime;
+    private TextView tripLength;
+    private TextView etaClockTime;
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -518,9 +522,11 @@ public class DirectionsFragment extends Fragment {
             exitDirections();
         });
 
+        // Initialize the fab for swapping
         fabSwap = mView.findViewById(R.id.fab_swap);
         fabSwap.setOnClickListener(v -> swapDirections());
 
+        // Initilize the trip type chip group
         tripTypeGroup = mView.findViewById(R.id.trip_type_group);
         tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (sheet.getVisibility() == View.VISIBLE) {
@@ -528,6 +534,11 @@ public class DirectionsFragment extends Fragment {
                 createDirections(destItem);
             }
         });
+
+        // Create Directions bottom sheet header items
+        tripTime = mView.findViewById(R.id.eta_min);
+        tripLength = mView.findViewById(R.id.trip_total_length);
+        etaClockTime = mView.findViewById(R.id.eta_time);
 
         return mView;
     }
@@ -570,6 +581,22 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
+    /*
+     * Method converts nautical miles into feet
+     * Probably needs to be changed just place holding until I double check units
+     */
+    private int convertMilesToFeet(double miles) {
+        return (int) (miles * 5280);
+    }
+
+    /*
+     * Method converts minutes into seconds
+     * Probably needs to be changed just place holding until I double check units
+     */
+    private int convertMinutesToSeconds(double minutes) {
+        return (int) (minutes * 60);
+    }
+
     public void createDirections(ListItem itemTapped) {
         mMap.clear();
         if (itemTapped != null) {
@@ -587,7 +614,7 @@ public class DirectionsFragment extends Fragment {
                 destSearchBar.setText(itemTapped.title);
                 destItem = itemTapped;
             }
-            
+
             if (destItem != null && srcItem != null) {
 
                 // Get Trip Plan and input into
@@ -613,14 +640,36 @@ public class DirectionsFragment extends Fragment {
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
                     for (int i = 0; i < routeFeatures.size(); i++) {
                         Feature currFeature = routeFeatures.get(i);
-                        // TODO: fix to add parsing direction type
-                        textDirections.add(new ListItem(currFeature.getText(), String.valueOf(currFeature.getLength()), 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
+
+                        // Convert feature length and time to readable formatted String
+                        long distFt = currFeature.getLength();
+                        String distText;
+                        if (distFt > 600) {
+                            distText = Math.round((distFt / 5280.0) * 100.0) / 100.0 + " miles";
+                        } else {
+                            distText = distFt + " feet";
+                        }
+                        long timeSec = currFeature.getTime();
+                        String timeText;
+                        if (timeSec >= 120) {
+                            timeText = " (" + Math.round((timeSec / 60.0) * 10.0) / 10.0 + " minutes)";
+                        } else {
+                            timeText = " (" + timeSec + " seconds)";
+                        }
+
+                        // Add list item
+                        textDirections.add(new ListItem(currFeature.getText(), distText + timeText, 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
                     }
 
                     // Parse the trip plan into the BottomBar
                     requireActivity().runOnUiThread(() -> {
                         directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
                         directionsRecycler.setAdapter(directionsAdapter);
+
+                        // Set bottom sheet header items
+                        tripTime.setText(String.format("%.2fmin", newTripPlan.getTotalTime()));
+                        tripLength.setText(String.format("%.2fkm", newTripPlan.getTotalLength()));
+                        etaClockTime.setText(String.format("ETA %.2f", newTripPlan.getTotalTime() + 20));
                     });
                 }).start();
 

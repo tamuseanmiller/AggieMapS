@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -67,9 +68,14 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.OkHttpClient;
@@ -77,7 +83,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener {
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, RecentSearchesAdapter.ItemClickListener{
 
     private static final int SPEECH_REQUEST_CODE = 0;
     private MaterialSearchBar materialSearchBar;
@@ -93,6 +99,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
     private ArrayList<ListItem> busRoutesListItems;
+    private ArrayList<ListItem> recentSearchesListItems;
+    private RecentSearchesAdapter recentSearchesAdapter;
+    private RecyclerView recentSearchesRecycler;
     private MaterialSearchBar srcSearchBar;
     private MaterialSearchBar destSearchBar;
     private BottomSheetBehavior<View> bottomSheetBehavior;
@@ -108,37 +117,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private String srcBarText = "";
     private String destBarText = "";
     private RecyclerView directionsRecycler;
-    private static final int DEFAULT_DIRECTION = 0;
     private static final int MAIN_SEARCH_BAR = 1;
     private static final int SRC_SEARCH_BAR = 2;
     private static final int DEST_SEARCH_BAR = 3;
-
-
-//    private void haveNetworkConnection() {
-//        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-//        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-//        System.out.println(activeNetwork);
-//        if (activeNetwork != null) {
-//            // connected to the internet
-//            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-//                // connected to wifi
-//            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-//                // connected to mobile data
-//            }
-//        } else {
-//            // not connected to the internet
-//            Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main),"Your network is unavailable. Check your data or wifi connection.",Snackbar.LENGTH_INDEFINITE);
-//            snackbar.setAction("RETRY", new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    haveNetworkConnection();
-//                }
-//            });
-//            snackbar.show();
-//        }
-//    }
-
-
+    private static final int GIS_ADAPTER = 1;
+    private static final int GOOGLE_ADAPTER = 2;
+    private List<ListItem> recentSearchesTemp;
     enum SearchTag {
         CATEGORY,
         RESULT
@@ -249,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
             String result = getApiCall(call);
-            System.out.println((result));
+//            System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
 
             // Parse every feature
@@ -417,6 +401,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         gisListItems = new ArrayList<>();
         googleListItems = new ArrayList<>();
         busRoutesListItems = new ArrayList<>();
+        recentSearchesListItems = new ArrayList<>();
         NestedScrollView nSV = new NestedScrollView(this);
         LinearLayout ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
@@ -426,6 +411,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         googleSearchAdapter.setClickListener(this);
         busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
         busRoutesSearchAdapter.setClickListener(this);
+        recentSearchesListItems.clear();
+        Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
+        // Testing purposes
+        if (cachedRecentSearches.containsKey("recentSearches")){
+            List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
+            if (recentSearchesList != null) {
+                recentSearchesListItems.addAll(recentSearchesList);
+            }
+        }
+
+
+        recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
+        recentSearchesAdapter.setClickListener(this);
+
         gisSearchRecycler = new RecyclerView(this);
         gisSearchRecycler.suppressLayout(true);
         gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
@@ -453,6 +452,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
         busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
+
+        recentSearchesRecycler = new RecyclerView(this);
+        recentSearchesRecycler.suppressLayout(true);
+        recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
+        recentSearchesRecycler.setAdapter(recentSearchesAdapter);
+
         RelativeLayout curLocationRow = (RelativeLayout) getLayoutInflater().inflate(R.layout.list_row, null);
         TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
         currTitleText.setText("Current location");
@@ -462,6 +472,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             clearFocusOnSearch();
         });
         ll.addView(curLocationRow);
+        ll.addView(recentSearchesRecycler);
         ll.addView(gisSearchRecycler);
         ll.addView(busRoutesSearchRecycler);
         ll.addView(googleSearchRecycler);
@@ -877,6 +888,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onGISClick(View view, int position) {
+        addRecentSearches(GIS_ADAPTER, position);
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
@@ -894,6 +906,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onGoogleClick(View view, int position) {
+        addRecentSearches(GOOGLE_ADAPTER, position);
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(googleSearchAdapter.getItem(position).position);
         selectedResult.title(googleSearchAdapter.getItem(position).title);
@@ -925,6 +938,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
         clearFocusOnSearch();
     }
+
+    /*
+     * When a Recent Searches Result is tapped, show the recent searched
+     */
+    public void onRecentSearchClick(View view, int position) {
+        MapsFragment.mMap.clear();
+        clearFocusOnSearch();
+    }
+
 
     /*
      * TODO: Method to enter the directions screen from the main activity
@@ -1035,5 +1057,38 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
     }
 
+    /*
+    A helper function to update the arraylist of recent searches and shared prefs
+     */
+    private void addRecentSearches(int adapter, int position) {
+        Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
+        // Testing purposes
+        if (cachedRecentSearches.containsKey("recentSearches")){
+            List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
+            if (recentSearchesList != null) {
+                recentSearchesTemp = recentSearchesList;
+//                Log.e("Recent Searches size", String.valueOf(recentSearchesList.size()));
+//                Log.e("recentSearches", recentSearchesList.toString());
+            }
+        }
+        else{
+            recentSearchesTemp= new ArrayList<>();
+            recentSearchesTemp.add(new ListItem("Recents", "", 0, null, SearchTag.CATEGORY, null));
+        }
+
+        if (recentSearchesTemp.size() == 5) {
+            recentSearchesTemp.remove(0);
+        }
+        switch (adapter) {
+            case (GIS_ADAPTER):
+                if (!recentSearchesTemp.contains(gisSearchAdapter.getItem(position)))
+                    recentSearchesTemp.add(gisSearchAdapter.getItem(position));
+            case (GOOGLE_ADAPTER):
+                if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position)))
+                    recentSearchesTemp.add(googleSearchAdapter.getItem(position));
+        }
+        RecentSearches rs = new RecentSearches(recentSearchesTemp);
+        RecentSearches.writeData(getApplicationContext(), rs, "recentSearches");
+    }
 }
 

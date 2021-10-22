@@ -1,17 +1,23 @@
 package com.mrst.aggiemaps;
 
 import static com.google.gson.internal.$Gson$Types.arrayOf;
+import static com.mrst.aggiemaps.R.layout.custom_intro;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -32,7 +38,7 @@ public class AppIntroduction extends AppIntro{
         super.onCreate(savedInstanceState);
 
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        Boolean b = sharedPreferences.getBoolean(AppIntro_Seen,false);
+
         if (sharedPreferences.getBoolean(AppIntro_Seen,false)){
             addSlide(AppIntroFragment.newInstance());
             startActivity(new Intent(getApplicationContext(),MainActivity.class));
@@ -54,6 +60,7 @@ public class AppIntroduction extends AppIntro{
 
             // custom slide for the cache button
             addSlide(AppIntroCustomLayoutFragment.newInstance(R.layout.custom_intro));
+
 
             addSlide(AppIntroFragment.newInstance("Locations Permission",
                     "Please allow AggieMapS to access your location. We will use it to optimize " +
@@ -98,7 +105,15 @@ public class AppIntroduction extends AppIntro{
 
             //Dhow/hide ALL buttons
             setButtonsEnabled(true);
+
         }
+        //TODO: Cache Buses Button does not work
+        ConstraintLayout custom_intro = (ConstraintLayout) getLayoutInflater().inflate(R.layout.custom_intro, null);
+        Button cacheBusesBtn =  custom_intro.findViewById(R.id.cacheBusesBtn);
+
+        cacheBusesBtn.setOnClickListener(view -> {
+            Toast.makeText(getApplicationContext(), "TESTHERE", Toast.LENGTH_SHORT).show();
+        });
 
     }
 

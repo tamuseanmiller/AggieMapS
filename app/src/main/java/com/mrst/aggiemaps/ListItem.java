@@ -1,10 +1,20 @@
 package com.mrst.aggiemaps;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.gson.Gson;
 
-public class ListItem {
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ListItem implements Serializable {
     public String title;
     public String subtitle;
     public int color;

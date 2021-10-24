@@ -411,17 +411,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         googleSearchAdapter.setClickListener(this);
         busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
         busRoutesSearchAdapter.setClickListener(this);
-        recentSearchesListItems.clear();
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
         // Testing purposes
         if (cachedRecentSearches.containsKey("recentSearches")){
             List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
+                recentSearchesListItems.clear();
                 recentSearchesListItems.addAll(recentSearchesList);
             }
         }
-
-
         recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
         recentSearchesAdapter.setClickListener(this);
 
@@ -1067,8 +1065,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
                 recentSearchesTemp = recentSearchesList;
-//                Log.e("Recent Searches size", String.valueOf(recentSearchesList.size()));
-//                Log.e("recentSearches", recentSearchesList.toString());
             }
         }
         else{
@@ -1089,6 +1085,12 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
         RecentSearches rs = new RecentSearches(recentSearchesTemp);
         RecentSearches.writeData(getApplicationContext(), rs, "recentSearches");
+
+
+        recentSearchesListItems.clear();
+        recentSearchesListItems.addAll(recentSearchesTemp);
+        recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
+        recentSearchesAdapter.setClickListener(this);
+        recentSearchesRecycler.setAdapter(recentSearchesAdapter);
     }
 }
-

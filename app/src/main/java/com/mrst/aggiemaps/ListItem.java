@@ -30,4 +30,8 @@ public class ListItem implements Serializable {
         this.tag = tag;
         this.position = position;
     }
+
+    public void setDirection(Drawable direction) {
+        this.direction = direction;
+    }
 }

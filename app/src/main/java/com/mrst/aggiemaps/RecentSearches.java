@@ -8,14 +8,14 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class RecentSearches {
 
-    List<ListItem> recentSearchesList;
+    LinkedList<ListItem> recentSearchesList;
 
-    public RecentSearches(List<ListItem> searchesList) {
+    public RecentSearches(LinkedList<ListItem> searchesList) {
         this.recentSearchesList = searchesList;
     }
 

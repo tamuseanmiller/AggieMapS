@@ -83,7 +83,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, RecentSearchesAdapter.ItemClickListener{
+public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, RecentSearchesAdapter.ItemClickListener {
 
     private static final int SPEECH_REQUEST_CODE = 0;
     private MaterialSearchBar materialSearchBar;
@@ -122,7 +122,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private static final int DEST_SEARCH_BAR = 3;
     private static final int GIS_ADAPTER = 1;
     private static final int GOOGLE_ADAPTER = 2;
-    private List<ListItem> recentSearchesTemp;
+    private LinkedList<ListItem> recentSearchesTemp;
+
     enum SearchTag {
         CATEGORY,
         RESULT
@@ -130,22 +131,22 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
     // Checks if there is an internet connection. If not, it keeps checking for internet until it is connected.
     int networkCheckCount = 1;
+
     private void haveNetworkConnection() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         if (netInfo != null) {
             if (networkCheckCount > 1) {
-                Toast.makeText(getApplicationContext(),"Connected!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
             }
-        }
-       else {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main),"Your network is unavailable. Check your data or wifi connection.",Snackbar.LENGTH_INDEFINITE);
+        } else {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main), "Your network is unavailable. Check your data or wifi connection.", Snackbar.LENGTH_INDEFINITE);
             snackbar.setAction("RETRY", view -> {
                 haveNetworkConnection();
                 networkCheckCount += 1;
             });
             snackbar.show();
-       }
+        }
     }
 
     enum ManeuverType {
@@ -175,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     private Drawable parseManeuverType(String maneuverType) {
-        switch(maneuverType) {
+        switch (maneuverType) {
             case "esriDMTStop":
                 return ContextCompat.getDrawable(this, R.drawable.close_octagon);
             case "esriDMTStraight":
@@ -413,8 +414,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         busRoutesSearchAdapter.setClickListener(this);
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
         // Testing purposes
-        if (cachedRecentSearches.containsKey("recentSearches")){
-            List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
+        if (cachedRecentSearches.containsKey("recentSearches")) {
+            Queue<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
                 recentSearchesListItems.clear();
                 recentSearchesListItems.addAll(recentSearchesList);
@@ -937,11 +938,23 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         clearFocusOnSearch();
     }
 
+
     /*
      * When a Recent Searches Result is tapped, show the recent searched
      */
+    @Override
     public void onRecentSearchClick(View view, int position) {
+        ListItem recentSearch = recentSearchesAdapter.getItem(position);
+
+        MarkerOptions selectedResult = new MarkerOptions();
+        selectedResult.position(recentSearch.position);
+        selectedResult.title(recentSearch.title);
+        // clear the map
         MapsFragment.mMap.clear();
+        MapsFragment.mMap.addMarker(selectedResult);
+        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recentSearch.position, 18.0f));
+        enterDirectionsMode(recentSearch);
+
         clearFocusOnSearch();
     }
 
@@ -961,15 +974,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // Set text for src,dest
         if (destItem != null) {
-            if (SearchBar==MAIN_SEARCH_BAR){
+            if (SearchBar == MAIN_SEARCH_BAR) {
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(destItem.title);
                 srcBarText = "Current location";
                 destBarText = destItem.title;
-            } else if (SearchBar==SRC_SEARCH_BAR){
+            } else if (SearchBar == SRC_SEARCH_BAR) {
                 srcSearchBar.setText(destItem.title);
                 srcBarText = destItem.title;
-            } else if (SearchBar==DEST_SEARCH_BAR){
+            } else if (SearchBar == DEST_SEARCH_BAR) {
                 destSearchBar.setText(destItem.title);
                 destBarText = destItem.title;
             }
@@ -1059,38 +1072,54 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     A helper function to update the arraylist of recent searches and shared prefs
      */
     private void addRecentSearches(int adapter, int position) {
+        Drawable recentIcon = ContextCompat.getDrawable(this,R.drawable.history);
+        recentIcon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(this,R.color.accent)));
+
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
-        // Testing purposes
-        if (cachedRecentSearches.containsKey("recentSearches")){
-            List<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
+        // Get the cached recent searches list otherwise create a new temp linkedlist
+        if (cachedRecentSearches.containsKey("recentSearches")) {
+            LinkedList<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
                 recentSearchesTemp = recentSearchesList;
             }
-        }
-        else{
-            recentSearchesTemp= new ArrayList<>();
-            recentSearchesTemp.add(new ListItem("Recents", "", 0, null, SearchTag.CATEGORY, null));
+        } else {
+            recentSearchesTemp = new LinkedList<>();
+            recentSearchesTemp.addFirst(new ListItem("Recents", "", 0, null, SearchTag.CATEGORY, null));
         }
 
-        if (recentSearchesTemp.size() == 5) {
-            recentSearchesTemp.remove(0);
+        // Remove the first search as it is the most least recent.
+        if (recentSearchesTemp.size() > 5) {
+            recentSearchesTemp.removeLast();
         }
-        switch (adapter) {
-            case (GIS_ADAPTER):
-                if (!recentSearchesTemp.contains(gisSearchAdapter.getItem(position)))
-                    recentSearchesTemp.add(gisSearchAdapter.getItem(position));
-            case (GOOGLE_ADAPTER):
-                if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position)))
-                    recentSearchesTemp.add(googleSearchAdapter.getItem(position));
+
+        // Get the data from the appropriate adapter and add it to the temp list
+        if (adapter == GIS_ADAPTER) {
+            if (!recentSearchesTemp.contains(gisSearchAdapter.getItem(position))) {
+                ListItem temp = gisSearchAdapter.getItem(position);
+                temp.setDirection(recentIcon);
+                recentSearchesTemp.add(1, temp);
+            }
+        } else if (adapter == GOOGLE_ADAPTER) {
+            if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position))) {
+                ListItem temp = googleSearchAdapter.getItem(position);
+                temp.setDirection(recentIcon);
+                recentSearchesTemp.add(1, temp);
+            }
         }
-        RecentSearches rs = new RecentSearches(recentSearchesTemp);
-        RecentSearches.writeData(getApplicationContext(), rs, "recentSearches");
 
-
+        // Update the search view
         recentSearchesListItems.clear();
         recentSearchesListItems.addAll(recentSearchesTemp);
         recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
         recentSearchesAdapter.setClickListener(this);
         recentSearchesRecycler.setAdapter(recentSearchesAdapter);
+
+        for(ListItem i: recentSearchesTemp){
+            i.setDirection(null);
+        }
+
+        // Write to shared Prefs
+        RecentSearches rs = new RecentSearches(recentSearchesTemp);
+        RecentSearches.writeData(getApplicationContext(), rs, "recentSearches");
     }
 }

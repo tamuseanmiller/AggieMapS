@@ -20,7 +20,7 @@
         app:elevation="0dp"
         android:longClickable="false"
         app:borderWidth="0dp"
-        android:backgroundTint="@color/accent"
+        app:backgroundTint="@color/accent"
         app:tint="@color/white"
         android:stateListAnimator="@null"
         android:layout_centerVertical="true"

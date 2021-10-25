@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_search"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:layout_marginStart="10dp"
+    android:layout_marginBottom="10dp">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/direction_icon"
+        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabCustomSize="35dp"
+        app:elevation="0dp"
+        android:longClickable="false"
+        app:borderWidth="0dp"
+        app:backgroundTint="@color/accent"
+        app:tint="@color/white"
+        android:stateListAnimator="@null"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/map_marker_outline"
+        app:maxImageSize="20dp"
+        android:layout_marginEnd="5dp"
+        android:enabled="false"
+        android:contentDescription="@string/directional_arrow" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/direction_icon"
+        android:layout_centerVertical="true">
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="16dp"
+            android:textSize="16sp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textColor="@color/foreground"
+            android:paddingBottom="3dp"/>
+
+        <TextView
+            android:id="@+id/subtitle_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title_text"
+            android:layout_gravity="center_vertical"
+            android:textSize="14dp"
+            android:paddingEnd="16dp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="@color/foreground_60"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>
+

@@ -51,4 +51,8 @@ public class ListItem implements Serializable {
     public void setDirection(@DrawableRes int direction) {
         this.direction = direction;
     }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
 }

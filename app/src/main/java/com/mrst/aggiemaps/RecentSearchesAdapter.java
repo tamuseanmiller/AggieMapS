@@ -2,6 +2,7 @@ package com.mrst.aggiemaps;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.divider.MaterialDivider;
@@ -38,7 +40,7 @@ public class RecentSearchesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             case 1:
                 return new RecentSearchesAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
             case 0:
-                return new RecentSearchesAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
+                return new RecentSearchesAdapter.ListViewHolder(mInflater.inflate(R.layout.list_col, parent, false));
             default:
                 return null;
         }
@@ -55,12 +57,23 @@ public class RecentSearchesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             case RESULT:
                 ListViewHolder holderList = (ListViewHolder) holderView;
                 holderList.titleText.setText(mData.get(position).title);
-                holderList.subtitleText.setText(mData.get(position).subtitle);
-                if (mData.size() - 1 != position)
-                    holderList.divider.setVisibility(View.VISIBLE);
-                Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
-                icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
-                holderList.directionIcon.setImageDrawable(icon);
+                if (mData.get(position).subtitle != null) {
+                    holderList.subtitleText.setText(mData.get(position).subtitle);
+                    holderList.subtitleText.setSelected(true);
+                } else {
+                    holderList.subtitleText.setVisibility(View.GONE);
+                }
+
+                // Set icon if it's passed
+                if (mData.get(position).direction != 0) {
+                    Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
+                    icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
+                    holderList.directionIcon.setImageDrawable(icon);
+                }
+
+                // Set background color
+                if (mData.get(position).color != 0)
+                    holderList.directionIcon.setBackgroundTintList(ColorStateList.valueOf(mData.get(position).color));
                 break;
         }
     }

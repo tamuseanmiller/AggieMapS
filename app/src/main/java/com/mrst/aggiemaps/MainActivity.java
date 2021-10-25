@@ -38,6 +38,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +55,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -176,7 +178,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         RampLeft
     }
 
-    private @DrawableRes int parseManeuverType(String maneuverType) {
+    private @DrawableRes
+    int parseManeuverType(String maneuverType) {
         switch (maneuverType) {
             case "esriDMTStop":
                 return R.drawable.close_octagon;
@@ -414,17 +417,18 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
         busRoutesSearchAdapter.setClickListener(this);
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
-        // Testing purposes
+        // Add Recent Searches
         if (cachedRecentSearches.containsKey("recentSearches")) {
+            recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
             Queue<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
-                recentSearchesListItems.clear();
                 recentSearchesListItems.addAll(recentSearchesList);
             }
         }
         recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
         recentSearchesAdapter.setClickListener(this);
 
+        // Create recyclerviews and their layout managers
         gisSearchRecycler = new RecyclerView(this);
         gisSearchRecycler.suppressLayout(true);
         gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
@@ -455,23 +459,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         recentSearchesRecycler = new RecyclerView(this);
         recentSearchesRecycler.suppressLayout(true);
-        recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        });
+        recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+
+        // Add divider
+        MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
+        divider.setDividerInsetEnd(20);
+        divider.setDividerInsetStart(20);
+        recentSearchesRecycler.addItemDecoration(divider);
         recentSearchesRecycler.setAdapter(recentSearchesAdapter);
 
-        RelativeLayout curLocationRow = (RelativeLayout) getLayoutInflater().inflate(R.layout.list_row, null);
-        TextView currTitleText = curLocationRow.findViewById(R.id.title_text);
-        currTitleText.setText("Current location");
-        currTitleText.setOnClickListener(v -> {
-            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-            mapsFragment.getDeviceLocation();
-            clearFocusOnSearch();
-        });
-        ll.addView(curLocationRow);
         ll.addView(recentSearchesRecycler);
         ll.addView(gisSearchRecycler);
         ll.addView(busRoutesSearchRecycler);
@@ -947,14 +943,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public void onRecentSearchClick(View view, int position) {
         ListItem recentSearch = recentSearchesAdapter.getItem(position);
 
-        MarkerOptions selectedResult = new MarkerOptions();
-        selectedResult.position(recentSearch.position);
-        selectedResult.title(recentSearch.title);
-        // clear the map
-        MapsFragment.mMap.clear();
-        MapsFragment.mMap.addMarker(selectedResult);
-        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recentSearch.position, 18.0f));
-        enterDirectionsMode(recentSearch);
+        if (recentSearch.position == null) {
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            mapsFragment.getDeviceLocation();
+        } else {
+
+            MarkerOptions selectedResult = new MarkerOptions();
+            selectedResult.position(recentSearch.position);
+            selectedResult.title(recentSearch.title);
+            // clear the map
+            MapsFragment.mMap.clear();
+            MapsFragment.mMap.addMarker(selectedResult);
+            MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recentSearch.position, 18.0f));
+            enterDirectionsMode(recentSearch);
+        }
 
         clearFocusOnSearch();
     }
@@ -1068,7 +1070,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    * A helper function to update the arraylist of recent searches and shared prefs
+     * A helper function to update the arraylist of recent searches and shared prefs
      */
     private void addRecentSearches(int adapter, int position) {
 
@@ -1081,7 +1083,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         } else {
             recentSearchesTemp = new LinkedList<>();
-            recentSearchesTemp.addFirst(new ListItem("Recents", "", 0, SearchTag.CATEGORY));
         }
 
         // Remove the first search as it is the most least recent.
@@ -1093,19 +1094,22 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         if (adapter == GIS_ADAPTER) {
             if (!recentSearchesTemp.contains(gisSearchAdapter.getItem(position))) {
                 ListItem temp = gisSearchAdapter.getItem(position);
-                temp.setDirection(R.drawable.history);
-                recentSearchesTemp.add(1, temp);
+                temp.setDirection(R.drawable.clock);
+                temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
+                recentSearchesTemp.addFirst(temp);
             }
         } else if (adapter == GOOGLE_ADAPTER) {
             if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position))) {
                 ListItem temp = googleSearchAdapter.getItem(position);
-                temp.setDirection(R.drawable.history);
-                recentSearchesTemp.add(1, temp);
+                temp.setDirection(R.drawable.clock);
+                temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
+                recentSearchesTemp.addFirst(temp);
             }
         }
 
         // Update the search view
         recentSearchesListItems.clear();
+        recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
         recentSearchesListItems.addAll(recentSearchesTemp);
         recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
         recentSearchesAdapter.setClickListener(this);

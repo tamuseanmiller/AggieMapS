@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.DrawableRes;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 
@@ -18,11 +20,11 @@ public class ListItem implements Serializable {
     public String title;
     public String subtitle;
     public int color;
-    public Drawable direction;
+    public @DrawableRes int direction;
     public MainActivity.SearchTag tag;
     public LatLng position;
 
-    public ListItem(String title, String subtitle, int color, Drawable direction, MainActivity.SearchTag tag, LatLng position) {
+    public ListItem(String title, String subtitle, int color, @DrawableRes int direction, MainActivity.SearchTag tag, LatLng position) {
         this.title = title;
         this.subtitle = subtitle;
         this.color = color;
@@ -31,7 +33,22 @@ public class ListItem implements Serializable {
         this.position = position;
     }
 
-    public void setDirection(Drawable direction) {
+    public ListItem(String title, String subtitle, int color, MainActivity.SearchTag tag, LatLng position) {
+        this.title = title;
+        this.subtitle = subtitle;
+        this.color = color;
+        this.tag = tag;
+        this.position = position;
+    }
+
+    public ListItem(String title, String subtitle, int color, MainActivity.SearchTag tag) {
+        this.title = title;
+        this.subtitle = subtitle;
+        this.color = color;
+        this.tag = tag;
+    }
+
+    public void setDirection(@DrawableRes int direction) {
         this.direction = direction;
     }
 }

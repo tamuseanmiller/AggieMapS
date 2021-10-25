@@ -29,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -175,48 +176,48 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         RampLeft
     }
 
-    private Drawable parseManeuverType(String maneuverType) {
+    private @DrawableRes int parseManeuverType(String maneuverType) {
         switch (maneuverType) {
             case "esriDMTStop":
-                return ContextCompat.getDrawable(this, R.drawable.close_octagon);
+                return R.drawable.close_octagon;
             case "esriDMTStraight":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_up);
+                return R.drawable.arrow_up;
             case "esriDMTBearLeft":
             case "esriDMTRampLeft":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_top_left);
+                return R.drawable.arrow_top_left;
             case "esriDMTBearRight":
             case "esriDMTRampRight":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_top_right);
+                return R.drawable.arrow_top_right;
             case "esriDMTTurnLeft":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_left_top);
+                return R.drawable.arrow_left_top;
             case "esriDMTTurnRight":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_right_top);
+                return R.drawable.arrow_right_top;
             case "esriDMTSharpLeft":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_left);
+                return R.drawable.arrow_left;
             case "esriDMTSharpRight":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_right);
+                return R.drawable.arrow_right;
             case "esriDMTUTurn":
-                return ContextCompat.getDrawable(this, R.drawable.arrow_u_down_left);
+                return R.drawable.arrow_u_down_left;
             case "esriDMTFerry":
             case "esriDMTEndOfFerry":
-                return ContextCompat.getDrawable(this, R.drawable.ferry);
+                return R.drawable.ferry;
             case "esriDMTRoundabout":
-                return ContextCompat.getDrawable(this, R.drawable.rotate_left);
+                return R.drawable.rotate_left;
             case "esriDMTHighwayMerge":
-                return ContextCompat.getDrawable(this, R.drawable.call_merge);
+                return R.drawable.call_merge;
             case "esriDMTHighwayExit":
             case "esriDMTForkCenter":
             case "esriDMTForkLeft":
             case "esriDMTForkRight":
-                return ContextCompat.getDrawable(this, R.drawable.call_split);
+                return R.drawable.call_split;
             case "esriDMTHighwayChange":
-                return ContextCompat.getDrawable(this, R.drawable.source_fork);
+                return R.drawable.source_fork;
             case "esriDMTDepart":
-                return ContextCompat.getDrawable(this, R.drawable.car);
+                return R.drawable.car;
             case "esriDMTTripItem":
-                return ContextCompat.getDrawable(this, R.drawable.sign_direction);
+                return R.drawable.sign_direction;
             default:
-                return ContextCompat.getDrawable(this, R.drawable.nuke);
+                return R.drawable.nuke;
         }
     }
 
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             ArrayList<Feature> features = new ArrayList<>();
             for (int i = 0; i < features_json.length(); i++) {
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
-                Drawable manueverType = parseManeuverType(attributes.getString("maneuverType"));
+                @DrawableRes int manueverType = parseManeuverType(attributes.getString("maneuverType"));
                 int length = attributes.getInt("length");
                 int time = attributes.getInt("time");
                 String text = attributes.getString("text");
@@ -687,7 +688,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Initialize temporary array and add the category
             ArrayList<ListItem> tempList = new ArrayList<>();
-            tempList.add(new ListItem("Bus Routes", "", 0, null, SearchTag.CATEGORY, null));
+            tempList.add(new ListItem("Bus Routes", "", 0, SearchTag.CATEGORY));
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
@@ -697,7 +698,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
                     String routeName = mapsFragment.busRoutes.get(i).routeName.toLowerCase();
                     if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all"))
-                        tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, null, SearchTag.RESULT, null));
+                        tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, SearchTag.RESULT));
                 }
             }
 
@@ -737,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
             ArrayList<ListItem> tempList = new ArrayList<>();
             if (!response.getAutocompletePredictions().isEmpty()) {
-                tempList.add(new ListItem("Google Maps", "", 0, null, SearchTag.CATEGORY, null));
+                tempList.add(new ListItem("Google Maps", "", 0, SearchTag.CATEGORY));
             }
             for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
                 Log.i(TAG, prediction.getPlaceId());
@@ -750,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 final FetchPlaceRequest placeRequest = FetchPlaceRequest.newInstance(prediction.getPlaceId(), placeFields);
 
                 placesClient.fetchPlace(placeRequest).addOnSuccessListener((placeResponse) -> {
-                    tempList.add(new ListItem(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, null, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
+                    tempList.add(new ListItem(prediction.getPrimaryText(null).toString(), prediction.getFullText(null).toString(), 0, SearchTag.RESULT, placeResponse.getPlace().getLatLng()));
                     googleListItems.clear();
                     googleListItems.addAll(tempList);
                     googleSearchAdapter = new GoogleSearchAdapter(this, googleListItems);
@@ -793,7 +794,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     JSONArray features = jsonObject.getJSONArray("features");
                     for (int i = 0; i < features.length(); i++) {
                         if (i == 0)
-                            tempList.add(new ListItem("On Campus", "", 0, null, SearchTag.CATEGORY, null));
+                            tempList.add(new ListItem("On Campus", "", 0, SearchTag.CATEGORY));
                         String bldgName = features.getJSONObject(i).getJSONObject("attributes").getString("BldgName");
                         String address = features.getJSONObject(i).getJSONObject("attributes").getString("Address");
                         double lat = features.getJSONObject(i).getJSONObject("attributes").getDouble("Latitude");
@@ -801,7 +802,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         if (address.equals("null"))
                             address = lat + ", " + lng; // If no address, use lat/lng instead
                         String finalAddress = address;
-                        tempList.add(new ListItem(bldgName, finalAddress, 0, null, SearchTag.RESULT, new LatLng(lat, lng)));
+                        tempList.add(new ListItem(bldgName, finalAddress, 0, SearchTag.RESULT, new LatLng(lat, lng)));
                     }
                     runOnUiThread(() -> {
                         gisListItems.clear();
@@ -1022,9 +1023,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }).start();
 
             // Change the visibility of the BottomBar to "visible"
-
             sheet.setVisibility(View.VISIBLE);
-            //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
             // End the progress indicator
             tripProgress.setVisibility(View.INVISIBLE);
@@ -1069,11 +1068,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
-    A helper function to update the arraylist of recent searches and shared prefs
+    * A helper function to update the arraylist of recent searches and shared prefs
      */
     private void addRecentSearches(int adapter, int position) {
-        Drawable recentIcon = ContextCompat.getDrawable(this,R.drawable.history);
-        recentIcon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(this,R.color.accent)));
 
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
         // Get the cached recent searches list otherwise create a new temp linkedlist
@@ -1084,7 +1081,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         } else {
             recentSearchesTemp = new LinkedList<>();
-            recentSearchesTemp.addFirst(new ListItem("Recents", "", 0, null, SearchTag.CATEGORY, null));
+            recentSearchesTemp.addFirst(new ListItem("Recents", "", 0, SearchTag.CATEGORY));
         }
 
         // Remove the first search as it is the most least recent.
@@ -1096,13 +1093,13 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         if (adapter == GIS_ADAPTER) {
             if (!recentSearchesTemp.contains(gisSearchAdapter.getItem(position))) {
                 ListItem temp = gisSearchAdapter.getItem(position);
-                temp.setDirection(recentIcon);
+                temp.setDirection(R.drawable.history);
                 recentSearchesTemp.add(1, temp);
             }
         } else if (adapter == GOOGLE_ADAPTER) {
             if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position))) {
                 ListItem temp = googleSearchAdapter.getItem(position);
-                temp.setDirection(recentIcon);
+                temp.setDirection(R.drawable.history);
                 recentSearchesTemp.add(1, temp);
             }
         }
@@ -1113,10 +1110,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
         recentSearchesAdapter.setClickListener(this);
         recentSearchesRecycler.setAdapter(recentSearchesAdapter);
-
-        for(ListItem i: recentSearchesTemp){
-            i.setDirection(null);
-        }
 
         // Write to shared Prefs
         RecentSearches rs = new RecentSearches(recentSearchesTemp);

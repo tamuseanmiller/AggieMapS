@@ -1,6 +1,8 @@
 package com.mrst.aggiemaps;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.divider.MaterialDivider;
@@ -55,6 +58,9 @@ public class RecentSearchesAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 holderList.subtitleText.setText(mData.get(position).subtitle);
                 if (mData.size() - 1 != position)
                     holderList.divider.setVisibility(View.VISIBLE);
+                Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
+                icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
+                holderList.directionIcon.setImageDrawable(icon);
                 break;
         }
     }

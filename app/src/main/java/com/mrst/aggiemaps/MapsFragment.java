@@ -41,6 +41,8 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.core.util.Pair;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -83,6 +85,7 @@ import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
 import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,7 +135,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public static String currentRouteNo;
     public FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
-    public static GoogleMap mMap;       // The Map itself
+    public GoogleMap mMap;       // The Map itself
     private Handler handler = new Handler();
     private Runnable runnable;
     private ArrayList<Marker> busMarkers;
@@ -141,15 +144,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
+    private final String KEY_CAMERA_POSITION = "camera_position";
+    private final String KEY_LOCATION = "location";
     private TextView stopText;
+    public FrameLayout standardBottomSheet;
+    public LatLng deviceLatLng;
     private NestedScrollView vScroll;
     private FrameLayout rightSheet;
-    public RecyclerView swipeRecycler;
-    public FrameLayout standardBottomSheet;
-    public FloatingActionButton fab_directions;
-    public LatLng deviceLatLng;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -289,7 +290,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             int padding = 70;
             LatLngBounds bounds = builder.build();
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            if (zoom && !routeIsDrawn) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+            if (zoom && !routeIsDrawn)
+                requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
 
             // Draw polyline
             assert first != null;
@@ -378,9 +380,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
             if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
 
-            updateBusRoute(routeNo, color, zoom, true);
+            updateBusRoute(routeNo, color, false, true);
 
-        } else updateBusRoute(routeNo, color, zoom, false);  // Always update route in the background
+        } else
+            updateBusRoute(routeNo, color, zoom, false);  // Always update route in the background
     }
 
 
@@ -570,13 +573,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String maps = sharedPref.getString("light_maps", "light");
                 switch (maps) {
                     case "light":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.light));
                         break;
                     case "retro":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.retro));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.retro));
                         break;
                     case "classic":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.classic));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.classic));
                 }
             }
             // If dark mode is on
@@ -585,13 +588,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 String maps = sharedPref.getString("dark_maps", "night");
                 switch (maps) {
                     case "dark":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.dark));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.dark));
                         break;
                     case "sin_city":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.sin_city));
                         break;
                     case "night":
-                        MapsFragment.mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.night));
+                        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireActivity(), R.raw.night));
                         break;
                 }
             } else {
@@ -647,8 +650,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
         busMarkers = new ArrayList<>();
 
-        // Set up recyclers
-        swipeRecycler = mView.findViewById(R.id.swipe_recycler);
         favRoutes = mView.findViewById(R.id.recycler_favorites);
         favAdapter = null;
         onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
@@ -657,31 +658,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         offCampusAdapter = null;
         gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
         gameDayAdapter = null;
-
-        // Set up the bus swiping action
-        swipeRecycler.setLayoutManager(new UnscrollableLinearLayoutManager(getActivity()));
-        List<String> l = new ArrayList<>();
-        l.add(" ");
-        SwipeAdapter swipeAdapter = new SwipeAdapter(getActivity(), l);
-        swipeRecycler.setAdapter(swipeAdapter);
-        swipeAdapter.setClickListener(this);
-
-        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-                if (rightSheetBehavior.getState() != RightSheetBehavior.STATE_COLLAPSED)
-                    rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
-                swipeAdapter.notifyItemChanged(0);
-            }
-        });
-        helper.attachToRecyclerView(null);
-        helper.attachToRecyclerView(swipeRecycler);
 
         // Set decorations for the recyclers
         ColumnProvider col = () -> 1;
@@ -726,6 +702,24 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         } else {
             standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
         }
+
+        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                if (slideOffset < 0.08) {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                } else {
+                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                }
+            }
+        });
 
         // Set up right sheet for timetable
         rightSheet = mView.findViewById(R.id.timetable_sheet);
@@ -790,10 +784,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Then set up the bus routes on the bottom sheet
         new Thread(this::setUpBusRoutes).start();
-
-        // Initialize directions fab
-        fab_directions = mView.findViewById(R.id.fab_directions);
-        fab_directions.setOnClickListener(v -> ((MainActivity) getActivity()).enterDirectionsMode(null));
 
         return mView;
     }
@@ -996,7 +986,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
-    * Method to update the list of bus routes in the bottom sheet
+     * Method to update the list of bus routes in the bottom sheet
      */
     private void updateBusRoutes() {
         try {
@@ -1218,7 +1208,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         favoritesText.setVisibility(View.GONE);
                     }
                     favoritesSet.remove(busRoute.routeNumber);
-                    new Thread(this::saveFavorites).start();
+                    new Thread(() -> {
+                        AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+                        AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+                        saveFavorites();
+                    }).start();
                     return;
             }
 
@@ -1228,7 +1222,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             favAdapter.notifyItemInserted(favList.size() - 1);
             favRoutes.setVisibility(View.VISIBLE);
             favoritesText.setVisibility(View.VISIBLE);
-            new Thread(this::saveFavorites).start();
+            new Thread(() -> {
+                AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+                AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+                saveFavorites();
+            }).start();
             return;  // skip showing the route if
         }
 

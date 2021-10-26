@@ -80,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
-            android:layout_marginBottom="40dp"
+            android:layout_marginBottom="100dp"
             android:orientation="vertical"
             app:layout_anchorGravity="bottom|right|end">
 
@@ -129,43 +129,12 @@
                 android:elevation="2dp"
                 app:borderWidth="0dp"
                 app:elevation="2dp"
-                app:layout_constraintBottom_toTopOf="@id/fab_directions"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:pressedTranslationZ="3dp"
                 app:rippleColor="@color/red_700"
                 app:srcCompat="@drawable/clock"
                 app:tint="@color/white" />
-
-            <!--     Timetable FAB      -->
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/fab_directions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp"
-                android:backgroundTint="@color/accent"
-                android:contentDescription="@string/shows_timetable"
-                android:elevation="2dp"
-                app:borderWidth="0dp"
-                app:elevation="2dp"
-                app:layout_constraintBottom_toTopOf="@id/swipe_recycler"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:pressedTranslationZ="3dp"
-                app:rippleColor="@color/red_700"
-                app:srcCompat="@drawable/directions"
-                app:tint="@color/white" />
-
-            <!--     Buses Button      -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/swipe_recycler"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="20dp"
-                android:paddingTop="5dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

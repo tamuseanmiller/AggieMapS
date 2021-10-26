@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DirectionsFragment">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/ll_srcdest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:orientation="vertical">
+
+            <!-- Source Search Bar -->
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/src_app_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:elevation="0.1dp"
+                android:stateListAnimator="@null">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Simple MaterialToolbar extension -->
+                    <com.lapism.search.widget.MaterialSearchBar
+                        android:id="@+id/src_search_bar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        app:layout_scrollFlags="enterAlways|snap" />
+
+                    <!--     Cancel FAB      -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab_cancel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/foreground"
+                        android:contentDescription="@string/shows_timetable"
+                        android:elevation="2dp"
+                        app:borderWidth="0dp"
+                        app:elevation="2dp"
+                        app:fabCustomSize="48dp"
+                        app:pressedTranslationZ="3dp"
+                        app:rippleColor="@color/red_700"
+                        app:srcCompat="@drawable/window_close"
+                        app:tint="@color/background" />
+
+                </LinearLayout>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <!-- Destination Search Bar -->
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/dest_app_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:elevation="0.1dp"
+                android:stateListAnimator="@null">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Simple MaterialToolbar extension -->
+                    <com.lapism.search.widget.MaterialSearchBar
+                        android:id="@+id/dest_search_bar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="6"
+                        app:layout_scrollFlags="enterAlways|snap" />
+
+                    <!--     Swap FAB      -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab_swap"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/foreground"
+                        android:contentDescription="@string/shows_timetable"
+                        android:elevation="2dp"
+                        app:borderWidth="0dp"
+                        app:elevation="2dp"
+                        app:fabCustomSize="48dp"
+                        app:pressedTranslationZ="3dp"
+                        app:rippleColor="@color/red_700"
+                        app:srcCompat="@drawable/swap_vertical"
+                        app:tint="@color/background" />
+
+                </LinearLayout>
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/trip_type_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true"
+                android:layout_marginStart="16dp">
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="true"
+                    android:layout_marginEnd="5dp"
+                    android:text="Car"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipIcon="@drawable/car"
+                    app:chipIconSize="18dp"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
+                    android:layout_marginEnd="5dp"
+                    android:text="Bus"
+                    app:chipIcon="@drawable/bus"
+                    app:chipIconSize="18dp"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
+                    android:layout_marginEnd="5dp"
+                    android:text="Bike"
+                    app:chipIcon="@drawable/bike"
+                    app:chipIconSize="18dp"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:checked="false"
+                    android:layout_marginEnd="5dp"
+                    android:text="Walk"
+                    app:chipIcon="@drawable/walk"
+                    app:chipIconSize="18dp"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIconTint="@color/txic_color_chips"
+                    android:textColor="@color/txic_color_chips"
+                    app:iconEndPadding="-3dp"
+                    app:iconStartPadding="5dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
+
+        <!-- Direction Sheet -->
+        <FrameLayout
+            android:id="@+id/directions_bottom_sheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="10dp"
+            android:overScrollMode="always"
+            android:visibility="gone"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+            <include layout="@layout/directions_sheet" />
+
+        </FrameLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <!--     My Location FAB      -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_mylocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="120dp"
+            android:backgroundTint="@color/accent"
+            android:contentDescription="@string/shows_timetable"
+            android:elevation="2dp"
+            app:borderWidth="0dp"
+            app:elevation="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:pressedTranslationZ="3dp"
+            app:rippleColor="@color/red_700"
+            app:srcCompat="@drawable/crosshairs_gps"
+            app:tint="@color/white" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</fragment>

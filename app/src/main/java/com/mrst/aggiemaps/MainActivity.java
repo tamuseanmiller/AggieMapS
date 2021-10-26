@@ -5,6 +5,8 @@ import static android.content.ContentValues.TAG;
 import android.content.Context;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -13,6 +15,9 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.DisplayMetrics;
+import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -33,18 +38,27 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
@@ -59,6 +73,9 @@ import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
@@ -80,6 +97,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 
+import github.com.st235.lib_expandablebottombar.ExpandableBottomBar;
 import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -101,31 +119,23 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
+    final SettingsFragment settingsFragment = new SettingsFragment();
     private ArrayList<ListItem> busRoutesListItems;
     private ArrayList<ListItem> recentSearchesListItems;
     private RecentSearchesAdapter recentSearchesAdapter;
     private RecyclerView recentSearchesRecycler;
-    private MaterialSearchBar srcSearchBar;
-    private MaterialSearchBar destSearchBar;
-    private BottomSheetBehavior<View> bottomSheetBehavior;
-    private DirectionsAdapter directionsAdapter;
-    private FrameLayout sheet;
-    private CircularProgressIndicator tripProgress;
     private AppBarLayout defaultSearchBar;
-    private LinearLayout llSrcDestContainer;
-    private boolean inDirectionsMode;
-    private FloatingActionButton fabCancel;
-    private FloatingActionButton fabSwap;
-    private int SearchBar;
-    private String srcBarText = "";
-    private String destBarText = "";
-    private RecyclerView directionsRecycler;
-    private static final int MAIN_SEARCH_BAR = 1;
-    private static final int SRC_SEARCH_BAR = 2;
-    private static final int DEST_SEARCH_BAR = 3;
+    public ExpandableBottomBar bottomBar;
+    public int whichSearchBar;
+    private ViewPager2 viewPager;
+    private LinkedList<ListItem> recentSearchesTemp;
+
+    private FragmentStateAdapter pagerAdapter;
     private static final int GIS_ADAPTER = 1;
     private static final int GOOGLE_ADAPTER = 2;
-    private LinkedList<ListItem> recentSearchesTemp;
+    public static final int MAIN_SEARCH_BAR = 1;
+    public static final int SRC_SEARCH_BAR = 2;
+    public static final int DEST_SEARCH_BAR = 3;
 
     enum SearchTag {
         CATEGORY,
@@ -178,149 +188,30 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         RampLeft
     }
 
-    private @DrawableRes
-    int parseManeuverType(String maneuverType) {
-        switch (maneuverType) {
-            case "esriDMTStop":
-                return R.drawable.close_octagon;
-            case "esriDMTStraight":
-                return R.drawable.arrow_up;
-            case "esriDMTBearLeft":
-            case "esriDMTRampLeft":
-                return R.drawable.arrow_top_left;
-            case "esriDMTBearRight":
-            case "esriDMTRampRight":
-                return R.drawable.arrow_top_right;
-            case "esriDMTTurnLeft":
-                return R.drawable.arrow_left_top;
-            case "esriDMTTurnRight":
-                return R.drawable.arrow_right_top;
-            case "esriDMTSharpLeft":
-                return R.drawable.arrow_left;
-            case "esriDMTSharpRight":
-                return R.drawable.arrow_right;
-            case "esriDMTUTurn":
-                return R.drawable.arrow_u_down_left;
-            case "esriDMTFerry":
-            case "esriDMTEndOfFerry":
-                return R.drawable.ferry;
-            case "esriDMTRoundabout":
-                return R.drawable.rotate_left;
-            case "esriDMTHighwayMerge":
-                return R.drawable.call_merge;
-            case "esriDMTHighwayExit":
-            case "esriDMTForkCenter":
-            case "esriDMTForkLeft":
-            case "esriDMTForkRight":
-                return R.drawable.call_split;
-            case "esriDMTHighwayChange":
-                return R.drawable.source_fork;
-            case "esriDMTDepart":
-                return R.drawable.car;
-            case "esriDMTTripItem":
-                return R.drawable.sign_direction;
-            default:
-                return R.drawable.nuke;
-        }
-    }
-
     private int convertDpToPx(int dp) {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
-    /*
-     * Method to create array of a route from two latlng coordinates
-     * returns a TripPlan obj
-     */
-    private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
-        try {
-
-            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
-            String result = getApiCall(call);
-//            System.out.println((result));
-            JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
-
-            // Parse every feature
-            ArrayList<Feature> features = new ArrayList<>();
-            for (int i = 0; i < features_json.length(); i++) {
-                JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
-                @DrawableRes int manueverType = parseManeuverType(attributes.getString("maneuverType"));
-                int length = attributes.getInt("length");
-                int time = attributes.getInt("time");
-                String text = attributes.getString("text");
-                int ETA = attributes.getInt("ETA");
-                Feature new_feature = new Feature(length, time, text, ETA, manueverType);
-                features.add(new_feature);
-            }
-//            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
-//            // parsing routes
-//            JSONObject spatialReference = new JSONObject(result).getJSONObject("routes").getJSONObject("spatialReference");
-//            String geometryType = new JSONObject(result).getJSONObject("routes").getString("geometryType");
-//            JSONObject attributes = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("attributes");
-//            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
-//            JSONArray directions = new JSONObject(result).getJSONArray("directions");
-
-            // Parse all of the geometry
-            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
-            ArrayList<LatLng> geometry = new ArrayList<>();
-            for (int i = 0; i < paths.length(); i++) {
-                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
-                geometry.add(new_latlng);
-            }
-
-            // Draw line
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.width(10);
-            polylineOptions.geodesic(true);
-            polylineOptions.pattern(null);
-            polylineOptions.clickable(true);
-            polylineOptions.color(ContextCompat.getColor(this, R.color.accent));
-            for (int i = 0; i < paths.length(); i++) {
-                double lat = paths.getJSONArray(i).getDouble(0);
-                double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng, lat);
-                polylineOptions.add(latlng);
-            }
-            runOnUiThread(() -> MapsFragment.mMap.addPolyline(polylineOptions));
-
-            // Parse summary information
-            JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
-            double totalTime = summary.getDouble("totalTime");
-            double totalLength = summary.getDouble("totalLength");
-            double totalDriveTime = summary.getDouble("totalDriveTime");
-
-
-            return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
-        } catch (JSONException e) {
-            Log.e("MYAPP", "unexpected JSON exception", e);
-            e.printStackTrace();
-            // Do something to recover ...
-        }
-        return null;
-    }
-
     private void clearFocusOnSearch() {
         materialSearchView.clearFocus();
         materialSearchView.setVisibility(View.GONE);
-        if (inDirectionsMode) {
-            llSrcDestContainer.setVisibility(View.VISIBLE);
-            sheet.setVisibility(View.VISIBLE);
+        showSystemUI();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+
+        if (whichSearchBar > 1) {
+            directionsFragment.clearFocusOnSearch();
         } else {
             materialSearchBar.setVisibility(View.VISIBLE);
         }
-        showSystemUI();
-
     }
 
-    private void requestFocusOnSearch(int whichSearchBar) {
+    public void requestFocusOnSearch(int searchBar) {
         materialSearchView.requestFocus();
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchBar.setVisibility(View.GONE);
-        llSrcDestContainer.setVisibility(View.GONE);
-        sheet.setVisibility(View.GONE);
         hideSystemUI();
-        SearchBar = whichSearchBar;
+        whichSearchBar = searchBar;
     }
 
     /*
@@ -349,12 +240,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
-        client = new OkHttpClient();  // Create OkHttpClient to be used in API request
-        haveNetworkConnection();
         // Set current theme
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
         String theme = sharedPref.getString("theme", "system_theme");
@@ -369,6 +254,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+        client = new OkHttpClient();  // Create OkHttpClient to be used in API request
+        haveNetworkConnection();
 
         // Set the status bar to be transparent
         Window w = getWindow();
@@ -515,107 +405,57 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             }
         });
 
-        /*
-         * TODO: Initialize UI for Directions
-         *  Look above for help, most of this has been done once already above
-         * 1. Create new ArrayList of SearchResults
-         * 2. Initialize SearchBar and SearchView (You may be able to use the same view)
-         * 3. Set toolbar and action bar
-         * 4. Create the views for the SearchView
-         * 5. Set the SearchView Settings
-         * 6. Initialize the BottomSheet
-         * 7. Get the BottomSheetBehavior
-         * 8. Set the settings of the BottomSheetBehavior
-         * 9. Initialize Progress Indicator
-         * 10. Initialize Main App Bar
-         * 11. Initialize Source and Dest Container
-         */
+        // Set up BottomBar with viewpager
+        viewPager = findViewById(R.id.pager);
+        pagerAdapter = new BottomPagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setUserInputEnabled(false);
+        viewPager.setOffscreenPageLimit(3);
+        pagerAdapter.createFragment(0);
+        pagerAdapter.createFragment(1);
+        pagerAdapter.createFragment(2);
+        viewPager.setCurrentItem(2);
 
-        // 1. Create new ArrayList of SearchResults
-//        searchResultsItems = new ArrayList<>();
-//        directionsAdapter = new DirectionsAdapter(this, searchResultsItems);
-        directionsRecycler = findViewById(R.id.directions_recycler);
-        directionsRecycler.setLayoutManager(new LinearLayoutManager(this));
+        // Add the settings fragment to the fragment manager
+        FragmentManager fm = getSupportFragmentManager();
+        fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commit();
 
-        // 2. Initialize SearchBars
-        srcSearchBar = findViewById(R.id.src_search_bar);
-        destSearchBar = findViewById(R.id.dest_search_bar);
+        // Create bottom bar
+        bottomBar = findViewById(R.id.bottom_bar);
+        bottomBar.getMenu().select(R.id.item0);
 
-        // 3. Set toolbar and action bar
-        toolbar = srcSearchBar.getToolbar();
-        setSupportActionBar(toolbar);
-        actionBar = getSupportActionBar();
-        if (nav != null && actionBar != null) {
-            nav.setTint(getColor(R.color.foreground));
-            actionBar.setIcon(nav);
-        }
-        toolbar = destSearchBar.getToolbar();
-        setSupportActionBar(toolbar);
-        actionBar = getSupportActionBar();
-        if (nav != null && actionBar != null) {
-            nav.setTint(getColor(R.color.foreground));
-            actionBar.setIcon(nav);
-        }
+        // Get bus routes on tap
+        bottomBar.setOnItemReselectedListener((i, j, k) -> {
+            if (j.getId() == R.id.item0) {
 
-        // 4. Create the views for the SearchBars
-        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
-        destSearchBar.setOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
-        srcSearchBar.setElevation(5);
-        srcSearchBar.setBackgroundColor(getColor(R.color.background));
-        srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
-        destSearchBar.setElevation(5);
-        destSearchBar.setBackgroundColor(getColor(R.color.background));
-        destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
-
-        // 5. Set the SearchView Settings
-        // reuse materialSearchView settings
-
-        // 6. Initialize the BottomSheet
-        sheet = findViewById(R.id.directions_bottom_sheet);
-
-        // 7. Get the BottomSheetBehavior
-        bottomSheetBehavior = BottomSheetBehavior.from(sheet);
-
-        // 8. Set the settings of the BottomSheetBehavior
-        bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
-        bottomSheetBehavior.setHideable(false);
-        bottomSheetBehavior.setPeekHeight(findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(135));
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-        // Set the max height of the bottom sheet by putting it below the searchbar
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        View destBar = findViewById(R.id.dest_app_bar);
-        View srcBar = findViewById(R.id.src_app_bar);
-//        bottomSheetBehavior.setMaxHeight(height - findViewById(R.id.main_app_bar).getHeight() * 2 - convertDpToPx(32));
-
-        // 9. Initialize Progress Indicator
-        tripProgress = findViewById(R.id.trip_progress);
-
-        // 10. Initialize Main App Bar
-        defaultSearchBar = findViewById(R.id.main_app_bar);
-        ViewTreeObserver viewTreeObserver = defaultSearchBar.getViewTreeObserver();
-        if (viewTreeObserver.isAlive()) {
-            viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    defaultSearchBar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    bottomSheetBehavior.setMaxHeight(height - defaultSearchBar.getHeight() * 2);
+                // If settings is visible, get rid of it and make the bar visible
+                if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
+                    materialSearchBar.setVisibility(View.VISIBLE);
+                    fm.beginTransaction().hide(settingsFragment).commit();
+                } else {
+                    // Open the bus routes bottom sheet
+                    MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+                    mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                 }
-            });
-        }
+            }
+            return null;
+        });
 
-        // 11. Initialize Source and Dest Container
-        llSrcDestContainer = findViewById(R.id.ll_srcdest);
-
-        // Initialize cancel fab and click listener
-        fabCancel = findViewById(R.id.fab_cancel);
-        fabCancel.setOnClickListener(v -> exitDirectionsMode());
-
-        fabSwap = findViewById(R.id.fab_swap);
-        fabSwap.setOnClickListener(v -> swapDirections());
-
+        // Switch between fragments on tap
+        bottomBar.setOnItemSelectedListener((i, j, k) -> {
+            fm.beginTransaction().hide(settingsFragment).commit();
+            if (j.getId() == R.id.blank) {
+                materialSearchBar.setVisibility(View.GONE);
+                viewPager.setCurrentItem(1);
+            } else if (j.getId() == R.id.maps) {
+                materialSearchBar.setVisibility(View.GONE);
+                viewPager.setCurrentItem(0);
+            } else if (j.getId() == R.id.item0) {
+                materialSearchBar.setVisibility(View.VISIBLE);
+                viewPager.setCurrentItem(2);
+            }
+            return null;
+        });
     }
 
     // Create an intent that can start the Speech Recognizer activity
@@ -666,8 +506,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 displaySpeechRecognizer();
                 break;
             case R.id.action_settings:
-                Intent myIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                MainActivity.this.startActivity(myIntent);
+                getSupportFragmentManager().beginTransaction().show(settingsFragment).commit();
                 break;
         }
         if (id == R.id.action_microphone) {
@@ -688,7 +527,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Loop through every bus route, check to see if the
             // name or number contains the given char sequence
-            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
+            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
             if (mapsFragment != null) {
                 for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
@@ -826,6 +665,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         } else if (materialSearchBar.getVisibility() == View.GONE) {
             exitDirectionsMode();
         }
+        // Hide settings fragment if open
+        if (!getSupportFragmentManager().findFragmentByTag("3").isHidden()) {
+            getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
+        }
     }
 
     /*
@@ -888,13 +731,34 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(gisSearchAdapter.getItem(position).position);
         selectedResult.title(gisSearchAdapter.getItem(position).title);
-        // clear the map
-        MapsFragment.mMap.clear();
-        MapsFragment.mMap.addMarker(selectedResult);
-        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(gisSearchAdapter.getItem(position));
-
         clearFocusOnSearch();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+
+        // If not the main search bar, enter for directions
+        if (whichSearchBar != MAIN_SEARCH_BAR) {
+            directionsFragment.mMap.addMarker(selectedResult);
+            enterDirectionsMode(gisSearchAdapter.getItem(position));
+        } else {
+            mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(gisSearchAdapter.getItem(position).position, 18.0f));
+            mapsFragment.mMap.addMarker(selectedResult);
+            Drawable directions = ContextCompat.getDrawable(this, R.drawable.directions);
+            directions.setTint(ContextCompat.getColor(this, R.color.foreground));
+            mapsFragment.mMap.setOnMarkerClickListener(marker -> {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Directions")
+                        .setMessage("Would you like to find directions to " + marker.getTitle())
+                        .setPositiveButton("Yes", (dialogInterface, i) -> {
+                            directionsFragment.mMap.addMarker(selectedResult);
+                            enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, 0, SearchTag.RESULT, marker.getPosition()));
+                        })
+                        .setIcon(directions)
+                        .setCancelable(true)
+                        .setNegativeButton("No", null)
+                        .show();
+                return false;
+            });
+        }
     }
 
     /*
@@ -906,13 +770,45 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         MarkerOptions selectedResult = new MarkerOptions();
         selectedResult.position(googleSearchAdapter.getItem(position).position);
         selectedResult.title(googleSearchAdapter.getItem(position).title);
-        // clear the map
-        MapsFragment.mMap.clear();
-        MapsFragment.mMap.addMarker(selectedResult);
-        MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
-        enterDirectionsMode(googleSearchAdapter.getItem(position));
-
         clearFocusOnSearch();
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+
+        // If not the main search bar, enter for directions
+        if (whichSearchBar != MAIN_SEARCH_BAR) {
+            directionsFragment.mMap.addMarker(selectedResult);
+            enterDirectionsMode(googleSearchAdapter.getItem(position));
+        } else {
+            mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
+            mapsFragment.mMap.addMarker(selectedResult);
+            mapsFragment.mMap.setOnMarkerClickListener(marker -> {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("Directions")
+                        .setMessage("Would you like to find directions to " + marker.getTitle())
+                        .setPositiveButton("Yes", (dialogInterface, i) -> {
+                            directionsFragment.mMap.addMarker(selectedResult);
+                            enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, SearchTag.RESULT, marker.getPosition()));
+                        })
+                        .setIcon(R.drawable.directions)
+                        .setCancelable(true)
+                        .show();
+                return false;
+            });
+        }
+    }
+
+    public void switchTheme(String newValue) {
+        switch (newValue) {
+            case "light":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case "dark":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            case "system_theme":
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+        }
     }
 
     /*
@@ -920,16 +816,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onBusRouteClick(View view, int position) {
-        MapsFragment.mMap.clear();
-        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-        if (mapsFragment != null) {
-            for (BusRoute i : mapsFragment.busRoutes) {
-                if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
-                    MapsFragment.currentRouteNo = i.routeNumber;
-                    new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
-                    new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true)).start();
-                    break;
-                }
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+        mapsFragment.mMap.clear();
+        for (BusRoute i : mapsFragment.busRoutes) {
+            if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
+                MapsFragment.currentRouteNo = i.routeNumber;
+                new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
+                new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true)).start();
+                break;
             }
         }
         clearFocusOnSearch();
@@ -941,132 +835,85 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onRecentSearchClick(View view, int position) {
-        ListItem recentSearch = recentSearchesAdapter.getItem(position);
 
-        if (recentSearch.position == null) {
-            MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-            mapsFragment.getDeviceLocation();
+        ListItem recentSearch = recentSearchesAdapter.getItem(position);
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+
+        // If not the main search bar, enter for directions
+        if (whichSearchBar != MAIN_SEARCH_BAR) {
+            // Set the position if current pos is tapped
+            if (position == 0) {
+                recentSearchesAdapter.getItem(position).position = mapsFragment.deviceLatLng;
+
+                // Otherwise just add marker
+            } else {
+                MarkerOptions selectedResult = new MarkerOptions();
+                selectedResult.position(recentSearch.position);
+                selectedResult.title(recentSearch.title);
+                directionsFragment.mMap.addMarker(selectedResult);
+            }
+
+            // Always attempt to enter directions mode when possible
+            enterDirectionsMode(recentSearchesAdapter.getItem(position));
         } else {
 
-            MarkerOptions selectedResult = new MarkerOptions();
-            selectedResult.position(recentSearch.position);
-            selectedResult.title(recentSearch.title);
-            // clear the map
-            MapsFragment.mMap.clear();
-            MapsFragment.mMap.addMarker(selectedResult);
-            MapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recentSearch.position, 18.0f));
-            enterDirectionsMode(recentSearch);
+            // Zooms to position if current location is tapped
+            if (position == 0) {
+                mapsFragment.getDeviceLocation();
+
+            } else {
+                // Repeat the same thing as the other on clicks if a recent is tapped from the main search bar
+                MarkerOptions selectedResult = new MarkerOptions();
+                selectedResult.position(recentSearch.position);
+                selectedResult.title(recentSearch.title);
+                mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(recentSearchesAdapter.getItem(position).position, 18.0f));
+                mapsFragment.mMap.addMarker(selectedResult);
+                mapsFragment.mMap.setOnMarkerClickListener(marker -> {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Directions")
+                            .setMessage("Would you like to find directions to " + marker.getTitle())
+                            .setPositiveButton("Yes", (dialogInterface, i) -> {
+                                directionsFragment.mMap.addMarker(selectedResult);
+                                enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, SearchTag.RESULT, marker.getPosition()));
+                            })
+                            .setIcon(R.drawable.directions)
+                            .setCancelable(true)
+                            .show();
+                    return false;
+                });
+            }
         }
 
         clearFocusOnSearch();
     }
 
-
-    /*
-     * TODO: Method to enter the directions screen from the main activity
-     */
     public void enterDirectionsMode(ListItem destItem) {
-        // Set the boolean value
-        inDirectionsMode = true;
 
         // Set the visibility of the default searchbar to "gone"
         materialSearchBar.setVisibility(View.GONE);
 
-        // Set the visibility of the src,dest searchbars to "visible"
-        llSrcDestContainer.setVisibility(View.VISIBLE);
+        // Create the directions on the directions fragment
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        directionsFragment.createDirections(destItem);
 
-        // Set text for src,dest
-        if (destItem != null) {
-            if (SearchBar == MAIN_SEARCH_BAR) {
-                srcSearchBar.setText("Current location");
-                destSearchBar.setText(destItem.title);
-                srcBarText = "Current location";
-                destBarText = destItem.title;
-            } else if (SearchBar == SRC_SEARCH_BAR) {
-                srcSearchBar.setText(destItem.title);
-                srcBarText = destItem.title;
-            } else if (SearchBar == DEST_SEARCH_BAR) {
-                destSearchBar.setText(destItem.title);
-                destBarText = destItem.title;
-            }
-        }
+        // Show the directions fragment
+        viewPager.setCurrentItem(1);
 
-        // Get rid of buses button, timetable button, and find me button
-        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-        mapsFragment.fabTimetable.setVisibility(View.GONE);
-        mapsFragment.fabMyLocation.setVisibility(View.INVISIBLE);
-        mapsFragment.swipeRecycler.setVisibility(View.INVISIBLE);
-        mapsFragment.fab_directions.setVisibility(View.INVISIBLE);
-        mapsFragment.fab_directions.setVisibility(View.INVISIBLE);
+        // Set the bottom bar selection and visibility
+        bottomBar.getMenu().select(R.id.blank);
+        bottomBar.setVisibility(View.GONE);
 
-        // Hide the routes bottomsheet if it is open
-        mapsFragment.standardBottomSheet.setVisibility(View.GONE);
-        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        if (destItem != null) {
-            // Start a progress indicator in one of the searchviews
-            tripProgress.setVisibility(View.VISIBLE);
-
-            // Get Trip Plan and input into
-            new Thread(() -> {
-                TripPlan newTripPlan = getTripPlan(mapsFragment.deviceLatLng, destItem.position, 1);
-                ArrayList<ListItem> textDirections = new ArrayList<>();
-                ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
-                for (int i = 0; i < routeFeatures.size(); i++) {
-                    Feature currFeature = routeFeatures.get(i);
-                    // TODO: fix to add parsing direction type
-                    textDirections.add(new ListItem(currFeature.getText(), String.valueOf(currFeature.getLength()), 0, currFeature.getManeuverType(), SearchTag.RESULT, null));
-                }
-
-                // Parse the trip plan into the BottomBar
-                runOnUiThread(() -> {
-                    directionsAdapter = new DirectionsAdapter(this, textDirections);
-                    directionsRecycler.setAdapter(directionsAdapter);
-                });
-            }).start();
-
-            // Change the visibility of the BottomBar to "visible"
-            sheet.setVisibility(View.VISIBLE);
-
-            // End the progress indicator
-            tripProgress.setVisibility(View.INVISIBLE);
-        }
     }
 
-    /*
-     * TODO: Method to exit the directions screen from the main activity
-     */
     public void exitDirectionsMode() {
-        // Set the boolean value to false
-        inDirectionsMode = false;
 
-        // Set the visibility of the default searchbar to "visible"
-        materialSearchBar.setVisibility(View.VISIBLE);
+        // Show the directions fragment
+        viewPager.setCurrentItem(2);
 
-        // Set the visibility of the src,dest searchbars to "gone"
-        llSrcDestContainer.setVisibility(View.GONE);
-
-        // Add back the buses button, timetable button, find me button, and close the bus routes bottom sheet.
-        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.maps_fragment);
-        mapsFragment.fabMyLocation.setVisibility(View.VISIBLE);
-        mapsFragment.swipeRecycler.setVisibility(View.VISIBLE);
-        mapsFragment.fab_directions.setVisibility(View.VISIBLE);
-        mapsFragment.standardBottomSheet.setVisibility(View.VISIBLE);
-
-        // clear the map
-        mapsFragment.mMap.clear();
-
-        // Change the visibility of the BottomBar to "gone"
-        bottomSheetBehavior.setState(bottomSheetBehavior.STATE_COLLAPSED);
-        sheet.setVisibility(View.GONE);
-    }
-
-    private void swapDirections() {
-        srcSearchBar.setText(destBarText);
-        destSearchBar.setText(srcBarText);
-        String temp_text = srcBarText;
-        srcBarText = destBarText;
-        destBarText = temp_text;
-
+        // Set the bottom bar selection and visibility
+        bottomBar.getMenu().select(R.id.item0);
+        bottomBar.setVisibility(View.VISIBLE);
     }
 
     /*

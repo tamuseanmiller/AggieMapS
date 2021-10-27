@@ -1,7 +1,5 @@
 package com.mrst.aggiemaps;
 
-import android.graphics.drawable.Drawable;
-
 import androidx.annotation.DrawableRes;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -9,26 +7,26 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 class Feature {
-    private double length;
-    private double time;
+    private double lengthMiles;
+    private double timeMins;
     private String text;
     private long eta;
     private @DrawableRes int maneuverType;
 
     public Feature(double length, double time, String text, long eta, @DrawableRes int maneuverType) {
-        this.length = length;
-        this.time = time;
+        this.lengthMiles = length;
+        this.timeMins = time;
         this.text = text;
         this.eta = eta;
         this.maneuverType = maneuverType;
     }
 
-    public double getLength() {
-        return length;
+    public double getLengthMiles() {
+        return lengthMiles;
     }
 
-    public double getTime() {
-        return time;
+    public double getTimeMins() {
+        return timeMins;
     }
 
     public String getText() {

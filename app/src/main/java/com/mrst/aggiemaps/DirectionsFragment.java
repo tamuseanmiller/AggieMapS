@@ -1,7 +1,6 @@
 package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
-
 import static com.mrst.aggiemaps.MainActivity.DEST_SEARCH_BAR;
 import static com.mrst.aggiemaps.MainActivity.MAIN_SEARCH_BAR;
 import static com.mrst.aggiemaps.MainActivity.SRC_SEARCH_BAR;
@@ -10,7 +9,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -75,11 +73,8 @@ public class DirectionsFragment extends Fragment {
     private FloatingActionButton fabSwap;
     private BottomSheetBehavior<View> bottomSheetBehavior;
     private DirectionsAdapter directionsAdapter;
-    private FrameLayout sheet;
+    public FrameLayout sheet;
     private OkHttpClient client;  // Client to make API requests
-
-    private static final String KEY_LOCATION = "location";
-    private static final int DEFAULT_DIRECTION = 0;
     public GoogleMap mMap;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
@@ -210,6 +205,7 @@ public class DirectionsFragment extends Fragment {
 //            JSONArray directions = new JSONObject(result).getJSONArray("directions");
 
             // Parse all of the geometry
+
             JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
             ArrayList<LatLng> geometry = new ArrayList<>();
             for (int i = 0; i < paths.length(); i++) {
@@ -435,7 +431,7 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
-    private void updateLocationUI() {
+    public void updateLocationUI() {
         if (mMap == null) {
             return;
         }
@@ -463,6 +459,8 @@ public class DirectionsFragment extends Fragment {
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
+        } else {
+            locationPermissionGranted = false;
         }
     }
 
@@ -718,7 +716,7 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
-    private void exitDirections() {
+    public void exitDirections() {
 
         // Clear the map
         mMap.clear();

@@ -71,8 +71,8 @@ public class AppIntroduction extends AppIntro{
 
             askForPermissions(
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    3,
-                    true);
+                    2,
+                    false);
 
 
             // Fade Transition

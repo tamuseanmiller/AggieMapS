@@ -2,51 +2,38 @@ package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
 
-import android.content.Context;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.DisplayMetrics;
 import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
-import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -54,13 +41,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
@@ -69,18 +54,14 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.divider.MaterialDividerItemDecoration;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
+import com.permissionx.guolindev.PermissionX;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,9 +69,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +77,6 @@ import java.util.Objects;
 import java.util.Queue;
 
 import github.com.st235.lib_expandablebottombar.ExpandableBottomBar;
-import eu.okatrych.rightsheet.RightSheetBehavior;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -136,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public static final int MAIN_SEARCH_BAR = 1;
     public static final int SRC_SEARCH_BAR = 2;
     public static final int DEST_SEARCH_BAR = 3;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     enum SearchTag {
         CATEGORY,
@@ -260,6 +239,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
         haveNetworkConnection();
 
+        // Construct a FusedLocationProviderClient.
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
         // Set the status bar to be transparent
         Window w = getWindow();
         w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -308,8 +290,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         busRoutesSearchAdapter.setClickListener(this);
         Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
         // Add Recent Searches
+        recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
+
         if (cachedRecentSearches.containsKey("recentSearches")) {
-            recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
             Queue<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
             if (recentSearchesList != null) {
                 recentSearchesListItems.addAll(recentSearchesList);
@@ -376,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         clearIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
         materialSearchView.setClearIcon(clearIcon);
         materialSearchView.setDividerColor(ContextCompat.getColor(this, android.R.color.transparent));
-        materialSearchView.setTextClearOnBackPressed(true);
+        materialSearchView.setTextClearOnBackPressed(false);
 
         // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
         // and once again when the user makes a selection (for example when calling fetchPlace()).
@@ -669,6 +652,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         if (!getSupportFragmentManager().findFragmentByTag("3").isHidden()) {
             getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
         }
+        // End directions on back pressed if directions are being shown
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        if (directionsFragment.sheet.getVisibility() == View.VISIBLE) {
+            directionsFragment.exitDirections();
+        }
     }
 
     /*
@@ -829,7 +817,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         clearFocusOnSearch();
     }
 
-
     /*
      * When a Recent Searches Result is tapped, show the recent searched
      */
@@ -844,7 +831,47 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         if (whichSearchBar != MAIN_SEARCH_BAR) {
             // Set the position if current pos is tapped
             if (position == 0) {
-                recentSearchesAdapter.getItem(position).position = mapsFragment.deviceLatLng;
+                /*
+                 * Get the best and most recent location of the device, which may be null in rare
+                 * cases when a location is not available.
+                 */
+                try {
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+                            Location lastKnownLocation = task.getResult();
+                            if (lastKnownLocation != null) {
+                                LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                                    recentSearchesAdapter.getItem(position).position = curLocation;
+                            }
+                        });
+                    } else {
+                        PermissionX.init(this)
+                                .permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                                .request((allGranted, grantedList, deniedList) -> {
+                                    if (allGranted) {
+                                        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+                                            Location lastKnownLocation = task.getResult();
+                                            if (lastKnownLocation != null) {
+
+                                                // Set the current position
+                                                LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                                                recentSearchesAdapter.getItem(position).position = curLocation;
+
+                                                // Update maps and directions
+                                                mapsFragment.updateLocationUI();
+                                                mapsFragment.getDeviceLocation();
+                                                directionsFragment.updateLocationUI();
+                                                directionsFragment.getDeviceLocation();
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                } catch (SecurityException e) {
+                    Log.e("Exception: %s", e.getMessage(), e);
+                }
 
                 // Otherwise just add marker
             } else {
@@ -860,7 +887,47 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Zooms to position if current location is tapped
             if (position == 0) {
-                mapsFragment.getDeviceLocation();
+                /*
+                 * Get the best and most recent location of the device, which may be null in rare
+                 * cases when a location is not available.
+                 */
+                try {
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+                            Location lastKnownLocation = task.getResult();
+                            if (lastKnownLocation != null) {
+                                LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                                mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLocation, 14.0f));
+                            }
+                        });
+
+                        // If permission doesn't exist
+                    } else {
+                        PermissionX.init(this)
+                                .permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                                .request((allGranted, grantedList, deniedList) -> {
+                                    if (allGranted) {
+                                        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(task -> {
+                                            Location lastKnownLocation = task.getResult();
+                                            if (lastKnownLocation != null) {
+                                                LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                                                mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(curLocation, 14.0f));
+
+                                                // Update maps and directions
+                                                mapsFragment.updateLocationUI();
+                                                mapsFragment.getDeviceLocation();
+                                                directionsFragment.updateLocationUI();
+                                                directionsFragment.getDeviceLocation();
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                } catch (SecurityException e) {
+                    Log.e("Exception: %s", e.getMessage(), e);
+                }
 
             } else {
                 // Repeat the same thing as the other on clicks if a recent is tapped from the main search bar
@@ -886,6 +953,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         clearFocusOnSearch();
+
     }
 
     public void enterDirectionsMode(ListItem destItem) {

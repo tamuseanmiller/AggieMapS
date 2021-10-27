@@ -223,12 +223,17 @@ public class DirectionsFragment extends Fragment {
             polylineOptions.pattern(null);
             polylineOptions.clickable(true);
             polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
+            MarkerOptions endMarker = new MarkerOptions();
             for (int i = 0; i < paths.length(); i++) {
                 double lat = paths.getJSONArray(i).getDouble(0);
                 double lng = paths.getJSONArray(i).getDouble(1);
                 LatLng latlng = new LatLng(lng, lat);
                 polylineOptions.add(latlng);
                 builder.include(latlng);
+                if (i == paths.length() - 1) {
+                    endMarker.position(latlng);
+                    endMarker.draggable(false);
+                }
             }
 
             // Animate the camera to the new bounds
@@ -239,6 +244,7 @@ public class DirectionsFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 mMap.addPolyline(polylineOptions);  // Add polyline
                 mMap.animateCamera(cu);
+                mMap.addMarker(endMarker);
             });
 
             // Parse summary information

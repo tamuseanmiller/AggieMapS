@@ -62,11 +62,9 @@ import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 import com.permissionx.guolindev.PermissionX;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

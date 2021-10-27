@@ -56,6 +56,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
@@ -572,6 +573,31 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Get the current location of the device and set the position of the map.
             getDeviceLocation();
+
+            // Set Click Listener for polyline
+            mMap.setOnPolylineClickListener(polyline -> {
+
+                // Show title
+                MarkerOptions title = new MarkerOptions();
+                title.position(polyline.getPoints().get(0));
+                title.title(polyline.getId());
+                title.icon(BitmapFromVector(requireActivity(), R.drawable.arrow_left, android.R.color.transparent, 0));
+                Marker m = mMap.addMarker(title);
+                m.showInfoWindow();
+
+                // Zoom out
+                List<LatLng> points = polyline.getPoints();
+                new Thread(() -> {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (LatLng i : points) {
+                        builder.include(i);
+                    }
+                    int padding = 70;
+                    LatLngBounds bounds = builder.build();
+                    final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+                }).start();
+            });
         }
     };
 

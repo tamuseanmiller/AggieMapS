@@ -55,6 +55,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Objects;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
@@ -183,7 +185,7 @@ public class DirectionsFragment extends Fragment {
             String result = getApiCall(call);
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
-
+            Log.d("ROUTING", String.valueOf(features_json));
             // Parse every feature
             ArrayList<Feature> features = new ArrayList<>();
             for (int i = 0; i < features_json.length(); i++) {
@@ -237,7 +239,7 @@ public class DirectionsFragment extends Fragment {
             }
 
             // Animate the camera to the new bounds
-            int padding = 400;
+            int padding = 0; // TODO: set this programmatically
             LatLngBounds bounds = builder.build();
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
@@ -620,20 +622,32 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
-    /*
-     * Method converts nautical miles into feet
-     * Probably needs to be changed just place holding until I double check units
-     */
-    private int convertMilesToFeet(double miles) {
-        return (int) (miles * 5280);
+    // Return distance output that is readable and coherent
+    private String getDistanceText(double miles) {
+        if (miles < 0.1) {
+            return String.valueOf((int) (miles * 5280))  + " feet";
+        }
+        return String.format("%.2f miles", miles);
     }
 
-    /*
-     * Method converts minutes into seconds
-     * Probably needs to be changed just place holding until I double check units
-     */
-    private int convertMinutesToSeconds(double minutes) {
-        return (int) (minutes * 60);
+    // Return time output that is readable and consistent
+    private String getTimeText(double minutes) {
+        if (minutes > 2) {
+            return String.valueOf((int) minutes) + " min";
+        }
+        return String.valueOf((int) (minutes * 60)) + " sec";
+    }
+
+    private String getETAText(double totalTime) {
+        Calendar currentTime = Calendar.getInstance();
+        currentTime.getTime();
+        currentTime.add(Calendar.MINUTE, (int) totalTime);
+        String finalTime = currentTime.get(Calendar.HOUR) + ":" + currentTime.get(Calendar.MINUTE);
+        String afternoon = " PM";
+        if (currentTime.get(Calendar.AM_PM) == Calendar.AM) {
+            afternoon = " AM";
+        }
+        return "ETA " + finalTime + afternoon;
     }
 
     public void createDirections(ListItem itemTapped) {
@@ -683,23 +697,11 @@ public class DirectionsFragment extends Fragment {
                         Feature currFeature = routeFeatures.get(i);
 
                         // Convert feature length and time to readable formatted String
-                        double distFt = currFeature.getLength();
-                        String distText;
-//                        if (distFt > 600) {
-//                            distText = Math.round((distFt / 5280.0) * 100.0) / 100.0 + " miles";
-//                        } else {
-                        distText = String.format("%.2f miles", distFt);
-//                        }
-                        double timeSec = currFeature.getTime();
-                        String timeText;
-                        if (timeSec >= 120) {
-                            timeText = String.format(" (%.2f minutes)", Math.round((timeSec / 60.0) * 10.0) / 10.0);
-                        } else {
-                            timeText = String.format(" (%.2f seconds)", timeSec);
-                        }
+                        String distText = getDistanceText(currFeature.getLengthMiles());
+                        String timeText = getTimeText(currFeature.getTimeMins());
 
                         // Add list item
-                        textDirections.add(new ListItem(currFeature.getText(), distText + timeText, 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
+                        textDirections.add(new ListItem(currFeature.getText(), distText + " (" + timeText + ")", 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
                     }
 
                     // Parse the trip plan into the Bottom Sheet
@@ -708,9 +710,9 @@ public class DirectionsFragment extends Fragment {
                         directionsRecycler.setAdapter(directionsAdapter);
 
                         // Set bottom sheet header items
-                        tripTime.setText(String.format("%.2fmin", newTripPlan.getTotalTime()));
-                        tripLength.setText(String.format("%.2fkm", newTripPlan.getTotalLength()));
-                        etaClockTime.setText(String.format("ETA %.2f", newTripPlan.getTotalTime() + 20));
+                        tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
+                        tripLength.setText(getDistanceText(newTripPlan.getTotalLength()));
+                        etaClockTime.setText(getETAText(newTripPlan.getTotalTime()));
                     });
                 }).start();
 

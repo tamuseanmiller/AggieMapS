@@ -15,7 +15,7 @@ import com.google.android.material.button.MaterialButton;
 
 import org.jetbrains.annotations.Contract;
 
-public class BusFragment extends Fragment {
+public class IntroCacheRoutesFragment extends Fragment {
 
     @Nullable
     @Override
@@ -36,7 +36,7 @@ public class BusFragment extends Fragment {
 
     @NonNull
     @Contract(" -> new")
-    public static BusFragment newInstance() {
-        return new BusFragment();
+    public static IntroCacheRoutesFragment newInstance() {
+        return new IntroCacheRoutesFragment();
     }
 }

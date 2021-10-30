@@ -5,11 +5,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -48,7 +45,7 @@ public class AppIntroduction extends AppIntro {
 //            ));
 
             // custom slide for the cache button
-            addSlide(new BusFragment());
+            addSlide(new IntroCacheRoutesFragment());
 
             addSlide(AppIntroFragment.newInstance("Locations Permission",
                     "Please allow AggieMapS to access your location. We will use it to optimize " +

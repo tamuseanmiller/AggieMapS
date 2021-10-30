@@ -34,7 +34,7 @@ public class AppIntroduction extends AppIntro {
                     "Welcome to AggieMapS, an application to help navigate the Texas A&M " +
                             "Campus through the Aggie Spirit Bus system!",
                     R.drawable.map_intro,
-                    ContextCompat.getColor(this, R.color.red_60)
+                    ContextCompat.getColor(this, R.color.purple_300)
             ));
 
 //             Default add slides for bus routes test and matching of custom layout file
@@ -51,12 +51,12 @@ public class AppIntroduction extends AppIntro {
                     "Please allow AggieMapS to access your location. We will use it to optimize " +
                             "navigation for you!",
                     R.drawable.current_location_intro,
-                    ContextCompat.getColor(this, R.color.accent)
+                    ContextCompat.getColor(this, R.color.blue_300)
             ));
 
             askForPermissions(
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    2,
+                    3,
                     false);
 
 

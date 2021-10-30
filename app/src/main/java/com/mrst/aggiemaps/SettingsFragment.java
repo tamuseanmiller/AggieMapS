@@ -1,8 +1,6 @@
 package com.mrst.aggiemaps;
 
-import android.app.ActionBar;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -12,9 +10,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,12 +49,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             return true;
         });
 
-        DirectionsFragment directionsFragment = (DirectionsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f1");
-        MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
-        //assert mapsFragment != null;
-
         // Listen for light map style change
         preferenceManager.findPreference("light_maps").setOnPreferenceChangeListener((preference, newValue) -> {
+            DirectionsFragment directionsFragment = (DirectionsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f1");
+            MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
+            assert mapsFragment != null;
+            assert directionsFragment != null;
             // If light mode is on
             if (currentNightMode == Configuration.UI_MODE_NIGHT_NO) {
                 switch (newValue.toString()) {
@@ -81,7 +77,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         });
 
         // Listen for dark map style change
-        preferenceManager.findPreference("dark_maps").setOnPreferenceChangeListener((Preference.OnPreferenceChangeListener) (preference, newValue) -> {
+        preferenceManager.findPreference("dark_maps").setOnPreferenceChangeListener((preference, newValue) -> {
+            DirectionsFragment directionsFragment = (DirectionsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f1");
+            MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
+            assert mapsFragment != null;
+            assert directionsFragment != null;
             // If dark mode is on
             if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
                 switch (newValue.toString()) {

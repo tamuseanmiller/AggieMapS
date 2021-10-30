@@ -237,6 +237,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
         haveNetworkConnection();
 
+        // Set up BottomBar with viewpager
+        viewPager = findViewById(R.id.pager);
+        pagerAdapter = new BottomPagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setUserInputEnabled(false);
+        viewPager.setOffscreenPageLimit(3);
+        pagerAdapter.createFragment(0);
+        pagerAdapter.createFragment(1);
+        pagerAdapter.createFragment(2);
+        viewPager.setCurrentItem(2);
+
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -339,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         recentSearchesRecycler.addItemDecoration(divider);
         recentSearchesRecycler.setAdapter(recentSearchesAdapter);
 
+        // Add views into the material search view
         ll.addView(recentSearchesRecycler);
         ll.addView(gisSearchRecycler);
         ll.addView(busRoutesSearchRecycler);
@@ -366,6 +378,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         // Set OnClick Listeners
         materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
 
+        // Set listeners for when someone tries to type into the searchview
         materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
@@ -385,17 +398,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 return true;
             }
         });
-
-        // Set up BottomBar with viewpager
-        viewPager = findViewById(R.id.pager);
-        pagerAdapter = new BottomPagerAdapter(this);
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.setUserInputEnabled(false);
-        viewPager.setOffscreenPageLimit(3);
-        pagerAdapter.createFragment(0);
-        pagerAdapter.createFragment(1);
-        pagerAdapter.createFragment(2);
-        viewPager.setCurrentItem(2);
 
         // Add the settings fragment to the fragment manager
         FragmentManager fm = getSupportFragmentManager();

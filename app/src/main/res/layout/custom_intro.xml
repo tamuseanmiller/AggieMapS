@@ -47,16 +47,18 @@
         android:layout_marginHorizontal="20dp"
         />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/cacheBusesBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Cache Buses"
+        android:stateListAnimator="@null"
+        app:cornerRadius="25dp"
+        app:backgroundTint="@color/black"
         app:layout_constraintTop_toBottomOf="@+id/description"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginTop="20dp"
-        android:backgroundTint="@color/foreground"
         />
 
 

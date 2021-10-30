@@ -11,6 +11,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -101,6 +102,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
             editor.putString("dark_maps", newValue.toString());
             editor.apply();
+            return true;
+        });
+
+        preferenceManager.findPreference("cache_routes").setOnPreferenceClickListener(preference -> {
+            Intent i = new Intent(getActivity(), CacheRoutesService.class);
+            requireActivity().startForegroundService(i);
             return true;
         });
     }

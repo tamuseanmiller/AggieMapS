@@ -239,6 +239,7 @@ public class CacheRoutesService extends Service {
                 .setSmallIcon(R.drawable.bus)
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
+                .setProgress(100, 0, true)
                 .setOnlyAlertOnce(true);
         Notification n = notification.build();
 

@@ -1,9 +1,10 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory app:title="Themes">
 
         <ListPreference
-            app:defaultValue="system_default"
+            app:defaultValue="system_theme"
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"
             app:key="theme"
@@ -28,6 +29,15 @@
             app:title="Default Dark Map Style"
             app:icon="@drawable/map"
             app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Cache">
+
+        <Preference
+            app:title="Cache Bus Routes"
+            app:icon="@drawable/bus"
+            app:key="cache_routes"/>
 
     </PreferenceCategory>
 

@@ -127,7 +127,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public FloatingActionButton fabTimetable;
     public List<BusRoute> busRoutes;
     public GoogleMap mMap;       // The Map itself
-    private Handler handler = new Handler();
+    private Handler handler;
     private Runnable runnable;
     private ArrayList<Marker> busMarkers;
     public FloatingActionButton fabMyLocation;
@@ -137,7 +137,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Location lastKnownLocation;
     private final String KEY_CAMERA_POSITION = "camera_position";
     private final String KEY_LOCATION = "location";
-    private TextView stopText;
     public FrameLayout standardBottomSheet;
     public LatLng deviceLatLng;
     private NestedScrollView vScroll;
@@ -641,141 +640,152 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 .build();
         favoritesText = mView.findViewById(R.id.favorites_text); // Initialize favorites text
         busMarkers = new ArrayList<>();
+        handler = new Handler();
 
-        favRoutes = mView.findViewById(R.id.recycler_favorites);
-        favAdapter = null;
-        onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
-        onCampusAdapter = null;
-        offCampusRoutes = mView.findViewById(R.id.recycler_offcampus);
-        offCampusAdapter = null;
-        gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
-        gameDayAdapter = null;
+        new Thread(() -> {
 
-        // Set decorations for the recyclers
-        ColumnProvider col = () -> 1;
-        favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-        favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        DisplayMetrics metrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        col = () -> 2;
-        onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-        gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-        gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            favRoutes = mView.findViewById(R.id.recycler_favorites);
+            favAdapter = null;
+            onCampusRoutes = mView.findViewById(R.id.recycler_oncampus);
+            onCampusAdapter = null;
+            offCampusRoutes = mView.findViewById(R.id.recycler_offcampus);
+            offCampusAdapter = null;
+            gameDayRoutes = mView.findViewById(R.id.recycler_gameday);
+            gameDayAdapter = null;
 
-        // Set up the bottom sheet
-        standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
-        standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
-        standardBottomSheetBehavior.setHideable(false);
-        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        standardBottomSheetBehavior.setPeekHeight(0);
-        standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+            // Set decorations for the recyclers
+            ColumnProvider col = () -> 1;
+            favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+            favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            DisplayMetrics metrics = new DisplayMetrics();
+            requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            col = () -> 2;
+            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
 
-        // Set the max height of the bottom sheet by putting it below the searchbar
-        View view = requireActivity().findViewById(R.id.main_app_bar);
-        if (view instanceof AppBarLayout) {
-            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-            if (viewTreeObserver.isAlive()) {
-                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        standardBottomSheetBehavior.setMaxHeight(height - view.getHeight() - convertDpToPx(16));
+            // Set up the bottom sheet
+            standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
+            standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
+            requireActivity().runOnUiThread(() -> {
+                        standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
+                        standardBottomSheetBehavior.setHideable(false);
+                        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        standardBottomSheetBehavior.setPeekHeight(0);
+                        standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+
+                        // Set the max height of the bottom sheet by putting it below the searchbar
+                        View view = requireActivity().findViewById(R.id.main_app_bar);
+                        if (view instanceof AppBarLayout) {
+                            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+                            if (viewTreeObserver.isAlive()) {
+                                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                                    @Override
+                                    public void onGlobalLayout() {
+                                        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                        standardBottomSheetBehavior.setMaxHeight(height - view.getHeight() - convertDpToPx(16));
+                                    }
+                                });
+                            }
+
+                        } else {
+                            standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
+                        }
+
+                        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                            @Override
+                            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                                }
+                            }
+
+                            @Override
+                            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                                if (slideOffset < 0.08) {
+                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                                } else {
+                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                                }
+                            }
+                        });
+                    });
+
+            // Set up right sheet for timetable
+            rightSheet = mView.findViewById(R.id.timetable_sheet);
+            rightSheetBehavior = RightSheetBehavior.from(rightSheet);
+            requireActivity().runOnUiThread(() -> {
+                        rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+                        rightSheetBehavior.setHideable(false);
+                        rightSheetBehavior.setPeekWidth(0);
+                        rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+                    });
+            tlTimetable = mView.findViewById(R.id.tl_timetable);
+            tl_times = mView.findViewById(R.id.tl_times);
+            viewMoreBtn = mView.findViewById(R.id.viewMoreBtn);
+            vScroll = mView.findViewById(R.id.verticalScroll);
+
+            // Initialize the fab to open the timetable
+            requireActivity().runOnUiThread(() -> {
+                fabTimetable = mView.findViewById(R.id.fab_timetable);
+                fabTimetable.setVisibility(View.GONE);
+                fabTimetable.setOnClickListener(v -> {
+                    if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
+                        rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
+                    } else {
+                        rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                     }
                 });
-            }
+            });
 
-        } else {
-            standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
-        }
+            // Initialize the my current location FAB
+            fabMyLocation = mView.findViewById(R.id.fab_mylocation);
+            requireActivity().runOnUiThread(() -> {
+                fabMyLocation.setVisibility(View.GONE);
+                fabMyLocation.setOnClickListener(v -> {
+                    getDeviceLocation();
+                });
+            });
 
-        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                if (slideOffset < 0.08) {
-                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+            // Initialize the Date Picker for the TimeTable
+            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select date")
+                    .build();
+            datePicker.addOnPositiveButtonClickListener(selection -> {
+                tlTimetable.removeAllViews();
+                tl_times.removeAllViews();
+                String header = datePicker.getHeaderText();
+                LocalDate ld;
+                if (header.length() == 11) {
+                    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+                    ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
                 } else {
-                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+                    ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
                 }
-            }
-        });
+                new Thread(() -> {
+                    setUpTimeTable(ld.toString(), true);
+                }).start();
+            });
 
-        // Set up right sheet for timetable
-        rightSheet = mView.findViewById(R.id.timetable_sheet);
-        rightSheetBehavior = RightSheetBehavior.from(rightSheet);
-        rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
-        rightSheetBehavior.setHideable(false);
-        rightSheetBehavior.setPeekWidth(0);
-        rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
-        tlTimetable = mView.findViewById(R.id.tl_timetable);
-        tl_times = mView.findViewById(R.id.tl_times);
-        viewMoreBtn = mView.findViewById(R.id.viewMoreBtn);
-        vScroll = mView.findViewById(R.id.verticalScroll);
+            // Initialize Try Another Date Button
+            MaterialButton tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
+            requireActivity().runOnUiThread(() -> tryAnotherDate.setOnClickListener(v -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag")));
 
-        // Initialize the fab to open the timetable
-        fabTimetable = mView.findViewById(R.id.fab_timetable);
-        fabTimetable.setVisibility(View.GONE);
-        fabTimetable.setOnClickListener(v -> {
-            if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
-                rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
-            } else {
-                rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
-            }
-        });
+            // Initialize the Progress Bar for after a user picks a date
+            dateProgress = mView.findViewById(R.id.date_progress);
+            requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.INVISIBLE));
 
-        // Initialize the my current location FAB
-        fabMyLocation = mView.findViewById(R.id.fab_mylocation);
-        fabMyLocation.setVisibility(View.GONE);
-        fabMyLocation.setOnClickListener(v -> {
-            getDeviceLocation();
-        });
+            // Then set up the bus routes on the bottom sheet
+            new Thread(this::setUpBusRoutes).start();
 
-        // Initialize the Date Picker for the TimeTable
-        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select date")
-                .build();
-        datePicker.addOnPositiveButtonClickListener(selection -> {
-            tlTimetable.removeAllViews();
-            tl_times.removeAllViews();
-            String header = datePicker.getHeaderText();
-            LocalDate ld;
-            if (header.length() == 11) {
-                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
-                ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-            } else {
-                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-                ld = LocalDate.parse(datePicker.getHeaderText(), dateFormatter);
-            }
-            new Thread(() -> {
-                setUpTimeTable(ld.toString(), true);
-            }).start();
-        });
-
-        stopText = view.findViewById(R.id.viewMoreStop);
-
-        // Initialize Try Another Date Button
-        MaterialButton tryAnotherDate = mView.findViewById(R.id.try_another_date_button);
-        tryAnotherDate.setOnClickListener(v -> datePicker.show(requireActivity().getSupportFragmentManager(), "tag"));
-
-        // Initialize the Progress Bar for after a user picks a date
-        dateProgress = mView.findViewById(R.id.date_progress);
-        dateProgress.setVisibility(View.INVISIBLE);
-
-        // Then set up the bus routes on the bottom sheet
-        new Thread(this::setUpBusRoutes).start();
+        }).start();
 
         return mView;
     }

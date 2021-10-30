@@ -479,107 +479,115 @@ public class DirectionsFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View mView = inflater.inflate(R.layout.fragment_directions, container, false);
 
-        client = new OkHttpClient();  // Create OkHttpClient to be used in API request
+        new Thread(() -> {
 
-        // Construct a FusedLocationProviderClient.
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+            client = new OkHttpClient();  // Create OkHttpClient to be used in API request
 
-        // Initialize my location FAB
-        fabMyLocation = mView.findViewById(R.id.fab_mylocation);
-        fabMyLocation.setOnClickListener(v -> {
-            LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
-        });
+            // Construct a FusedLocationProviderClient.
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        directionsRecycler = mView.findViewById(R.id.directions_recycler);
-        directionsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+            // Initialize my location FAB
+            fabMyLocation = mView.findViewById(R.id.fab_mylocation);
+            fabMyLocation.setOnClickListener(v -> {
+                LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
+            });
 
-        // 2. Initialize SearchBars
-        srcSearchBar = mView.findViewById(R.id.src_search_bar);
-        destSearchBar = mView.findViewById(R.id.dest_search_bar);
+            directionsRecycler = mView.findViewById(R.id.directions_recycler);
+            directionsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        // 4. Create the views for the SearchBars
-        srcSearchBar.setOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
-        destSearchBar.setOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
-        srcSearchBar.setElevation(5);
-        srcSearchBar.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
-        srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
-        destSearchBar.setElevation(5);
-        destSearchBar.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
-        destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
-        srcSearchBar.setHint("Choose starting point");
-        destSearchBar.setHint("Choose destination");
-        srcItem = null;
-        destItem = null;
+            // 2. Initialize SearchBars
+            srcSearchBar = mView.findViewById(R.id.src_search_bar);
+            destSearchBar = mView.findViewById(R.id.dest_search_bar);
 
-        // 5. Set the SearchView Settings
-        // reuse materialSearchView settings
+            // 4. Create the views for the SearchBars
+            requireActivity().runOnUiThread(() -> {
+                srcSearchBar.setOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
+                destSearchBar.setOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
+                srcSearchBar.setElevation(5);
+                srcSearchBar.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
+                srcSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(SRC_SEARCH_BAR));
+                destSearchBar.setElevation(5);
+                destSearchBar.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
+                destSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(DEST_SEARCH_BAR));
+                srcSearchBar.setHint("Choose starting point");
+                destSearchBar.setHint("Choose destination");
+            });
+            srcItem = null;
+            destItem = null;
 
-        // 6. Initialize the BottomSheet
-        sheet = mView.findViewById(R.id.directions_bottom_sheet);
+            // 5. Set the SearchView Settings
+            // reuse materialSearchView settings
 
-        // 7. Get the BottomSheetBehavior
-        bottomSheetBehavior = BottomSheetBehavior.from(sheet);
+            // 6. Initialize the BottomSheet
+            sheet = mView.findViewById(R.id.directions_bottom_sheet);
 
-        // 8. Set the settings of the BottomSheetBehavior
-        bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
-        bottomSheetBehavior.setHideable(false);
-        bottomSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(135));
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            // 7. Get the BottomSheetBehavior
+            bottomSheetBehavior = BottomSheetBehavior.from(sheet);
 
-        // Set the max height of the bottom sheet by putting it below the searchbar
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
+            // 8. Set the settings of the BottomSheetBehavior
+            requireActivity().runOnUiThread(() -> {
+                bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+                bottomSheetBehavior.setHideable(false);
+                bottomSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(135));
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            });
 
-        // 9. Initialize Progress Indicator
-        //tripProgress = findViewById(R.id.trip_progress);
+            // Set the max height of the bottom sheet by putting it below the searchbar
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int height = displayMetrics.heightPixels;
 
-        // 10. Initialize Main App Bar
-        View view = requireActivity().findViewById(R.id.main_app_bar);
-        if (view instanceof AppBarLayout) {
-            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-            if (viewTreeObserver.isAlive()) {
-                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() - convertDpToPx(16));
-                    }
-                });
+            // 9. Initialize Progress Indicator
+            //tripProgress = findViewById(R.id.trip_progress);
+
+            // 10. Initialize Main App Bar
+            View view = requireActivity().findViewById(R.id.main_app_bar);
+            if (view instanceof AppBarLayout) {
+                ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+                if (viewTreeObserver.isAlive()) {
+                    viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() - convertDpToPx(16));
+                        }
+                    });
+                }
+
+            } else {
+                bottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
             }
 
-        } else {
-            bottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
-        }
+            // 11. Initialize Source and Dest Container
+            llSrcDestContainer = mView.findViewById(R.id.ll_srcdest);
 
-        // 11. Initialize Source and Dest Container
-        llSrcDestContainer = mView.findViewById(R.id.ll_srcdest);
+            // Initialize cancel fab and click listener
+            fabCancel = mView.findViewById(R.id.fab_cancel);
+            fabCancel.setOnClickListener(v -> {
+                ((MainActivity) requireActivity()).exitDirectionsMode();
+                exitDirections();
+            });
 
-        // Initialize cancel fab and click listener
-        fabCancel = mView.findViewById(R.id.fab_cancel);
-        fabCancel.setOnClickListener(v -> {
-            ((MainActivity) requireActivity()).exitDirectionsMode();
-            exitDirections();
-        });
+            // Initialize the fab for swapping
+            fabSwap = mView.findViewById(R.id.fab_swap);
+            fabSwap.setOnClickListener(v -> swapDirections());
 
-        // Initialize the fab for swapping
-        fabSwap = mView.findViewById(R.id.fab_swap);
-        fabSwap.setOnClickListener(v -> swapDirections());
+            // Initilize the trip type chip group
+            tripTypeGroup = mView.findViewById(R.id.trip_type_group);
+            tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                if (sheet.getVisibility() == View.VISIBLE) {
+                    ((MainActivity) requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
+                    createDirections(destItem);
+                }
+            });
 
-        // Initilize the trip type chip group
-        tripTypeGroup = mView.findViewById(R.id.trip_type_group);
-        tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            if (sheet.getVisibility() == View.VISIBLE) {
-                ((MainActivity) requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
-                createDirections(destItem);
-            }
-        });
+            // Create Directions bottom sheet header items
+            tripTime = mView.findViewById(R.id.eta_min);
+            tripLength = mView.findViewById(R.id.trip_total_length);
+            etaClockTime = mView.findViewById(R.id.eta_time);
 
-        // Create Directions bottom sheet header items
-        tripTime = mView.findViewById(R.id.eta_min);
-        tripLength = mView.findViewById(R.id.trip_total_length);
-        etaClockTime = mView.findViewById(R.id.eta_time);
+        }).start();
 
         return mView;
     }
@@ -625,7 +633,7 @@ public class DirectionsFragment extends Fragment {
     // Return distance output that is readable and coherent
     private String getDistanceText(double miles) {
         if (miles < 0.1) {
-            return String.valueOf((int) (miles * 5280))  + " feet";
+            return String.valueOf((int) (miles * 5280)) + " feet";
         }
         return String.format("%.2f miles", miles);
     }

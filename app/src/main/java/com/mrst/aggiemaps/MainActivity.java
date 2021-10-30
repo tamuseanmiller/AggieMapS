@@ -62,9 +62,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 import com.permissionx.guolindev.PermissionX;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -235,210 +237,220 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         setContentView(R.layout.activity_main);
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
-        haveNetworkConnection();
+        new Thread(this::haveNetworkConnection).start();
 
-        // Set up BottomBar with viewpager
-        viewPager = findViewById(R.id.pager);
-        pagerAdapter = new BottomPagerAdapter(this);
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.setUserInputEnabled(false);
-        viewPager.setOffscreenPageLimit(3);
-        pagerAdapter.createFragment(0);
-        pagerAdapter.createFragment(1);
-        pagerAdapter.createFragment(2);
-        viewPager.setCurrentItem(2);
+        new Thread(() -> {
 
-        // Construct a FusedLocationProviderClient.
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            // Set up BottomBar with viewpager
+            viewPager = findViewById(R.id.pager);
+            pagerAdapter = new BottomPagerAdapter(this);
+            runOnUiThread(() -> {
+                viewPager.setAdapter(pagerAdapter);
+                viewPager.setUserInputEnabled(false);
+                viewPager.setOffscreenPageLimit(3);
+            });
+            viewPager.setCurrentItem(2);
+            pagerAdapter.createFragment(0);
+            pagerAdapter.createFragment(1);
+            pagerAdapter.createFragment(2);
 
-        // Set the status bar to be transparent
-        Window w = getWindow();
-        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            // Construct a FusedLocationProviderClient.
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Initialize Places
-        // Initialize the SDK
-        Places.initialize(getApplicationContext(), getString(R.string.maps_api_key));
+            // Set the status bar to be transparent
+            Window w = getWindow();
+            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        // Create a new PlacesClient instance
-        placesClient = Places.createClient(this);
+            // Initialize Places
+            // Initialize the SDK
+            Places.initialize(getApplicationContext(), getString(R.string.maps_api_key));
 
-        // Initialize the SearchBar and View
-        materialSearchBar = findViewById(R.id.material_search_bar);
-        materialSearchView = findViewById(R.id.material_search_view);
+            // Create a new PlacesClient instance
+            placesClient = Places.createClient(this);
 
-        // Set the default toolbar and actionbar
-        Toolbar toolbar = materialSearchBar.getToolbar();
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
-        if (nav != null && actionBar != null) {
-            nav.setTint(getColor(R.color.foreground));
-            actionBar.setIcon(nav);
-        }
+            // Initialize the SearchBar and View
+            materialSearchBar = findViewById(R.id.material_search_bar);
+            materialSearchView = findViewById(R.id.material_search_view);
 
-        // Set Default Search Bar Settings
-        materialSearchBar.setHint("Aggie MapS");
-        materialSearchBar.setElevation(5);
-        materialSearchBar.setBackgroundColor(getColor(R.color.background));
-        materialSearchBar.setOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
-        materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
-
-        // Set recyclers
-        gisListItems = new ArrayList<>();
-        googleListItems = new ArrayList<>();
-        busRoutesListItems = new ArrayList<>();
-        recentSearchesListItems = new ArrayList<>();
-        NestedScrollView nSV = new NestedScrollView(this);
-        LinearLayout ll = new LinearLayout(this);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        gisSearchAdapter = new GISSearchAdapter(this, gisListItems);
-        gisSearchAdapter.setClickListener(this);
-        googleSearchAdapter = new GoogleSearchAdapter(this, googleListItems);
-        googleSearchAdapter.setClickListener(this);
-        busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
-        busRoutesSearchAdapter.setClickListener(this);
-        Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
-        // Add Recent Searches
-        recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
-
-        if (cachedRecentSearches.containsKey("recentSearches")) {
-            Queue<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
-            if (recentSearchesList != null) {
-                recentSearchesListItems.addAll(recentSearchesList);
-            }
-        }
-        recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
-        recentSearchesAdapter.setClickListener(this);
-
-        // Create recyclerviews and their layout managers
-        gisSearchRecycler = new RecyclerView(this);
-        gisSearchRecycler.suppressLayout(true);
-        gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        });
-        gisSearchRecycler.setAdapter(gisSearchAdapter);
-        googleSearchRecycler = new RecyclerView(this);
-        googleSearchRecycler.suppressLayout(true);
-        googleSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        });
-        googleSearchRecycler.setAdapter(googleSearchAdapter);
-        busRoutesSearchRecycler = new RecyclerView(this);
-        busRoutesSearchRecycler.suppressLayout(true);
-        busRoutesSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
-            @Override
-            public boolean canScrollVertically() {
-                return false;
-            }
-        });
-        busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
-
-        recentSearchesRecycler = new RecyclerView(this);
-        recentSearchesRecycler.suppressLayout(true);
-        recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
-
-        // Add divider
-        MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
-        divider.setDividerInsetEnd(20);
-        divider.setDividerInsetStart(20);
-        recentSearchesRecycler.addItemDecoration(divider);
-        recentSearchesRecycler.setAdapter(recentSearchesAdapter);
-
-        // Add views into the material search view
-        ll.addView(recentSearchesRecycler);
-        ll.addView(gisSearchRecycler);
-        ll.addView(busRoutesSearchRecycler);
-        ll.addView(googleSearchRecycler);
-        nSV.addView(ll);
-
-        // Set SearchView Settings
-        materialSearchView.addView(nSV);
-        Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
-        navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
-        materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
-        materialSearchView.setVisibility(View.GONE);
-        materialSearchView.setHint("Try Building Numbers/Names");
-        materialSearchView.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
-        Drawable clearIcon = ContextCompat.getDrawable(this, R.drawable.close);
-        clearIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
-        materialSearchView.setClearIcon(clearIcon);
-        materialSearchView.setDividerColor(ContextCompat.getColor(this, android.R.color.transparent));
-        materialSearchView.setTextClearOnBackPressed(false);
-
-        // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
-        // and once again when the user makes a selection (for example when calling fetchPlace()).
-        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
-
-        // Set OnClick Listeners
-        materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
-
-        // Set listeners for when someone tries to type into the searchview
-        materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
-                if (charSequence.length() == 0) return true;
-                queryGIS(charSequence); // Query GIS, Google
-                queryBusRoutes(charSequence);
-                queryGoogle(charSequence, token);
-                return true;
+            // Set the default toolbar and actionbar
+            Toolbar toolbar = materialSearchBar.getToolbar();
+            runOnUiThread(() -> setSupportActionBar(toolbar));
+            ActionBar actionBar = getSupportActionBar();
+            Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
+            if (nav != null && actionBar != null) {
+                nav.setTint(getColor(R.color.foreground));
+                actionBar.setIcon(nav);
             }
 
-            @Override
-            public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
-                if (charSequence.length() == 0) return true;
-                queryGIS(charSequence); // Query GIS, Google, Bus Routes
-                queryBusRoutes(charSequence);
-                queryGoogle(charSequence, token);
-                return true;
-            }
-        });
+            // Set Default Search Bar Settings
+            runOnUiThread(() -> {
+                materialSearchBar.setHint("Aggie MapS");
+                materialSearchBar.setElevation(5);
+                materialSearchBar.setBackgroundColor(getColor(R.color.background));
+                materialSearchBar.setOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
+                materialSearchBar.setNavigationOnClickListener(v -> requestFocusOnSearch(MAIN_SEARCH_BAR));
+            });
 
-        // Add the settings fragment to the fragment manager
-        FragmentManager fm = getSupportFragmentManager();
-        fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commit();
+            // Set recyclers
+            gisListItems = new ArrayList<>();
+            googleListItems = new ArrayList<>();
+            busRoutesListItems = new ArrayList<>();
+            recentSearchesListItems = new ArrayList<>();
+            NestedScrollView nSV = new NestedScrollView(this);
+            LinearLayout ll = new LinearLayout(this);
+            ll.setOrientation(LinearLayout.VERTICAL);
+            gisSearchAdapter = new GISSearchAdapter(this, gisListItems);
+            gisSearchAdapter.setClickListener(this);
+            googleSearchAdapter = new GoogleSearchAdapter(this, googleListItems);
+            googleSearchAdapter.setClickListener(this);
+            busRoutesSearchAdapter = new BusRoutesSearchAdapter(this, busRoutesListItems);
+            busRoutesSearchAdapter.setClickListener(this);
+            Map<String, RecentSearches> cachedRecentSearches = RecentSearches.getData(getApplicationContext());
+            // Add Recent Searches
+            recentSearchesListItems.add(new ListItem("Current Location", "Last Known Location", ContextCompat.getColor(this, R.color.blue_500), R.drawable.crosshairs_gps, SearchTag.RESULT, null));
 
-        // Create bottom bar
-        bottomBar = findViewById(R.id.bottom_bar);
-        bottomBar.getMenu().select(R.id.item0);
-
-        // Get bus routes on tap
-        bottomBar.setOnItemReselectedListener((i, j, k) -> {
-            if (j.getId() == R.id.item0) {
-
-                // If settings is visible, get rid of it and make the bar visible
-                if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
-                    materialSearchBar.setVisibility(View.VISIBLE);
-                    fm.beginTransaction().hide(settingsFragment).commit();
-                } else {
-                    // Open the bus routes bottom sheet
-                    MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
-                    mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+            if (cachedRecentSearches.containsKey("recentSearches")) {
+                Queue<ListItem> recentSearchesList = Objects.requireNonNull(cachedRecentSearches.get("recentSearches")).recentSearchesList;
+                if (recentSearchesList != null) {
+                    recentSearchesListItems.addAll(recentSearchesList);
                 }
             }
-            return null;
-        });
+            recentSearchesAdapter = new RecentSearchesAdapter(this, recentSearchesListItems);
+            recentSearchesAdapter.setClickListener(this);
 
-        // Switch between fragments on tap
-        bottomBar.setOnItemSelectedListener((i, j, k) -> {
-            fm.beginTransaction().hide(settingsFragment).commit();
-            if (j.getId() == R.id.blank) {
-                materialSearchBar.setVisibility(View.GONE);
-                viewPager.setCurrentItem(1);
-            } else if (j.getId() == R.id.maps) {
-                materialSearchBar.setVisibility(View.GONE);
-                viewPager.setCurrentItem(0);
-            } else if (j.getId() == R.id.item0) {
-                materialSearchBar.setVisibility(View.VISIBLE);
-                viewPager.setCurrentItem(2);
-            }
-            return null;
-        });
+            // Create recyclerviews and their layout managers
+            gisSearchRecycler = new RecyclerView(this);
+            gisSearchRecycler.suppressLayout(true);
+            gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+                @Override
+                public boolean canScrollVertically() {
+                    return false;
+                }
+            });
+            gisSearchRecycler.setAdapter(gisSearchAdapter);
+            googleSearchRecycler = new RecyclerView(this);
+            googleSearchRecycler.suppressLayout(true);
+            googleSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+                @Override
+                public boolean canScrollVertically() {
+                    return false;
+                }
+            });
+            googleSearchRecycler.setAdapter(googleSearchAdapter);
+            busRoutesSearchRecycler = new RecyclerView(this);
+            busRoutesSearchRecycler.suppressLayout(true);
+            busRoutesSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
+                @Override
+                public boolean canScrollVertically() {
+                    return false;
+                }
+            });
+            busRoutesSearchRecycler.setAdapter(busRoutesSearchAdapter);
+
+            recentSearchesRecycler = new RecyclerView(this);
+            recentSearchesRecycler.suppressLayout(true);
+            recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+
+            // Add divider
+            MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);
+            divider.setDividerInsetEnd(20);
+            divider.setDividerInsetStart(20);
+            recentSearchesRecycler.addItemDecoration(divider);
+            runOnUiThread(() -> recentSearchesRecycler.setAdapter(recentSearchesAdapter));
+
+            // Add views into the material search view
+            ll.addView(recentSearchesRecycler);
+            ll.addView(gisSearchRecycler);
+            ll.addView(busRoutesSearchRecycler);
+            ll.addView(googleSearchRecycler);
+            nSV.addView(ll);
+
+            // Set SearchView Settings
+            runOnUiThread(() -> {
+                materialSearchView.addView(nSV);
+                Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
+                navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
+                materialSearchView.setVisibility(View.GONE);
+                materialSearchView.setHint("Try Building Numbers/Names");
+                materialSearchView.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
+                Drawable clearIcon = ContextCompat.getDrawable(this, R.drawable.close);
+                clearIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                materialSearchView.setClearIcon(clearIcon);
+                materialSearchView.setDividerColor(ContextCompat.getColor(this, android.R.color.transparent));
+                materialSearchView.setTextClearOnBackPressed(false);
+            });
+
+            // Create a new token for the autocomplete session. Pass this to FindAutocompletePredictionsRequest,
+            // and once again when the user makes a selection (for example when calling fetchPlace()).
+            AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+
+            // Set OnClick Listeners
+            materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
+
+            // Set listeners for when someone tries to type into the searchview
+            materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
+                    if (charSequence.length() == 0) return true;
+                    queryGIS(charSequence); // Query GIS, Google
+                    queryBusRoutes(charSequence);
+                    queryGoogle(charSequence, token);
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
+                    if (charSequence.length() == 0) return true;
+                    queryGIS(charSequence); // Query GIS, Google, Bus Routes
+                    queryBusRoutes(charSequence);
+                    queryGoogle(charSequence, token);
+                    return true;
+                }
+            });
+
+            // Add the settings fragment to the fragment manager
+            FragmentManager fm = getSupportFragmentManager();
+            fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commit();
+
+            // Create bottom bar
+            bottomBar = findViewById(R.id.bottom_bar);
+            runOnUiThread(() -> bottomBar.getMenu().select(R.id.item0));
+
+            // Get bus routes on tap
+            bottomBar.setOnItemReselectedListener((i, j, k) -> {
+                if (j.getId() == R.id.item0) {
+
+                    // If settings is visible, get rid of it and make the bar visible
+                    if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
+                        materialSearchBar.setVisibility(View.VISIBLE);
+                        fm.beginTransaction().hide(settingsFragment).commit();
+                    } else {
+                        // Open the bus routes bottom sheet
+                        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+                        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                    }
+                }
+                return null;
+            });
+
+            // Switch between fragments on tap
+            bottomBar.setOnItemSelectedListener((i, j, k) -> {
+                fm.beginTransaction().hide(settingsFragment).commit();
+                if (j.getId() == R.id.blank) {
+                    materialSearchBar.setVisibility(View.GONE);
+                    viewPager.setCurrentItem(1);
+                } else if (j.getId() == R.id.maps) {
+                    materialSearchBar.setVisibility(View.GONE);
+                    viewPager.setCurrentItem(0);
+                } else if (j.getId() == R.id.item0) {
+                    materialSearchBar.setVisibility(View.VISIBLE);
+                    viewPager.setCurrentItem(2);
+                }
+                return null;
+            });
+
+        }).start();
     }
 
     // Create an intent that can start the Speech Recognizer activity
@@ -843,7 +855,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                             Location lastKnownLocation = task.getResult();
                             if (lastKnownLocation != null) {
                                 LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                    recentSearchesAdapter.getItem(position).position = curLocation;
+                                recentSearchesAdapter.getItem(position).position = curLocation;
                             }
                         });
                     } else {

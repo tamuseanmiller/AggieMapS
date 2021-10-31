@@ -233,9 +233,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        // Set the status bar to be transparent
+        Window w = getWindow();
+        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
         new Thread(this::haveNetworkConnection).start();
 
@@ -256,10 +262,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Construct a FusedLocationProviderClient.
             fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
-            // Set the status bar to be transparent
-            Window w = getWindow();
-            runOnUiThread(() -> w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS));
 
             // Initialize Places
             // Initialize the SDK

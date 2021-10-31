@@ -683,7 +683,6 @@ public class DirectionsFragment extends Fragment {
     }
 
     public void createDirections(ListItem itemTapped) {
-        ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE);
         mMap.clear();
         if (itemTapped != null) {
             int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
@@ -702,6 +701,9 @@ public class DirectionsFragment extends Fragment {
             }
 
             if (destItem != null && srcItem != null) {
+
+                // Set bottom bar visibility to gone
+                ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE);
 
                 // Get Trip Plan and input into
                 new Thread(() -> {

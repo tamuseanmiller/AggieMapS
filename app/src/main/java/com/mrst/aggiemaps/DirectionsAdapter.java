@@ -36,9 +36,9 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch (viewType) {
             case 1:
-                return new DirectionsAdapter.CategoryViewHolder(mInflater.inflate(R.layout.search_category, parent, false));
+                return new LandmarkViewHolder(mInflater.inflate(R.layout.landmark_row, parent, false));
             case 0:
-                return new DirectionsAdapter.ListViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
+                return new FeatureViewHolder(mInflater.inflate(R.layout.list_row, parent, false));
             default:
                 return null;
         }
@@ -49,14 +49,17 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         if (mData.size() <= position) return;
         switch (mData.get(position).tag) {
             case CATEGORY:
-                CategoryViewHolder holderCat = (CategoryViewHolder) holderView;
+                LandmarkViewHolder holderCat = (LandmarkViewHolder) holderView;
                 holderCat.categoryName.setText(mData.get(position).title);
                 break;
             case RESULT:
-                ListViewHolder holderList = (ListViewHolder) holderView;
+                FeatureViewHolder holderList = (FeatureViewHolder) holderView;
                 holderList.titleText.setText(mData.get(position).title);
-                holderList.subtitleText.setText(mData.get(position).subtitle);
-                if (mData.size() - 1 != position)
+                if (mData.get(position).subtitle != null)
+                    holderList.subtitleText.setText(mData.get(position).subtitle);
+                else
+                    holderList.subtitleText.setVisibility(View.GONE);
+                if (mData.size() - 1 != position && mData.get(position + 1).tag != MainActivity.SearchTag.CATEGORY)
                     holderList.divider.setVisibility(View.VISIBLE);
                 Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
                 icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
@@ -90,14 +93,14 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
 
     // stores and recycles views as they are scrolled off screen
-    public class ListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class FeatureViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView titleText;
         TextView subtitleText;
         FloatingActionButton directionIcon;
         RelativeLayout rlSearch;
         MaterialDivider divider;
 
-        ListViewHolder(View itemView) {
+        FeatureViewHolder(View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.title_text);
             subtitleText = itemView.findViewById(R.id.subtitle_text);
@@ -118,12 +121,12 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     // stores and recycles views as they are scrolled off screen
-    public class CategoryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class LandmarkViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView categoryName;
 
-        CategoryViewHolder(View itemView) {
+        LandmarkViewHolder(View itemView) {
             super(itemView);
-            categoryName = itemView.findViewById(R.id.category_name);
+            categoryName = itemView.findViewById(R.id.landmark_text);
 
         }
 

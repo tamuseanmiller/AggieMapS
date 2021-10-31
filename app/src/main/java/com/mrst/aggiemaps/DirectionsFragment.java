@@ -180,7 +180,8 @@ public class DirectionsFragment extends Fragment {
      */
     private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
         try {
-            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?doNotLocateOnRestrictedElements=true&outputLines=esriNAOutputLineTrueShape&outSR=4326&returnBarriers=false&returnDirections=true&returnPolygonBarriers=false&returnPolylineBarriers=false&returnRoutes=true&returnStops=false&returnZ=false&startTimeIsUTC=true&stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Current%20Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Zachry%20Engineering%20Education%20Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&travelMode=" + tripType + "&f=pjson";
+            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
+//            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?doNotLocateOnRestrictedElements=true&outputLines=esriNAOutputLineTrueShape&outSR=4326&returnBarriers=false&returnDirections=true&returnPolygonBarriers=false&returnPolylineBarriers=false&returnRoutes=true&returnStops=false&returnZ=false&startTimeIsUTC=true&stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Current%20Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Zachry%20Engineering%20Education%20Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&travelMode=" + tripType + "&f=pjson";
             //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
             String result = getApiCall(call);
             System.out.println((result));
@@ -195,8 +196,34 @@ public class DirectionsFragment extends Fragment {
                 double time = attributes.getDouble("time");
                 String text = attributes.getString("text");
                 int ETA = attributes.getInt("ETA");
+
+                // Add feature
                 Feature new_feature = new Feature(length, time, text, ETA, manueverType);
                 features.add(new_feature);
+
+                // Add landmarks
+                if (features_json.getJSONObject(i).has("events")) {
+                    JSONObject events = features_json.getJSONObject(i).getJSONArray("events").getJSONObject(0);
+                    // Look through all events
+                    if (events.has("strings")) {
+                        JSONArray strings = events.getJSONArray("strings");
+                        // Look through all strings in events
+                        for (int k = 0; k < strings.length(); k++) {
+                            // If a landmark exists
+                            if (strings.getJSONObject(k).has("stringType") &&
+                                    strings.getJSONObject(k).getString("stringType").equals("esriDSTGeneral")) {
+                                String landmarkText = strings.getJSONObject(k).getString("string");
+
+                                // Change the text from "Make the maneuver" to "Pass"
+                                if (landmarkText.startsWith("Make the maneuver"))
+                                    landmarkText = landmarkText.replaceFirst("Make the maneuver", "Pass");
+
+                                // Add landmark feature
+                                features.add(new Feature(FeatureType.LANDMARK, landmarkText));
+                            }
+                        }
+                    }
+                }
             }
 //            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
 //            // parsing routes
@@ -207,7 +234,6 @@ public class DirectionsFragment extends Fragment {
 //            JSONArray directions = new JSONObject(result).getJSONArray("directions");
 
             // Parse all of the geometry
-
             JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
             ArrayList<LatLng> geometry = new ArrayList<>();
             for (int i = 0; i < paths.length(); i++) {
@@ -258,9 +284,7 @@ public class DirectionsFragment extends Fragment {
 
             return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
         } catch (JSONException e) {
-            Log.e("MYAPP", "unexpected JSON exception", e);
             e.printStackTrace();
-            // Do something to recover ...
         }
         return null;
     }
@@ -550,7 +574,7 @@ public class DirectionsFragment extends Fragment {
                         @Override
                         public void onGlobalLayout() {
                             view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() - convertDpToPx(16));
+                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight());
                         }
                     });
                 }
@@ -701,15 +725,34 @@ public class DirectionsFragment extends Fragment {
                     }
                     ArrayList<ListItem> textDirections = new ArrayList<>();
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
+                    routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text
+                    routeFeatures.get(routeFeatures.size() - 1).setText(  // Fix second text
+                            routeFeatures.get(routeFeatures.size() - 1).getText()
+                                    .replaceFirst("Location 2", destItem.title));
                     for (int i = 0; i < routeFeatures.size(); i++) {
                         Feature currFeature = routeFeatures.get(i);
+                        // If there's a landmark
+                        if (currFeature.getType() == FeatureType.LANDMARK) {
+                            textDirections.add(new ListItem(currFeature.getText(), "", 0, MainActivity.SearchTag.CATEGORY));
 
-                        // Convert feature length and time to readable formatted String
-                        String distText = getDistanceText(currFeature.getLengthMiles());
-                        String timeText = getTimeText(currFeature.getTimeMins());
+                        } else {
+                            // Convert feature length and time to readable formatted String
+                            String distText = getDistanceText(currFeature.getLengthMiles());
+                            String timeText = getTimeText(currFeature.getTimeMins());
 
-                        // Add list item
-                        textDirections.add(new ListItem(currFeature.getText(), distText + " (" + timeText + ")", 0, currFeature.getManeuverType(), MainActivity.SearchTag.RESULT, null));
+                            // Add list item
+                            if (i != 0 && i != routeFeatures.size() - 1) {
+                                textDirections.add(new ListItem(currFeature.getText(),
+                                        distText + " (" + timeText + ")",
+                                        0, currFeature.getManeuverType(),
+                                        MainActivity.SearchTag.RESULT, null));
+                            } else {
+                                textDirections.add(new ListItem(currFeature.getText(),
+                                        null,
+                                        0, currFeature.getManeuverType(),
+                                        MainActivity.SearchTag.RESULT, null));
+                            }
+                        }
                     }
 
                     // Parse the trip plan into the Bottom Sheet
@@ -721,12 +764,12 @@ public class DirectionsFragment extends Fragment {
                         tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
                         tripLength.setText(getDistanceText(newTripPlan.getTotalLength()));
                         etaClockTime.setText(getETAText(newTripPlan.getTotalTime()));
+
+                        // Change the visibility of the BottomSheet to "visible"
+                        sheet.setVisibility(View.VISIBLE);
+                        fabMyLocation.setVisibility(View.GONE);
                     });
                 }).start();
-
-                // Change the visibility of the BottomBar to "visible"
-                sheet.setVisibility(View.VISIBLE);
-                fabMyLocation.setVisibility(View.GONE);
 
             }
         }

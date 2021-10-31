@@ -6,12 +6,19 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
+enum FeatureType {
+    LANDMARK,
+    NOT_LANDMARK
+}
+
 class Feature {
     private double lengthMiles;
     private double timeMins;
     private String text;
     private long eta;
-    private @DrawableRes int maneuverType;
+    private @DrawableRes
+    int maneuverType;
+    private FeatureType type;
 
     public Feature(double length, double time, String text, long eta, @DrawableRes int maneuverType) {
         this.lengthMiles = length;
@@ -19,6 +26,12 @@ class Feature {
         this.text = text;
         this.eta = eta;
         this.maneuverType = maneuverType;
+        this.type = FeatureType.NOT_LANDMARK;
+    }
+
+    public Feature(FeatureType type, String text) {
+        this.type = type;
+        this.text = text;
     }
 
     public double getLengthMiles() {
@@ -37,8 +50,17 @@ class Feature {
         return eta;
     }
 
-    public @DrawableRes int getManeuverType() {
+    public @DrawableRes
+    int getManeuverType() {
         return maneuverType;
+    }
+
+    public FeatureType getType() {
+        return type;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 }
 

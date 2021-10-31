@@ -528,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
                     String routeName = mapsFragment.busRoutes.get(i).routeName.toLowerCase();
                     if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all"))
-                        tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, SearchTag.RESULT));
+                        tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, R.drawable.bus, SearchTag.RESULT, null));
                 }
             }
 
@@ -822,7 +822,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
                 MapsFragment.currentRouteNo = i.routeNumber;
                 new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
-                new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true)).start();
+                new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true, true)).start();
                 break;
             }
         }

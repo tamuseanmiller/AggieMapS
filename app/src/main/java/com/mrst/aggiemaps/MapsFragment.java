@@ -336,7 +336,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     /*
      * Method to draw a bus route on the map
      */
-    public void drawBusRoute(String routeNo, int color, boolean zoom) {
+    public void drawBusRoute(String routeNo, int color, boolean zoom, boolean update) {
 
         // Check for cached data
         Map<String, AggieBusRoute> route = AggieBusRoute.getData(requireActivity());
@@ -370,7 +370,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
             if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
 
-            updateBusRoute(routeNo, color, false, true);
+            if (update) updateBusRoute(routeNo, color, false, true);
 
         } else
             updateBusRoute(routeNo, color, zoom, false);  // Always update route in the background
@@ -674,58 +674,58 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             int height = displayMetrics.heightPixels;
             standardBottomSheetBehavior = BottomSheetBehavior.from(standardBottomSheet);
             requireActivity().runOnUiThread(() -> {
-                        standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
-                        standardBottomSheetBehavior.setHideable(false);
-                        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                        standardBottomSheetBehavior.setPeekHeight(0);
-                        standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+                standardBottomSheetBehavior.setSaveFlags(BottomSheetBehavior.SAVE_ALL);
+                standardBottomSheetBehavior.setHideable(false);
+                standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                standardBottomSheetBehavior.setPeekHeight(0);
+                standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
 
-                        // Set the max height of the bottom sheet by putting it below the searchbar
-                        View view = requireActivity().findViewById(R.id.main_app_bar);
-                        if (view instanceof AppBarLayout) {
-                            ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-                            if (viewTreeObserver.isAlive()) {
-                                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                                    @Override
-                                    public void onGlobalLayout() {
-                                        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                                        standardBottomSheetBehavior.setMaxHeight(height - view.getHeight() - convertDpToPx(16));
-                                    }
-                                });
-                            }
-
-                        } else {
-                            standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
-                        }
-
-                        standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                // Set the max height of the bottom sheet by putting it below the searchbar
+                View view = requireActivity().findViewById(R.id.main_app_bar);
+                if (view instanceof AppBarLayout) {
+                    ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
+                    if (viewTreeObserver.isAlive()) {
+                        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                             @Override
-                            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
-                                }
-                            }
-
-                            @Override
-                            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                                if (slideOffset < 0.08) {
-                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
-                                } else {
-                                    requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
-                                }
+                            public void onGlobalLayout() {
+                                view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                                standardBottomSheetBehavior.setMaxHeight(height - view.getHeight() - convertDpToPx(16));
                             }
                         });
-                    });
+                    }
+
+                } else {
+                    standardBottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
+                }
+
+                standardBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                    @Override
+                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                        if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                            requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                        if (slideOffset < 0.08) {
+                            requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                        } else {
+                            requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.GONE);
+                        }
+                    }
+                });
+            });
 
             // Set up right sheet for timetable
             rightSheet = mView.findViewById(R.id.timetable_sheet);
             rightSheetBehavior = RightSheetBehavior.from(rightSheet);
             requireActivity().runOnUiThread(() -> {
-                        rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
-                        rightSheetBehavior.setHideable(false);
-                        rightSheetBehavior.setPeekWidth(0);
-                        rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
-                    });
+                rightSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+                rightSheetBehavior.setHideable(false);
+                rightSheetBehavior.setPeekWidth(0);
+                rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+            });
             tlTimetable = mView.findViewById(R.id.tl_timetable);
             tl_times = mView.findViewById(R.id.tl_times);
             viewMoreBtn = mView.findViewById(R.id.viewMoreBtn);
@@ -1242,25 +1242,25 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     case "Favorites":
                         for (int i = 1; i < favAdapter.getItemCount(); i++) {
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(favAdapter.getItem(finalI).routeNumber, favAdapter.getItem(finalI).color, false)).start();
+                            drawBusRoute(favAdapter.getItem(finalI).routeNumber, favAdapter.getItem(finalI).color, false, false);
                         }
                         break;
                     case "On Campus":
                         for (int i = 1; i < onCampusAdapter.getItemCount(); i++) {
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(onCampusAdapter.getItem(finalI).routeNumber, onCampusAdapter.getItem(finalI).color, false)).start();
+                            drawBusRoute(onCampusAdapter.getItem(finalI).routeNumber, onCampusAdapter.getItem(finalI).color, false, false);
                         }
                         break;
                     case "Off Campus":
                         for (int i = 1; i < offCampusAdapter.getItemCount(); i++) {
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(offCampusAdapter.getItem(finalI).routeNumber, offCampusAdapter.getItem(finalI).color, false)).start();
+                            drawBusRoute(offCampusAdapter.getItem(finalI).routeNumber, offCampusAdapter.getItem(finalI).color, false, false);
                         }
                         break;
                     case "Game Day":
                         for (int i = 1; i < gameDayAdapter.getItemCount(); i++) {
                             int finalI = i;
-                            new Thread(() -> drawBusRoute(gameDayAdapter.getItem(finalI).routeNumber, gameDayAdapter.getItem(finalI).color, false)).start();
+                            drawBusRoute(gameDayAdapter.getItem(finalI).routeNumber, gameDayAdapter.getItem(finalI).color, false, false);
                         }
                         break;
                 }
@@ -1274,7 +1274,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             new Thread(() -> setUpTimeTable(LocalDate.now().toString(), false)).start();
 
             // Draw the route
-            new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color, true)).start();
+            new Thread(() -> drawBusRoute(busRoute.routeNumber, busRoute.color, true, true)).start();
 
             // Continuously draw the buses on the route
             handler = new Handler();

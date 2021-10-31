@@ -747,10 +747,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Initialize the my current location FAB
             fabMyLocation = mView.findViewById(R.id.fab_mylocation);
             requireActivity().runOnUiThread(() -> {
-                fabMyLocation.setVisibility(View.GONE);
-                fabMyLocation.setOnClickListener(v -> {
-                    getDeviceLocation();
-                });
+                fabMyLocation.setOnClickListener(v -> getDeviceLocation());
             });
 
             // Initialize the Date Picker for the TimeTable

@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Set the status bar to be transparent
             Window w = getWindow();
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            runOnUiThread(() -> w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS));
 
             // Initialize Places
             // Initialize the SDK

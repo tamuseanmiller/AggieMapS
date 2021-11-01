@@ -1025,8 +1025,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 temp.setDirection(R.drawable.clock);
                 temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
                 recentSearchesTemp.addFirst(temp);
-            } else {
-                // TODO: Change position to front
             }
         } else if (adapter == GOOGLE_ADAPTER) {
             if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position))) {
@@ -1034,11 +1032,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 temp.setDirection(R.drawable.clock);
                 temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
                 recentSearchesTemp.addFirst(temp);
-            } else {
-                // TODO: Change position to front
             }
-        } else if (adapter == RECENTS_ADAPTER) {
-            recentSearchesTemp.remove(recentSearchesAdapter.getItem(position));
+        } else if (adapter == RECENTS_ADAPTER && position != 0) {
+            recentSearchesTemp.remove(position - 1);
             recentSearchesTemp.addFirst(recentSearchesAdapter.getItem(position));
         }
 

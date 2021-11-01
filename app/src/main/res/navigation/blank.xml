@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/second_fragment"
-        android:name="com.mrst.aggiemaps.BlankFragment"
+        android:name="com.mrst.aggiemaps.GarageFragment"
         android:label="Leaderboard"
         tools:layout="@layout/fragment_blank" >
         <action

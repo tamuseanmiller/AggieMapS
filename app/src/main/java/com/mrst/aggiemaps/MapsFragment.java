@@ -413,8 +413,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     if (busMarkers.size() < busData_jsonArray.length()) {
                         MarkerOptions marker = new MarkerOptions();
                         marker.flat(true);
-                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_side,
-                                ContextCompat.getColor(requireActivity(), R.color.foreground), 0));
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_articulated_front,
+                                ContextCompat.getColor(requireActivity(), R.color.foreground), 5));
                         marker.zIndex(100);
                         marker.anchor(0.5F, 0.8F);
                         marker.position(new LatLng(p.getY(), p.getX()));
@@ -920,7 +920,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     new Thread(() -> setUpTimeTable(viewMoreTime, true)).start();
                 });
                 if (viewAll) {
-                    vScroll.post(() -> vScroll.scrollTo(0, 15));
+//                    vScroll.post(() -> vScroll.scrollTo(0, 15));
                 } else {
                     vScroll.post(() -> vScroll.fullScroll(View.FOCUS_DOWN));
                 }

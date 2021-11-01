@@ -28,7 +28,7 @@ public class BottomPagerAdapter extends FragmentStateAdapter {
                 fragmentList.add(directionsFragment);
                 return directionsFragment;
             case 0:
-                Fragment blankFragment = new BlankFragment();
+                Fragment blankFragment = new GarageFragment();
                 fragmentList.add(blankFragment);
                 return blankFragment;
             default:

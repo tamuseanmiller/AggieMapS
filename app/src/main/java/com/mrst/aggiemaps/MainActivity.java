@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private FragmentStateAdapter pagerAdapter;
     private static final int GIS_ADAPTER = 1;
     private static final int GOOGLE_ADAPTER = 2;
+    private static final int RECENTS_ADAPTER = 3;
     public static final int MAIN_SEARCH_BAR = 1;
     public static final int SRC_SEARCH_BAR = 2;
     public static final int DEST_SEARCH_BAR = 3;
@@ -836,7 +837,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onRecentSearchClick(View view, int position) {
-
+        addRecentSearches(RECENTS_ADAPTER, position);
         ListItem recentSearch = recentSearchesAdapter.getItem(position);
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
@@ -1034,6 +1035,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
                 recentSearchesTemp.addFirst(temp);
             }
+        } else if (adapter == RECENTS_ADAPTER) {
+            recentSearchesTemp.remove(recentSearchesAdapter.getItem(position));
+            recentSearchesTemp.addFirst(recentSearchesAdapter.getItem(position));
         }
 
         // Update the search view

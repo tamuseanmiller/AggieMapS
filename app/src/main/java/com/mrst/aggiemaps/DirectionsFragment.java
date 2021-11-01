@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -44,6 +46,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -88,6 +91,8 @@ public class DirectionsFragment extends Fragment {
     private TextView tripTime;
     private TextView tripLength;
     private TextView etaClockTime;
+    private ImageView tripTypeIcon;
+    private MaterialButton directionsButton;
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -553,6 +558,12 @@ public class DirectionsFragment extends Fragment {
             // 7. Get the BottomSheetBehavior
             bottomSheetBehavior = BottomSheetBehavior.from(sheet);
 
+            // Initialize trip type icon for bottom bar
+            tripTypeIcon = mView.findViewById(R.id.trip_type_image);
+
+            // Initialize directions button
+            directionsButton = mView.findViewById(R.id.directions_button);
+
             // 8. Set the settings of the BottomSheetBehavior
             requireActivity().runOnUiThread(() -> {
                 bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
@@ -640,7 +651,7 @@ public class DirectionsFragment extends Fragment {
             destSearchBar.setText("");
             destSearchBar.setHint("Choose destination");
         }
-
+        createDirections(destItem);
     }
 
     private int convertDpToPx(int dp) {
@@ -712,19 +723,24 @@ public class DirectionsFragment extends Fragment {
                 // Get Trip Plan and input into
                 new Thread(() -> {
                     TripPlan newTripPlan;
+                    int iconSrc = R.drawable.bus;
                     Chip c = tripTypeGroup.findViewById(tripTypeGroup.getCheckedChipId());
                     switch (c.getText().toString()) {
                         case "Car": // Car
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.DRIVE);
+                            iconSrc = R.drawable.car;
                             break;
                         case "Bus": // Bus
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BUS);
+                            iconSrc = R.drawable.bus;
                             break;
                         case "Bike": // Bike
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BIKE);
+                            iconSrc = R.drawable.bike;
                             break;
                         case "Walk": // Walk
                             newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.WALK);
+                            iconSrc = R.drawable.walk;
                             break;
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
@@ -761,6 +777,18 @@ public class DirectionsFragment extends Fragment {
                         }
                     }
 
+                    // Set drawable for icon
+                    Drawable iconFilled = ContextCompat.getDrawable(getActivity(), iconSrc);
+                    iconFilled.setTint(ContextCompat.getColor(getActivity(), R.color.white));
+
+                    // Directions button
+                    directionsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        }
+                    });
+
                     // Parse the trip plan into the Bottom Sheet
                     requireActivity().runOnUiThread(() -> {
                         directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
@@ -770,6 +798,7 @@ public class DirectionsFragment extends Fragment {
                         tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
                         tripLength.setText(getDistanceText(newTripPlan.getTotalLength()));
                         etaClockTime.setText(getETAText(newTripPlan.getTotalTime()));
+                        tripTypeIcon.setImageDrawable(iconFilled);
 
                         // Change the visibility of the BottomSheet to "visible"
                         sheet.setVisibility(View.VISIBLE);

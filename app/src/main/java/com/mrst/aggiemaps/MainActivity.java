@@ -858,6 +858,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                             if (lastKnownLocation != null) {
                                 LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                                 recentSearchesAdapter.getItem(position).position = curLocation;
+                                
+                                // Always attempt to enter directions mode when possible
+                                enterDirectionsMode(recentSearchesAdapter.getItem(position));
                             }
                         });
                     } else {
@@ -878,6 +881,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                                                 mapsFragment.getDeviceLocation();
                                                 directionsFragment.updateLocationUI();
                                                 directionsFragment.getDeviceLocation();
+
+                                                // Always attempt to enter directions mode when possible
+                                                enterDirectionsMode(recentSearchesAdapter.getItem(position));
                                             }
                                         });
                                     }
@@ -893,10 +899,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 selectedResult.position(recentSearch.position);
                 selectedResult.title(recentSearch.title);
                 directionsFragment.mMap.addMarker(selectedResult);
+                // Always attempt to enter directions mode when possible
+                enterDirectionsMode(recentSearchesAdapter.getItem(position));
             }
-
-            // Always attempt to enter directions mode when possible
-            enterDirectionsMode(recentSearchesAdapter.getItem(position));
         } else {
 
             // Zooms to position if current location is tapped

@@ -137,7 +137,7 @@ public class DirectionsFragment extends Fragment {
     int parseManeuverType(String maneuverType) {
         switch (maneuverType) {
             case "esriDMTStop":
-                return R.drawable.close_octagon;
+                return R.drawable.map_marker_outline;
             case "esriDMTStraight":
                 return R.drawable.arrow_up;
             case "esriDMTBearLeft":
@@ -171,11 +171,11 @@ public class DirectionsFragment extends Fragment {
             case "esriDMTHighwayChange":
                 return R.drawable.source_fork;
             case "esriDMTDepart":
-                return R.drawable.car;
+                return R.drawable.map_marker_outline;
             case "esriDMTTripItem":
                 return R.drawable.sign_direction;
             default:
-                return R.drawable.nuke;
+                return R.drawable.checkbox_blank_circle;
         }
     }
 
@@ -672,7 +672,7 @@ public class DirectionsFragment extends Fragment {
     // Return distance output that is readable and coherent
     private String getDistanceText(double miles) {
         if (miles < 0.1) {
-            return String.valueOf((int) (miles * 5280)) + " feet";
+            return (int) (miles * 5280) + " feet";
         }
         return String.format("%.2f miles", miles);
     }
@@ -680,9 +680,9 @@ public class DirectionsFragment extends Fragment {
     // Return time output that is readable and consistent
     private String getTimeText(double minutes) {
         if (minutes > 2) {
-            return String.valueOf((int) minutes) + " min";
+            return (int) minutes + " min";
         }
-        return String.valueOf((int) (minutes * 60)) + " sec";
+        return (int) (minutes * 60) + " sec";
     }
 
     private String getETAText(double totalTime) {

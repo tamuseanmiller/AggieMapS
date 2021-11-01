@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -54,7 +55,6 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
@@ -85,15 +85,15 @@ import okhttp3.ResponseBody;
 public class MainActivity extends AppCompatActivity implements GISSearchAdapter.ItemClickListener, GoogleSearchAdapter.ItemClickListener, BusRoutesSearchAdapter.ItemClickListener, RecentSearchesAdapter.ItemClickListener {
 
     private static final int SPEECH_REQUEST_CODE = 0;
-    private MaterialSearchBar materialSearchBar;
-    private MaterialSearchView materialSearchView;
+    private MaterialSearchBar materialSearchBar;  // The default search bar
+    private MaterialSearchView materialSearchView;  // The view that is shown when the bar is tapped
     private OkHttpClient client;  // Client to make API requests
     private GISSearchAdapter gisSearchAdapter;
     private GoogleSearchAdapter googleSearchAdapter;
     private BusRoutesSearchAdapter busRoutesSearchAdapter;
     private ArrayList<ListItem> gisListItems;
     private ArrayList<ListItem> googleListItems;
-    private PlacesClient placesClient;
+    private PlacesClient placesClient;  // The client for querying places via Google Maps
     private RecyclerView gisSearchRecycler;
     private RecyclerView googleSearchRecycler;
     private RecyclerView busRoutesSearchRecycler;
@@ -102,13 +102,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private ArrayList<ListItem> recentSearchesListItems;
     private RecentSearchesAdapter recentSearchesAdapter;
     private RecyclerView recentSearchesRecycler;
-    private AppBarLayout defaultSearchBar;
-    public ExpandableBottomBar bottomBar;
+    public ExpandableBottomBar bottomBar;  // The bottom navigation bar
     public int whichSearchBar;
-    private ViewPager2 viewPager;
-    private LinkedList<ListItem> recentSearchesTemp;
-
-    private FragmentStateAdapter pagerAdapter;
+    private ViewPager2 viewPager;  // The viewpager that hold all fragments
+    private LinkedList<ListItem> recentSearchesTemp;  // The queue of all recent searches
+    private FragmentStateAdapter pagerAdapter;  // the adapter for the viewpager above
     private static final int GIS_ADAPTER = 1;
     private static final int GOOGLE_ADAPTER = 2;
     private static final int RECENTS_ADAPTER = 3;
@@ -397,7 +395,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 public boolean onQueryTextChange(@NonNull CharSequence charSequence) {
                     if (charSequence.length() == 0) return true;
                     queryGIS(charSequence); // Query GIS, Google
-                    queryBusRoutes(charSequence);
+                    if (whichSearchBar == MAIN_SEARCH_BAR) queryBusRoutes(charSequence);
                     queryGoogle(charSequence, token);
                     return true;
                 }
@@ -406,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 public boolean onQueryTextSubmit(@NonNull CharSequence charSequence) {
                     if (charSequence.length() == 0) return true;
                     queryGIS(charSequence); // Query GIS, Google, Bus Routes
-                    queryBusRoutes(charSequence);
+                    if (whichSearchBar == MAIN_SEARCH_BAR) queryBusRoutes(charSequence);
                     queryGoogle(charSequence, token);
                     return true;
                 }
@@ -418,11 +416,11 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Create bottom bar
             bottomBar = findViewById(R.id.bottom_bar);
-            runOnUiThread(() -> bottomBar.getMenu().select(R.id.item0));
+            runOnUiThread(() -> bottomBar.getMenu().select(R.id.buses));
 
             // Get bus routes on tap
             bottomBar.setOnItemReselectedListener((i, j, k) -> {
-                if (j.getId() == R.id.item0) {
+                if (j.getId() == R.id.buses) {
 
                     // If settings is visible, get rid of it and make the bar visible
                     if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
@@ -440,13 +438,13 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             // Switch between fragments on tap
             bottomBar.setOnItemSelectedListener((i, j, k) -> {
                 fm.beginTransaction().hide(settingsFragment).commit();
-                if (j.getId() == R.id.blank) {
+                if (j.getId() == R.id.directions) {
                     materialSearchBar.setVisibility(View.GONE);
                     viewPager.setCurrentItem(1);
-                } else if (j.getId() == R.id.maps) {
+                } else if (j.getId() == R.id.garages) {
                     materialSearchBar.setVisibility(View.GONE);
                     viewPager.setCurrentItem(0);
-                } else if (j.getId() == R.id.item0) {
+                } else if (j.getId() == R.id.buses) {
                     materialSearchBar.setVisibility(View.VISIBLE);
                     viewPager.setCurrentItem(2);
                 }
@@ -751,13 +749,13 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("Directions")
                         .setMessage("Would you like to find directions to " + marker.getTitle())
+                        .setCancelable(true)
                         .setPositiveButton("Yes", (dialogInterface, i) -> {
                             directionsFragment.mMap.addMarker(selectedResult);
                             enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, 0, SearchTag.RESULT, marker.getPosition()));
                         })
-                        .setIcon(directions)
-                        .setCancelable(true)
                         .setNegativeButton("No", null)
+                        .setIcon(directions)
                         .show();
                 return false;
             });
@@ -794,6 +792,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         })
                         .setIcon(R.drawable.directions)
                         .setCancelable(true)
+                        .setNegativeButton("No", null)
                         .show();
                 return false;
             });
@@ -823,7 +822,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         mapsFragment.mMap.clear();
         for (BusRoute i : mapsFragment.busRoutes) {
             if (i.routeNumber.equals(busRoutesSearchAdapter.getItem(position).title)) {
-                MapsFragment.currentRouteNo = i.routeNumber;
+                mapsFragment.currentRouteNo = i.routeNumber;
                 new Thread(() -> mapsFragment.drawBusesOnRoute(i.routeNumber)).start();
                 new Thread(() -> mapsFragment.drawBusRoute(i.routeNumber, i.color, true, true)).start();
                 break;
@@ -961,6 +960,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                             })
                             .setIcon(R.drawable.directions)
                             .setCancelable(true)
+                            .setNegativeButton("No", null)
                             .show();
                     return false;
                 });
@@ -984,9 +984,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         viewPager.setCurrentItem(1);
 
         // Set the bottom bar selection and visibility
-        bottomBar.getMenu().select(R.id.blank);
-        bottomBar.setVisibility(View.GONE);
-
+        bottomBar.getMenu().select(R.id.directions);
     }
 
     public void exitDirectionsMode() {
@@ -995,7 +993,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         viewPager.setCurrentItem(2);
 
         // Set the bottom bar selection and visibility
-        bottomBar.getMenu().select(R.id.item0);
+        bottomBar.getMenu().select(R.id.buses);
         bottomBar.setVisibility(View.VISIBLE);
     }
 
@@ -1027,6 +1025,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 temp.setDirection(R.drawable.clock);
                 temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
                 recentSearchesTemp.addFirst(temp);
+            } else {
+                // TODO: Change position to front
             }
         } else if (adapter == GOOGLE_ADAPTER) {
             if (!recentSearchesTemp.contains(googleSearchAdapter.getItem(position))) {
@@ -1034,6 +1034,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 temp.setDirection(R.drawable.clock);
                 temp.setColor(ContextCompat.getColor(this, R.color.grey_500));
                 recentSearchesTemp.addFirst(temp);
+            } else {
+                // TODO: Change position to front
             }
         } else if (adapter == RECENTS_ADAPTER) {
             recentSearchesTemp.remove(recentSearchesAdapter.getItem(position));

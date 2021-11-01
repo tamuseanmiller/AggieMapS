@@ -85,6 +85,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -102,7 +103,6 @@ import okhttp3.ResponseBody;
 
 public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickListener, FavAdapter.ItemClickListener, OffCampusAdapter.ItemClickListener, GameDayAdapter.ItemClickListener, SwipeAdapter.ItemClickListener {
 
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 44;
     private OkHttpClient client;  // Client to make API requests
     public BottomSheetBehavior<View> standardBottomSheetBehavior;
     private RecyclerView onCampusRoutes;
@@ -113,34 +113,33 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private RecyclerView favRoutes;
     private GameDayAdapter gameDayAdapter;
     private RecyclerView gameDayRoutes;
-    private TextView favoritesText;
-    private Set<String> favoritesSet;
-    private List<BusRoute> favList;
-    private List<BusRoute> onList;
-    private List<BusRoute> offList;
-    private List<BusRoute> gameDayList;
-    private RightSheetBehavior<View> rightSheetBehavior;
+    private TextView favoritesText;  // The category title for text in the routes sheet
+    private Set<String> favoritesSet;  // A set of all favorite routes
+    private List<BusRoute> favList;  // The favorites route list
+    private List<BusRoute> onList;  // The on campus route list
+    private List<BusRoute> offList;  // The off campus route list
+    private List<BusRoute> gameDayList;  // The game day route list
+    private RightSheetBehavior<View> rightSheetBehavior;  // The timetable sheet behavior
     private TableLayout tlTimetable;
     private TableLayout tl_times;
-    private TextView viewMoreBtn;
-    public static String currentRouteNo;
-    public FloatingActionButton fabTimetable;
-    public List<BusRoute> busRoutes;
-    public GoogleMap mMap;       // The Map itself
-    private Handler handler;
-    private Runnable runnable;
-    private ArrayList<Marker> busMarkers;
-    public FloatingActionButton fabMyLocation;
-    private LinearProgressIndicator dateProgress;
+    private TextView viewMoreBtn;  // The view more button in the timetable
+    public String currentRouteNo;  // the current route number being updated
+    public FloatingActionButton fabTimetable;  // The timetable FAB
+    public List<BusRoute> busRoutes;  // A list of all bus routes
+    public GoogleMap mMap;  // The Map itself
+    private Handler handler;  // Used for updating the buses on routes
+    private Runnable runnable;  // Used for updating the buses on routes
+    private ArrayList<Marker> busMarkers;  // A list for all buses on apps
+    public FloatingActionButton fabMyLocation;  // The my location FAB
+    private LinearProgressIndicator dateProgress;  // The progress indicator in the timetable
     private FusedLocationProviderClient fusedLocationProviderClient;
     private boolean locationPermissionGranted;
     private Location lastKnownLocation;
-    private final String KEY_CAMERA_POSITION = "camera_position";
-    private final String KEY_LOCATION = "location";
     public FrameLayout standardBottomSheet;
     public LatLng deviceLatLng;
     private NestedScrollView vScroll;
     private FrameLayout rightSheet;
+    private HashMap<Polyline, String> polylineTitles;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -349,7 +348,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Draw polyline of route
             PolylineOptions newPolyline = aggieBusRoute.polylineOptions;
             newPolyline.color(color);
-            requireActivity().runOnUiThread(() -> mMap.addPolyline(newPolyline));
+            requireActivity().runOnUiThread(() -> {
+                Polyline p = mMap.addPolyline(newPolyline);
+                polylineTitles.put(p, routeNo);
+            });
 
             // Draw stops
             for (Pair<String, LatLng> i : aggieBusRoute.stops) {
@@ -504,7 +506,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     @Override
     public void onSaveInstanceState(Bundle outState) {
         if (mMap != null) {
+            String KEY_CAMERA_POSITION = "camera_position";
             outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
+            String KEY_LOCATION = "location";
             outState.putParcelable(KEY_LOCATION, lastKnownLocation);
         }
         super.onSaveInstanceState(outState);
@@ -579,14 +583,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 // Show title
                 MarkerOptions title = new MarkerOptions();
                 title.position(polyline.getPoints().get(0));
-                title.title(polyline.getId());
+                title.title(polylineTitles.get(polyline));
                 title.icon(BitmapFromVector(requireActivity(), R.drawable.arrow_left, android.R.color.transparent, 0));
                 Marker m = mMap.addMarker(title);
-                m.showInfoWindow();
+                if (m != null) {
+                    m.showInfoWindow();
+                }
 
                 // Zoom out
                 List<LatLng> points = polyline.getPoints();
                 new Thread(() -> {
+//                    drawBusRoute(polylineTitles.get(polyline), polyline.getColor(), true, false);
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (LatLng i : points) {
                         builder.include(i);
@@ -778,6 +785,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Initialize the Progress Bar for after a user picks a date
             dateProgress = mView.findViewById(R.id.date_progress);
             requireActivity().runOnUiThread(() -> dateProgress.setVisibility(View.INVISIBLE));
+
+            // Initialize polyline hashmap
+            polylineTitles = new HashMap<>();
 
             // Then set up the bus routes on the bottom sheet
             new Thread(this::setUpBusRoutes).start();

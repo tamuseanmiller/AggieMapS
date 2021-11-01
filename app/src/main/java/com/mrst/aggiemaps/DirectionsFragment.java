@@ -46,6 +46,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -91,6 +92,7 @@ public class DirectionsFragment extends Fragment {
     private TextView tripLength;
     private TextView etaClockTime;
     private ImageView tripTypeIcon;
+    private MaterialButton directionsButton;
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -555,6 +557,9 @@ public class DirectionsFragment extends Fragment {
             // Initialize trip type icon for bottom bar
             tripTypeIcon = mView.findViewById(R.id.trip_type_image);
 
+            // Initialize directions button
+            directionsButton = mView.findViewById(R.id.directions_button);
+
             // 8. Set the settings of the BottomSheetBehavior
             requireActivity().runOnUiThread(() -> {
                 bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
@@ -642,7 +647,7 @@ public class DirectionsFragment extends Fragment {
             destSearchBar.setText("");
             destSearchBar.setHint("Choose destination");
         }
-
+        createDirections(destItem);
     }
 
     private int convertDpToPx(int dp) {
@@ -771,6 +776,14 @@ public class DirectionsFragment extends Fragment {
                     // Set drawable for icon
                     Drawable iconFilled = ContextCompat.getDrawable(getActivity(), iconSrc);
                     iconFilled.setTint(ContextCompat.getColor(getActivity(), R.color.white));
+
+                    // Directions button
+                    directionsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        }
+                    });
 
                     // Parse the trip plan into the Bottom Sheet
                     requireActivity().runOnUiThread(() -> {

@@ -3,20 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/maps"
-        android:title="Garages"
+        android:id="@+id/garages"
+        android:title="@string/garages"
         android:icon="@drawable/garage"
         app:exb_color="@color/purple_300"/>
 
     <item
-        android:id="@+id/blank"
-        android:title="Directions"
+        android:id="@+id/directions"
+        android:title="@string/directions"
         android:icon="@drawable/directions"
         app:exb_color="@color/cyan_300"/>
 
     <item
-        android:id="@+id/item0"
-        android:title="Buses"
+        android:id="@+id/buses"
+        android:title="@string/buses"
         android:icon="@drawable/bus"
         app:exb_color="@color/accent"/>
 

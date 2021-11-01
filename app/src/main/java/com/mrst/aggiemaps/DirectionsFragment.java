@@ -402,6 +402,10 @@ public class DirectionsFragment extends Fragment {
             // Setting a click event handler for the map
             mMap.setOnMapClickListener(latLng -> {
 
+                // Don't do anything if directions are being shown
+                if (srcItem != null && destItem != null) return;
+
+
                 // Creating a marker
                 MarkerOptions markerOptions = new MarkerOptions();
 
@@ -416,10 +420,10 @@ public class DirectionsFragment extends Fragment {
                 googleMap.addMarker(markerOptions);
 
                 // Add location to one of the bars
-                if (srcItem == null) {
+                if (srcItem == null && destItem == null) {
                     srcItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, MainActivity.SearchTag.RESULT, latLng);
                     srcSearchBar.setText(srcItem.title);
-                } else if (destItem == null) {
+                } else if (destItem == null && srcItem != null) {
                     destItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, MainActivity.SearchTag.RESULT, latLng);
                     destSearchBar.setText(destItem.title);
                     createDirections(destItem);

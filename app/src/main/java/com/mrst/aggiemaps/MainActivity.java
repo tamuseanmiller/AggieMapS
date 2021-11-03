@@ -5,7 +5,6 @@ import static android.content.ContentValues.TAG;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -234,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         super.onCreate(savedInstanceState);
-
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(this));
         setContentView(R.layout.activity_main);
 
         // Set the status bar to be transparent

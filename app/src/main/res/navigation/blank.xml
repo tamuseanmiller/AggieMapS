@@ -9,7 +9,7 @@
         android:id="@+id/second_fragment"
         android:name="com.mrst.aggiemaps.GarageFragment"
         android:label="Leaderboard"
-        tools:layout="@layout/fragment_blank" >
+        tools:layout="@layout/fragment_garages" >
         <action
             android:id="@+id/action_second_fragment_to_first_fragment"
             app:destination="@id/first_fragment" />

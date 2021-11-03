@@ -50,6 +50,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.lapism.search.widget.MaterialSearchBar;
 
 import org.json.JSONArray;
@@ -93,6 +94,8 @@ public class DirectionsFragment extends Fragment {
     private TextView etaClockTime;
     private ImageView tripTypeIcon;
     private MaterialButton directionsButton;
+    private CircularProgressIndicator tripProgress;
+    private ArrayList<ListItem> textDirections;
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -578,7 +581,7 @@ public class DirectionsFragment extends Fragment {
             int height = displayMetrics.heightPixels;
 
             // 9. Initialize Progress Indicator
-            //tripProgress = findViewById(R.id.trip_progress);
+            tripProgress = mView.findViewById(R.id.trip_progress);
 
             // 10. Initialize Main App Bar
             View view = requireActivity().findViewById(R.id.main_app_bar);
@@ -625,6 +628,11 @@ public class DirectionsFragment extends Fragment {
             tripTime = mView.findViewById(R.id.eta_min);
             tripLength = mView.findViewById(R.id.trip_total_length);
             etaClockTime = mView.findViewById(R.id.eta_time);
+
+            textDirections = new ArrayList<>();
+            directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
+            directionsRecycler.setHasFixedSize(true);
+            requireActivity().runOnUiThread(() -> directionsRecycler.setAdapter(directionsAdapter));
 
         }).start();
 
@@ -717,6 +725,9 @@ public class DirectionsFragment extends Fragment {
 
             if (destItem != null && srcItem != null) {
 
+                // Show progress indicator
+                tripProgress.setVisibility(View.VISIBLE);
+
                 // Set bottom bar visibility to gone
                 ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE);
 
@@ -745,7 +756,10 @@ public class DirectionsFragment extends Fragment {
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
                     }
-                    ArrayList<ListItem> textDirections = new ArrayList<>();
+                    int size = textDirections.size();
+                    textDirections.clear();
+                    if (size > 0)
+                    requireActivity().runOnUiThread(() -> directionsAdapter.notifyItemRangeRemoved(0, size));
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
                     routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text
                     routeFeatures.get(routeFeatures.size() - 1).setText(  // Fix second text
@@ -778,21 +792,16 @@ public class DirectionsFragment extends Fragment {
                     }
 
                     // Set drawable for icon
-                    Drawable iconFilled = ContextCompat.getDrawable(getActivity(), iconSrc);
-                    iconFilled.setTint(ContextCompat.getColor(getActivity(), R.color.white));
+                    Drawable iconFilled = ContextCompat.getDrawable(requireActivity(), iconSrc);
+                    iconFilled.setTint(ContextCompat.getColor(requireActivity(), R.color.white));
 
                     // Directions button
-                    directionsButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        }
-                    });
+                    directionsButton.setOnClickListener(v -> bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
 
                     // Parse the trip plan into the Bottom Sheet
                     requireActivity().runOnUiThread(() -> {
-                        directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
-                        directionsRecycler.setAdapter(directionsAdapter);
+                        // Add text directions to the adapter
+                        directionsAdapter.notifyItemRangeInserted(0, textDirections.size());
 
                         // Set bottom sheet header items
                         tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
@@ -803,6 +812,7 @@ public class DirectionsFragment extends Fragment {
                         // Change the visibility of the BottomSheet to "visible"
                         sheet.setVisibility(View.VISIBLE);
                         fabMyLocation.setVisibility(View.GONE);
+                        tripProgress.setVisibility(View.INVISIBLE);
                     });
                 }).start();
 

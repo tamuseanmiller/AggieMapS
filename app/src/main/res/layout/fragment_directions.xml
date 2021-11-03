@@ -77,13 +77,30 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Simple MaterialToolbar extension -->
-                    <com.lapism.search.widget.MaterialSearchBar
-                        android:id="@+id/dest_search_bar"
+                    <RelativeLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="6"
-                        app:layout_scrollFlags="enterAlways|snap" />
+                        android:layout_weight="6">
+
+                        <!-- Simple MaterialToolbar extension -->
+                        <com.lapism.search.widget.MaterialSearchBar
+                            android:id="@+id/dest_search_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:layout_scrollFlags="enterAlways|snap" />
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/trip_progress"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:indicatorSize="30dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="20dp"
+                            android:indeterminate="true"
+                            android:visibility="invisible"/>
+
+                    </RelativeLayout>
 
                     <!--     Swap FAB      -->
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -111,67 +128,67 @@
                 android:id="@+id/trip_type_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true"
+                android:layout_marginStart="16dp"
                 app:selectionRequired="true"
-                android:layout_marginStart="16dp">
+                app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
+                    style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/AggieMapS.Chip.Choice"
-                    android:checked="true"
                     android:layout_marginEnd="5dp"
+                    android:checked="true"
                     android:text="Car"
-                    app:chipBackgroundColor="@color/bg_color_chips"
-                    app:chipIconTint="@color/txic_color_chips"
                     android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/car"
                     app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
                     app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/AggieMapS.Chip.Choice"
-                    android:checked="false"
                     android:layout_marginEnd="5dp"
+                    android:checked="false"
                     android:text="Bus"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/bus"
                     app:chipIconSize="18dp"
-                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIconTint="@color/txic_color_chips"
-                    android:textColor="@color/txic_color_chips"
                     app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/AggieMapS.Chip.Choice"
-                    android:checked="false"
                     android:layout_marginEnd="5dp"
+                    android:checked="false"
                     android:text="Bike"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/bike"
                     app:chipIconSize="18dp"
-                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIconTint="@color/txic_color_chips"
-                    android:textColor="@color/txic_color_chips"
                     app:chipStartPadding="10dp"
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/AggieMapS.Chip.Choice"
-                    android:checked="false"
                     android:layout_marginEnd="5dp"
+                    android:checked="false"
                     android:text="Walk"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/walk"
                     app:chipIconSize="18dp"
-                    app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIconTint="@color/txic_color_chips"
-                    android:textColor="@color/txic_color_chips"
                     app:iconEndPadding="-3dp"
                     app:iconStartPadding="5dp" />
 
@@ -197,25 +214,25 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <!--     My Location FAB      -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_mylocation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="120dp"
-            android:backgroundTint="@color/accent"
-            android:contentDescription="@string/shows_timetable"
-            android:elevation="2dp"
-            app:borderWidth="0dp"
-            app:elevation="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:pressedTranslationZ="3dp"
-            app:rippleColor="@color/red_700"
-            app:srcCompat="@drawable/crosshairs_gps"
-            app:tint="@color/white" />
+            <!--     My Location FAB      -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_mylocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="120dp"
+                android:backgroundTint="@color/accent"
+                android:contentDescription="@string/shows_timetable"
+                android:elevation="2dp"
+                app:borderWidth="0dp"
+                app:elevation="2dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:pressedTranslationZ="3dp"
+                app:rippleColor="@color/red_700"
+                app:srcCompat="@drawable/crosshairs_gps"
+                app:tint="@color/white" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -858,7 +858,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                             if (lastKnownLocation != null) {
                                 LatLng curLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                                 recentSearchesAdapter.getItem(position).position = curLocation;
-                                
+
                                 // Always attempt to enter directions mode when possible
                                 enterDirectionsMode(recentSearchesAdapter.getItem(position));
                             }

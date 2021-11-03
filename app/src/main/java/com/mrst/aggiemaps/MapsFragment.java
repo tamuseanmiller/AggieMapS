@@ -416,7 +416,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         MarkerOptions marker = new MarkerOptions();
                         marker.flat(true);
                         marker.icon(BitmapFromVector(getActivity(), R.drawable.bus_articulated_front,
-                                ContextCompat.getColor(requireActivity(), R.color.foreground), 5));
+                                ContextCompat.getColor(requireActivity(), R.color.foreground), -10));
                         marker.zIndex(100);
                         marker.anchor(0.5F, 0.8F);
                         marker.position(new LatLng(p.getY(), p.getX()));

@@ -837,7 +837,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      */
     @Override
     public void onRecentSearchClick(View view, int position) {
-        addRecentSearches(RECENTS_ADAPTER, position);
         ListItem recentSearch = recentSearchesAdapter.getItem(position);
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
@@ -974,6 +973,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
 
         clearFocusOnSearch();
+        addRecentSearches(RECENTS_ADAPTER, position);
 
     }
 

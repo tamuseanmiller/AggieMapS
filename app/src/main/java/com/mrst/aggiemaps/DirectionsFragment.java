@@ -27,6 +27,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -61,6 +62,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
@@ -531,6 +533,10 @@ public class DirectionsFragment extends Fragment {
 
             directionsRecycler = mView.findViewById(R.id.directions_recycler);
             directionsRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
+            directionsRecycler.setHasFixedSize(true);
+            textDirections = new ArrayList<>();
+            directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
+            requireActivity().runOnUiThread(() -> directionsRecycler.setAdapter(directionsAdapter));
 
             // 2. Initialize SearchBars
             srcSearchBar = mView.findViewById(R.id.src_search_bar);
@@ -643,11 +649,6 @@ public class DirectionsFragment extends Fragment {
             tripTime = mView.findViewById(R.id.eta_min);
             tripLength = mView.findViewById(R.id.trip_total_length);
             etaClockTime = mView.findViewById(R.id.eta_time);
-
-            textDirections = new ArrayList<>();
-            directionsAdapter = new DirectionsAdapter(getActivity(), textDirections);
-            directionsRecycler.setHasFixedSize(true);
-            requireActivity().runOnUiThread(() -> directionsRecycler.setAdapter(directionsAdapter));
 
         }).start();
 
@@ -771,10 +772,8 @@ public class DirectionsFragment extends Fragment {
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
                     }
-                    int size = textDirections.size();
-                    textDirections.clear();
-                    if (size > 0)
-                    requireActivity().runOnUiThread(() -> directionsAdapter.notifyItemRangeRemoved(0, size));
+
+                    ArrayList<ListItem> tempDirections = new ArrayList<>();
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
                     routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text
                     routeFeatures.get(routeFeatures.size() - 1).setText(  // Fix second text
@@ -784,7 +783,7 @@ public class DirectionsFragment extends Fragment {
                         Feature currFeature = routeFeatures.get(i);
                         // If there's a landmark
                         if (currFeature.getType() == FeatureType.LANDMARK) {
-                            textDirections.add(new ListItem(currFeature.getText(), "", 0, MainActivity.SearchTag.CATEGORY));
+                            tempDirections.add(new ListItem(currFeature.getText(), "", 0, MainActivity.SearchTag.CATEGORY));
 
                         } else {
                             // Convert feature length and time to readable formatted String
@@ -793,18 +792,24 @@ public class DirectionsFragment extends Fragment {
 
                             // Add list item
                             if (i != 0 && i != routeFeatures.size() - 1) {
-                                textDirections.add(new ListItem(currFeature.getText(),
+                                tempDirections.add(new ListItem(currFeature.getText(),
                                         distText + " (" + timeText + ")",
                                         0, currFeature.getManeuverType(),
                                         MainActivity.SearchTag.RESULT, null));
                             } else {
-                                textDirections.add(new ListItem(currFeature.getText(),
+                                tempDirections.add(new ListItem(currFeature.getText(),
                                         null,
                                         0, currFeature.getManeuverType(),
                                         MainActivity.SearchTag.RESULT, null));
                             }
                         }
                     }
+
+                    int size = textDirections.size();
+                    textDirections.clear();
+                    if (size > 0)
+                        requireActivity().runOnUiThread(() -> directionsAdapter.notifyItemRangeRemoved(0, size));
+                    textDirections.addAll(tempDirections);
 
                     // Set drawable for icon
                     Drawable iconFilled = ContextCompat.getDrawable(requireActivity(), iconSrc);
@@ -817,6 +822,7 @@ public class DirectionsFragment extends Fragment {
                     requireActivity().runOnUiThread(() -> {
                         // Add text directions to the adapter
                         directionsAdapter.notifyItemRangeInserted(0, textDirections.size());
+                        directionsRecycler.setAdapter(directionsAdapter);
 
                         // Set bottom sheet header items
                         tripTime.setText(getTimeText(newTripPlan.getTotalTime()));

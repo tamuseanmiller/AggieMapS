@@ -48,7 +48,7 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:2.5.0'
     implementation "androidx.navigation:navigation-ui:2.3.5"
     implementation "androidx.navigation:navigation-fragment:2.3.5"
-    implementation 'io.github.lapism:search:1.0.0'
+    implementation 'io.github.lapism:search:1.1.0'
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     // For control over item selection of both touch and mouse driven selection

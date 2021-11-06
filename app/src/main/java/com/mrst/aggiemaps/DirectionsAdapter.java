@@ -64,6 +64,7 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
                 icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
                 holderList.directionIcon.setImageDrawable(icon);
+                holderList.itemView.setEnabled(false);
                 break;
         }
     }

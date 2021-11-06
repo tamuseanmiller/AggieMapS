@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Set Default Search Bar Settings
             runOnUiThread(() -> {
+                materialSearchBar.setNavigationIcon(nav);
                 materialSearchBar.setHint("Aggie MapS");
                 materialSearchBar.setElevation(5);
                 materialSearchBar.setBackgroundColor(getColor(R.color.background));

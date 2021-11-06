@@ -14,7 +14,7 @@
 
         <!-- Change overscroll mode to never for disabling snapping to top when scrolled up -->
         <androidx.core.widget.NestedScrollView
-            android:id="@+id/nsv"
+            android:id="@+id/nsv_directions"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:elevation="5dp"
@@ -110,7 +110,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    android:visibility="invisible"/>
+                    android:visibility="invisible"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"/>
 
             </LinearLayout>
 

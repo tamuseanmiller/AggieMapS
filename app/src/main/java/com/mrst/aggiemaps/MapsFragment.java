@@ -608,21 +608,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     };
 
     /*
-     * LinearLayoutManager that stops a recycler from being scrolled
-     * Used for swiping up on the buses button
-     */
-    private static class UnscrollableLinearLayoutManager extends LinearLayoutManager {
-        public UnscrollableLinearLayoutManager(Context context) {
-            super(context);
-        }
-
-        @Override
-        public boolean canScrollVertically() {
-            return false;
-        }
-    }
-
-    /*
      * When the view is created, what happens
      */
     @Nullable

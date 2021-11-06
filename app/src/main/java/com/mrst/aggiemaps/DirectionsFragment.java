@@ -560,6 +560,21 @@ public class DirectionsFragment extends Fragment {
 
             // 7. Get the BottomSheetBehavior
             bottomSheetBehavior = BottomSheetBehavior.from(sheet);
+            bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+
+                }
+
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    if (slideOffset < 0.05) {
+                        directionsRecycler.setVisibility(View.INVISIBLE);
+                    } else {
+                        directionsRecycler.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
 
             // Initialize trip type icon for bottom bar
             tripTypeIcon = mView.findViewById(R.id.trip_type_image);
@@ -571,7 +586,7 @@ public class DirectionsFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
                 bottomSheetBehavior.setHideable(false);
-                bottomSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(135));
+                bottomSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(110));
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             });
 

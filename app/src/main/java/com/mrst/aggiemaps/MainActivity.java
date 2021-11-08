@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -78,6 +79,8 @@ import java.util.Objects;
 import java.util.Queue;
 
 import github.com.st235.lib_expandablebottombar.ExpandableBottomBar;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -206,13 +209,24 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Execute request and get response
             Response response = client.newCall(request).execute();
-            ResponseBody body = response.body();
-
-            return Objects.requireNonNull(body).string(); // Return the response as a string
+            if (response.isSuccessful()) {
+                ResponseBody body = response.body();
+                return Objects.requireNonNull(body).string(); // Return the response as a string
+            } else {
+                // notify error
+                String errorCode = Integer.toString(response.code());
+                String errorMessage = response.message();
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction("Try Again", view -> {
+                    snackbar.dismiss();
+                });
+                snackbar.show();
+                return "";
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 

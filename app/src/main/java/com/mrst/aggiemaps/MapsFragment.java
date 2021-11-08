@@ -646,6 +646,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             gameDayAdapter = null;
 
             // Set decorations for the recyclers
+            requireActivity().runOnUiThread(() -> {
             ColumnProvider col = () -> 1;
             favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
             favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
@@ -658,7 +659,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
             gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-
+            });
             // Set up the bottom sheet
             standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -1273,8 +1274,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             busMarkers.clear();
             handler.post(runnable = () -> {
                 handler.postDelayed(runnable, 3000);
-                if (currentRouteNo.equals(busRoute.routeNumber))
-                    new Thread(() -> drawBusesOnRoute(busRoute.routeNumber)).start();
+                if (currentRouteNo.equals(busRoute.routeNumber)) {
+                    new Thread(() -> {
+                        drawBusesOnRoute(busRoute.routeNumber);
+                    }).start();
+                }
             });
         }
     }

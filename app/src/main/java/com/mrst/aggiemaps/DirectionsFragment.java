@@ -52,6 +52,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 
 import org.json.JSONArray;
@@ -128,13 +129,25 @@ public class DirectionsFragment extends Fragment {
 
             // Execute request and get response
             Response response = client.newCall(request).execute();
-            ResponseBody body = response.body();
-
-            return Objects.requireNonNull(body).string(); // Return the response as a string
+            if (response.isSuccessful()) {
+                ResponseBody body = response.body();
+                System.out.println(body);
+                return Objects.requireNonNull(body).string(); // Return the response as a string
+            } else {
+                // notify error
+                String errorCode = Integer.toString(response.code());
+                String errorMessage = response.message();
+                Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction("Try Again", view -> {
+                    snackbar.dismiss();
+                });
+                snackbar.show();
+                return "";
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 
@@ -772,7 +785,17 @@ public class DirectionsFragment extends Fragment {
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
                     }
-
+                    if (newTripPlan == null) {
+                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Invalid Request", Snackbar.LENGTH_INDEFINITE);
+                        snackbar.setAction("Try Again", view -> {
+                            snackbar.dismiss();
+                        });
+                        snackbar.show();
+                        requireActivity().runOnUiThread(() -> {
+                            tripProgress.setVisibility(View.INVISIBLE);
+                        });
+                        return;
+                    }
                     ArrayList<ListItem> tempDirections = new ArrayList<>();
                     ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
                     routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text

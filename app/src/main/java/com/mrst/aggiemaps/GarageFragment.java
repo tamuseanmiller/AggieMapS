@@ -96,12 +96,16 @@ public class GarageFragment extends Fragment {
                 garageCount = Integer.parseInt(garage.select(".badge").text().trim());
             } catch (Exception e) {
                 e.printStackTrace();
+                continue;
             }
 
             // Check to make sure both name and count classes were found in list element
-            if (garageName.equals("") || garageCount == -1) {
-                Log.d("GARAGE", "Element is missing name or count. Move to next.");
+            if (garageName.equals("")) {
+                Log.d("GARAGE", "Element is missing name. Move to next.");
                 continue;
+            }
+            if (garageCount < 0) {
+                garageCount = 0;
             }
             garageCounts.put(garageName, garageCount);
         }

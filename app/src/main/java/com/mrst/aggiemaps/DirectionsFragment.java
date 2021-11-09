@@ -197,6 +197,20 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
+    /**
+     * Returns travel mode based on provided graphic length and time properties and a fixed threshold value
+     * @param length
+     * @param time
+     */
+    private boolean speed(double length, double time) {
+        return !(length / time >= 0.09);
+    }
+
+    private int countGeometry(String str) {
+        String[] numGeom = str.split("[+\\-]");
+        return numGeom.length;
+    }
+
     /*
      * Method to create array of a route from two latlng coordinates
      * returns a TripPlan obj
@@ -210,18 +224,39 @@ public class DirectionsFragment extends Fragment {
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
             Log.d("ROUTING", String.valueOf(features_json));
+
+            // Parse all of the geometry
+            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
+            ArrayList<LatLng> geometry = new ArrayList<>();
+            int currGeometry = 0;  // Used later to correlate geometry to feature
+            for (int i = 0; i < paths.length(); i++) {
+                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
+                geometry.add(new_latlng);
+            }
+
             // Parse every feature
             ArrayList<Feature> features = new ArrayList<>();
             for (int i = 0; i < features_json.length(); i++) {
+                ArrayList<LatLng> featureGeometry = new ArrayList<>();
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
+
+                // Get the feature information
                 @DrawableRes int manueverType = parseManeuverType(attributes.getString("maneuverType"));
                 double length = attributes.getDouble("length");
                 double time = attributes.getDouble("time");
                 String text = attributes.getString("text");
                 int ETA = attributes.getInt("ETA");
 
+                // Get the number of geometry terms to use
+                String compressedGeometry = features_json.getJSONObject(i).getString("compressedGeometry");
+                int num = countGeometry(compressedGeometry) - 3;
+                for(int j = 0; j < num && currGeometry < geometry.size(); j++) {
+                    featureGeometry.add(geometry.get(currGeometry));
+                    currGeometry++;
+                }
+
                 // Add feature
-                Feature new_feature = new Feature(length, time, text, ETA, manueverType);
+                Feature new_feature = new Feature(length, time, text, ETA, manueverType, featureGeometry, speed(length, time));
                 features.add(new_feature);
 
                 // Add landmarks
@@ -247,6 +282,7 @@ public class DirectionsFragment extends Fragment {
                         }
                     }
                 }
+
             }
 //            JSONArray routes = new JSONObject(result).getJSONObject("routes").getJSONArray("features");
 //            // parsing routes
@@ -256,35 +292,43 @@ public class DirectionsFragment extends Fragment {
 //            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
 //            JSONArray directions = new JSONObject(result).getJSONArray("directions");
 
-            // Parse all of the geometry
-            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
-            ArrayList<LatLng> geometry = new ArrayList<>();
-            for (int i = 0; i < paths.length(); i++) {
-                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
-                geometry.add(new_latlng);
-            }
-
             // Create a builder for bounds to zoom to
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-            // Draw line
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.width(10);
-            polylineOptions.geodesic(true);
-            polylineOptions.pattern(null);
-            polylineOptions.clickable(true);
-            polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
-            MarkerOptions endMarker = new MarkerOptions();
-            for (int i = 0; i < paths.length(); i++) {
-                double lat = paths.getJSONArray(i).getDouble(0);
-                double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng, lat);
-                polylineOptions.add(latlng);
-                builder.include(latlng);
-                if (i == paths.length() - 1) {
-                    endMarker.position(latlng);
-                    endMarker.draggable(false);
+            // Draw lines
+            LatLng endPoint = null;
+            LatLng lastPoint = null;
+            for (Feature feature : features) {
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.width(10);
+                polylineOptions.geodesic(true);
+                polylineOptions.pattern(null);
+                polylineOptions.clickable(true);
+                if (feature.isWalking())
+                    polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
+                else
+                    polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.foreground));
+
+                if (lastPoint != null) polylineOptions.add(lastPoint);
+                if(feature.getGeometries() != null) {
+                    for (LatLng geom : feature.getGeometries()) {
+                        polylineOptions.add(geom);
+                        builder.include(geom);
+                        endPoint = geom;
+                        lastPoint = geom;
+                    }
                 }
+
+                // Add polyline
+                requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+            }
+
+            // Make the marker
+            if (endPoint != null) {
+                MarkerOptions endMarker = new MarkerOptions();
+                endMarker.position(endPoint);
+                endMarker.draggable(false);
+                requireActivity().runOnUiThread(() -> mMap.addMarker(endMarker));
             }
 
             // Animate the camera to the new bounds
@@ -292,18 +336,12 @@ public class DirectionsFragment extends Fragment {
             LatLngBounds bounds = builder.build();
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
-            requireActivity().runOnUiThread(() -> {
-                mMap.addPolyline(polylineOptions);  // Add polyline
-                mMap.animateCamera(cu);
-                mMap.addMarker(endMarker);
-            });
 
             // Parse summary information
             JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
             double totalTime = summary.getDouble("totalTime");
             double totalLength = summary.getDouble("totalLength");
             double totalDriveTime = summary.getDouble("totalDriveTime");
-
 
             return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
         } catch (JSONException e) {

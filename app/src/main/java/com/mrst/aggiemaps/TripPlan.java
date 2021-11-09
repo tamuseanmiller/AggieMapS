@@ -18,15 +18,19 @@ class Feature {
     private long eta;
     private @DrawableRes
     int maneuverType;
-    private FeatureType type;
+    private final FeatureType type;
+    private ArrayList<LatLng> geometries;
+    private boolean isWalking;
 
-    public Feature(double length, double time, String text, long eta, @DrawableRes int maneuverType) {
+    public Feature(double length, double time, String text, long eta, @DrawableRes int maneuverType, ArrayList<LatLng> geometries, boolean isWalking) {
         this.lengthMiles = length;
         this.timeMins = time;
         this.text = text;
         this.eta = eta;
         this.maneuverType = maneuverType;
         this.type = FeatureType.NOT_LANDMARK;
+        this.geometries = geometries;
+        this.isWalking = isWalking;
     }
 
     public Feature(FeatureType type, String text) {
@@ -61,6 +65,14 @@ class Feature {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public ArrayList<LatLng> getGeometries() {
+        return geometries;
+    }
+
+    public boolean isWalking() {
+        return isWalking;
     }
 }
 

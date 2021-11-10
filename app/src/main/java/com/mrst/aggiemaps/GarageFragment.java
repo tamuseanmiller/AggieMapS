@@ -62,7 +62,7 @@ public class GarageFragment extends Fragment {
             garagesRecycler = gView.findViewById(R.id.garages_recycler);
             // Use the data list to set the content of each row
             GaragesAdapter adapter = new GaragesAdapter(data);
-            garagesRecycler.setAdapter(adapter);
+//            garagesRecycler.setAdapter(adapter);
             garagesRecycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         }).start();
         progressIndicator.setVisibility(View.INVISIBLE);

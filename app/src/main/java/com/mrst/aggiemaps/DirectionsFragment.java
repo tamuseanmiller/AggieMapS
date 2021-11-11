@@ -735,7 +735,7 @@ public class DirectionsFragment extends Fragment {
         mMap.clear();
         if (itemTapped != null) {
             int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
-            if (whichSearchBar == MAIN_SEARCH_BAR && srcItem == null && locationPermissionGranted) {
+            if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
                 LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(itemTapped.title);

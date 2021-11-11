@@ -116,9 +116,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private TextView favoritesText;  // The category title for text in the routes sheet
     private Set<String> favoritesSet;  // A set of all favorite routes
     private List<BusRoute> favList;  // The favorites route list
-    private List<BusRoute> onList;  // The on campus route list
-    private List<BusRoute> offList;  // The off campus route list
-    private List<BusRoute> gameDayList;  // The game day route list
+    public List<BusRoute> onList;  // The on campus route list
+    public List<BusRoute> offList;  // The off campus route list
+    public List<BusRoute> gameDayList;  // The game day route list
     private RightSheetBehavior<View> rightSheetBehavior;  // The timetable sheet behavior
     private TableLayout tlTimetable;
     private TableLayout tl_times;
@@ -129,7 +129,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public GoogleMap mMap;  // The Map itself
     private Handler handler;  // Used for updating the buses on routes
     private Runnable runnable;  // Used for updating the buses on routes
-    private ArrayList<Marker> busMarkers;  // A list for all buses on apps
+    public ArrayList<Marker> busMarkers;  // A list for all buses on apps
     public FloatingActionButton fabMyLocation;  // The my location FAB
     private LinearProgressIndicator dateProgress;  // The progress indicator in the timetable
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -181,7 +181,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to make a GET request to a given URL
      * returns response body as String
      */
-    private String getApiCall(String url) {
+    public String getApiCall(String url) {
         try {
             // Create request
             Request request = new Request.Builder()

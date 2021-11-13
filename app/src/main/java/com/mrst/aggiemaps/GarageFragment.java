@@ -43,7 +43,8 @@ public class GarageFragment extends Fragment {
         // Initialize layout elements
         progressIndicator = gView.findViewById(R.id.garages_progress);
         refreshBtn = gView.findViewById(R.id.garages_refreshBtn);
-        refreshBtn.setOnClickListener(view -> { });
+        refreshBtn.setOnClickListener(view -> {
+        });
         progressIndicator.setVisibility(View.VISIBLE);
         new Thread(() -> {
             // Get the live counts from the function
@@ -54,7 +55,7 @@ public class GarageFragment extends Fragment {
 
             // Add the keys and values as pairs to the data list
             List<Pair<String, Integer>> data = new ArrayList<>();
-            for(int i=0; i<values.size(); i++){
+            for (int i = 0; i < values.size(); i++) {
                 data.add(new Pair(keys.get(i), values.get(i)));
             }
 

@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public static final int SRC_SEARCH_BAR = 2;
     public static final int DEST_SEARCH_BAR = 3;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    public int gisId;
 
     enum SearchTag {
         CATEGORY,
@@ -337,6 +338,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Create recyclerviews and their layout managers
             gisSearchRecycler = new RecyclerView(this);
+            gisId = 93174320;
+            gisSearchRecycler.setId(gisId);
             gisSearchRecycler.suppressLayout(true);
             gisSearchRecycler.setLayoutManager(new LinearLayoutManager(this) {
                 @Override

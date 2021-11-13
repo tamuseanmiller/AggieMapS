@@ -66,4 +66,5 @@ dependencies {
 
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.1-alpha03'
+    implementation "androidx.test.espresso:espresso-contrib:3.5.0-alpha03"
 }

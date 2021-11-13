@@ -35,7 +35,7 @@ public class InstrumentedTripPlanTest {
     }
 
     @Test
-    public void testZachToEABA() {
+    public void testZachToEABAWalk() {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
@@ -48,7 +48,7 @@ public class InstrumentedTripPlanTest {
     }
 
     @Test
-    public void testEABAToZach() {
+    public void testEABAToZachWalk() {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
@@ -61,11 +61,151 @@ public class InstrumentedTripPlanTest {
     }
 
     @Test
-    public void testZachToZach() {
+    public void testZachToZachWalk() {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
         TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.WALK);
+        assertNull(tripPlan);
+    }
+
+    @Test
+    public void testZachToEABADrive() {
+        // ZACH to EABA
+        LatLng src = new LatLng(30.62133, -96.34030);
+        LatLng dest = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testEABAToZachDrive() {
+        // EABA to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testZachToZachDrive() {
+        // ZACH to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.62133, -96.34030);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        assertNull(tripPlan);
+    }
+
+    @Test
+    public void testZachToEABABus() {
+        // ZACH to EABA
+        LatLng src = new LatLng(30.62133, -96.34030);
+        LatLng dest = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testEABAToZachBus() {
+        // EABA to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testZachToZachBus() {
+        // ZACH to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.62133, -96.34030);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        assertNull(tripPlan);
+    }
+
+    @Test
+    public void testZachToEABABike() {
+        // ZACH to EABA
+        LatLng src = new LatLng(30.62133, -96.34030);
+        LatLng dest = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testEABAToZachBike() {
+        // EABA to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testZachToZachBike() {
+        // ZACH to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.62133, -96.34030);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        assertNull(tripPlan);
+    }
+
+    @Test
+    public void testZachToEABABusADA() {
+        // ZACH to EABA
+        LatLng src = new LatLng(30.62133, -96.34030);
+        LatLng dest = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testEABAToZachBusADA() {
+        // EABA to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.61589, -96.33695);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
+        assertNotNull(tripPlan);
+        assertNotNull(tripPlan.getFeatures());
+        assertNotNull(tripPlan.getGeometry());
+        assertFalse(tripPlan.getFeatures().isEmpty());
+        assertFalse(tripPlan.getGeometry().isEmpty());
+    }
+
+    @Test
+    public void testZachToZachBusADA() {
+        // ZACH to ZACH
+        LatLng dest = new LatLng(30.62133, -96.34030);
+        LatLng src = new LatLng(30.62133, -96.34030);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
         assertNull(tripPlan);
     }
 }

@@ -23,4 +23,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="directions">Directions</string>
     <string name="garages">Garages</string>
+    <string name="car">Car</string>
+    <string name="bus">Bus</string>
+    <string name="bike">Bike</string>
+    <string name="walk">Walk</string>
 </resources>

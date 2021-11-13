@@ -1,12 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".GarageFragment"
     android:background="@color/foreground_60"
-    >
+    tools:context=".GarageFragment"
+    android:orientation="vertical">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.AppBarLayout
+            style="@style/Widget.Material3.AppBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true">
+
+            <com.google.android.material.appbar.CollapsingToolbarLayout
+                style="@style/Widget.Material3.CollapsingToolbar.Medium"
+                android:layout_width="match_parent"
+                android:layout_height="300dp">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    style="@style/Widget.Material3.Toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_scrollFlags="scroll|enterAlways|snap"
+                    app:title="YEET"
+                    app:subtitle="HEH"
+                    android:elevation="0dp" />
+
+            </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:theme="@style/AggieMapS.Garage"
@@ -107,4 +137,4 @@
             app:layout_constraintTop_toBottomOf="@+id/garagesCardMain" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</FrameLayout>
+</LinearLayout>

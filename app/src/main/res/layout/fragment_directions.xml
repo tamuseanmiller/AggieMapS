@@ -133,12 +133,13 @@
                 app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_car"
                     style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:checked="true"
-                    android:text="Car"
+                    android:text="@string/car"
                     android:textColor="@color/txic_color_chips"
                     app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/car"
@@ -148,12 +149,13 @@
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_bus"
                     style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:checked="false"
-                    android:text="Bus"
+                    android:text="@string/bus"
                     android:textColor="@color/txic_color_chips"
                     app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/bus"
@@ -163,12 +165,13 @@
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_bike"
                     style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:checked="false"
-                    android:text="Bike"
+                    android:text="@string/bike"
                     android:textColor="@color/txic_color_chips"
                     app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/bike"
@@ -178,12 +181,13 @@
                     app:iconEndPadding="-3dp" />
 
                 <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_walk"
                     style="@style/AggieMapS.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="5dp"
                     android:checked="false"
-                    android:text="Walk"
+                    android:text="@string/walk"
                     android:textColor="@color/txic_color_chips"
                     app:chipBackgroundColor="@color/bg_color_chips"
                     app:chipIcon="@drawable/walk"

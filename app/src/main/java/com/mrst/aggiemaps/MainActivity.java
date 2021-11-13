@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public static final int DEST_SEARCH_BAR = 3;
     private FusedLocationProviderClient fusedLocationProviderClient;
     public int gisId;
+    public int recentId;
 
     enum SearchTag {
         CATEGORY,
@@ -372,6 +373,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             recentSearchesRecycler = new RecyclerView(this);
             recentSearchesRecycler.suppressLayout(true);
             recentSearchesRecycler.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+            recentId = 93174420;
+            recentSearchesRecycler.setId(recentId);
 
             // Add divider
             MaterialDividerItemDecoration divider = new MaterialDividerItemDecoration(this, DividerItemDecoration.HORIZONTAL);

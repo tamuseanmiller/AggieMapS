@@ -138,6 +138,8 @@ public class DirectionsFragment extends Fragment {
                 snackbar.setAction("Try Again", view -> {
                     snackbar.dismiss();
                 });
+                snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
                 snackbar.show();
                 return "";
             }
@@ -735,7 +737,7 @@ public class DirectionsFragment extends Fragment {
         mMap.clear();
         if (itemTapped != null) {
             int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
-            if (whichSearchBar == MAIN_SEARCH_BAR && srcItem == null && locationPermissionGranted) {
+            if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
                 LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                 srcSearchBar.setText("Current location");
                 destSearchBar.setText(itemTapped.title);
@@ -782,79 +784,89 @@ public class DirectionsFragment extends Fragment {
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
                     }
+                    // Set bottom bar visibility to gone
+                    requireActivity().runOnUiThread(() -> ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE));
                     if (newTripPlan == null) {
                         Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Invalid Request", Snackbar.LENGTH_INDEFINITE);
                         snackbar.setAction("Try Again", view -> {
                             snackbar.dismiss();
                         });
+                        snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                        snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
                         snackbar.show();
                         requireActivity().runOnUiThread(() -> {
                             tripProgress.setVisibility(View.INVISIBLE);
+                            // Set bottom bar visibility to visible
+                            ((MainActivity) requireActivity()).bottomBar.setVisibility(View.VISIBLE);
+                            fabMyLocation.setVisibility(View.VISIBLE);
+                            sheet.setVisibility(View.GONE);
                         });
-                        return;
-                    }
-                    ArrayList<ListItem> tempDirections = new ArrayList<>();
-                    ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
-                    routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text
-                    routeFeatures.get(routeFeatures.size() - 1).setText(  // Fix second text
-                            routeFeatures.get(routeFeatures.size() - 1).getText()
-                                    .replaceFirst("Location 2", destItem.title));
-                    for (int i = 0; i < routeFeatures.size(); i++) {
-                        Feature currFeature = routeFeatures.get(i);
-                        // If there's a landmark
-                        if (currFeature.getType() == FeatureType.LANDMARK) {
-                            tempDirections.add(new ListItem(currFeature.getText(), "", 0, MainActivity.SearchTag.CATEGORY));
 
-                        } else {
-                            // Convert feature length and time to readable formatted String
-                            String distText = getDistanceText(currFeature.getLengthMiles());
-                            String timeText = getTimeText(currFeature.getTimeMins());
+                    } else {
+                        ArrayList<ListItem> tempDirections = new ArrayList<>();
+                        ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();
+                        routeFeatures.get(0).setText("Start at " + srcItem.title);  // Fix first text
+                        routeFeatures.get(routeFeatures.size() - 1).setText(  // Fix second text
+                                routeFeatures.get(routeFeatures.size() - 1).getText()
+                                        .replaceFirst("Location 2", destItem.title));
+                        for (int i = 0; i < routeFeatures.size(); i++) {
+                            Feature currFeature = routeFeatures.get(i);
+                            // If there's a landmark
+                            if (currFeature.getType() == FeatureType.LANDMARK) {
+                                tempDirections.add(new ListItem(currFeature.getText(), "", 0, MainActivity.SearchTag.CATEGORY));
 
-                            // Add list item
-                            if (i != 0 && i != routeFeatures.size() - 1) {
-                                tempDirections.add(new ListItem(currFeature.getText(),
-                                        distText + " (" + timeText + ")",
-                                        0, currFeature.getManeuverType(),
-                                        MainActivity.SearchTag.RESULT, null));
                             } else {
-                                tempDirections.add(new ListItem(currFeature.getText(),
-                                        null,
-                                        0, currFeature.getManeuverType(),
-                                        MainActivity.SearchTag.RESULT, null));
+                                // Convert feature length and time to readable formatted String
+                                String distText = getDistanceText(currFeature.getLengthMiles());
+                                String timeText = getTimeText(currFeature.getTimeMins());
+
+                                // Add list item
+                                if (i != 0 && i != routeFeatures.size() - 1) {
+                                    tempDirections.add(new ListItem(currFeature.getText(),
+                                            distText + " (" + timeText + ")",
+                                            0, currFeature.getManeuverType(),
+                                            MainActivity.SearchTag.RESULT, null));
+                                } else {
+                                    tempDirections.add(new ListItem(currFeature.getText(),
+                                            null,
+                                            0, currFeature.getManeuverType(),
+                                            MainActivity.SearchTag.RESULT, null));
+                                }
                             }
                         }
+
+                        int size = textDirections.size();
+                        textDirections.clear();
+                        if (size > 0)
+                            requireActivity().runOnUiThread(() -> directionsAdapter.notifyItemRangeRemoved(0, size));
+                        textDirections.addAll(tempDirections);
+
+                        // Set drawable for icon
+                        Drawable iconFilled = ContextCompat.getDrawable(requireActivity(), iconSrc);
+                        iconFilled.setTint(ContextCompat.getColor(requireActivity(), R.color.white));
+
+                        // Directions button
+                        directionsButton.setOnClickListener(v -> bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
+
+                        // Parse the trip plan into the Bottom Sheet
+                        requireActivity().runOnUiThread(() -> {
+
+                            // Add text directions to the adapter
+                            directionsAdapter.notifyItemRangeInserted(0, textDirections.size());
+                            directionsRecycler.setAdapter(directionsAdapter);
+
+                            // Set bottom sheet header items
+                            tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
+                            tripLength.setText(getDistanceText(newTripPlan.getTotalLength()));
+                            etaClockTime.setText(getETAText(newTripPlan.getTotalTime()));
+                            tripTypeIcon.setImageDrawable(iconFilled);
+
+                            // Change the visibility of the BottomSheet to "visible"
+                            sheet.setVisibility(View.VISIBLE);
+                            fabMyLocation.setVisibility(View.GONE);
+                            tripProgress.setVisibility(View.INVISIBLE);
+                        });
                     }
-
-                    int size = textDirections.size();
-                    textDirections.clear();
-                    if (size > 0)
-                        requireActivity().runOnUiThread(() -> directionsAdapter.notifyItemRangeRemoved(0, size));
-                    textDirections.addAll(tempDirections);
-
-                    // Set drawable for icon
-                    Drawable iconFilled = ContextCompat.getDrawable(requireActivity(), iconSrc);
-                    iconFilled.setTint(ContextCompat.getColor(requireActivity(), R.color.white));
-
-                    // Directions button
-                    directionsButton.setOnClickListener(v -> bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
-
-                    // Parse the trip plan into the Bottom Sheet
-                    requireActivity().runOnUiThread(() -> {
-                        // Add text directions to the adapter
-                        directionsAdapter.notifyItemRangeInserted(0, textDirections.size());
-                        directionsRecycler.setAdapter(directionsAdapter);
-
-                        // Set bottom sheet header items
-                        tripTime.setText(getTimeText(newTripPlan.getTotalTime()));
-                        tripLength.setText(getDistanceText(newTripPlan.getTotalLength()));
-                        etaClockTime.setText(getETAText(newTripPlan.getTotalTime()));
-                        tripTypeIcon.setImageDrawable(iconFilled);
-
-                        // Change the visibility of the BottomSheet to "visible"
-                        sheet.setVisibility(View.VISIBLE);
-                        fabMyLocation.setVisibility(View.GONE);
-                        tripProgress.setVisibility(View.INVISIBLE);
-                    });
                 }).start();
 
             }

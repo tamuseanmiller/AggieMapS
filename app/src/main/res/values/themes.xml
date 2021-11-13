@@ -99,4 +99,6 @@
         <item name="elevationOverlayEnabled">false</item>
     </style>
 
+    <style name="AggieMapS.Garage" parent="Theme.Material3.DayNight.NoActionBar"/>
+
 </resources>

@@ -181,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchView.setVisibility(View.GONE);
         showSystemUI();
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+        bottomBar.setVisibility(View.VISIBLE);
 
         if (whichSearchBar > 1) {
             directionsFragment.clearFocusOnSearch();
@@ -195,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         materialSearchBar.setVisibility(View.GONE);
         hideSystemUI();
         whichSearchBar = searchBar;
+        bottomBar.setVisibility(View.GONE);
     }
 
     /*

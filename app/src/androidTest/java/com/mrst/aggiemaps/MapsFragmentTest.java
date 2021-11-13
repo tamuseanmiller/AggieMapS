@@ -9,6 +9,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import android.content.Intent;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.rule.ActivityTestRule;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,8 +39,10 @@ public class MapsFragmentTest {
         onView(withId(R.id.standard_bottom_sheet))
                 .check(matches(isDisplayed()));
         Thread.sleep(500);
-        onView(withId(R.id.recycler_favorites))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
+        MapsFragment mapsFragment = (MapsFragment) mainActivity.getSupportFragmentManager().findFragmentByTag("f2");
+        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        onView(withId(R.id.recycler_oncampus))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(5, click()));
         Thread.sleep(3000);
     }
 

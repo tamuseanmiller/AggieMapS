@@ -17,26 +17,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true"
-            android:paddingTop="16dp"
             app:liftOnScroll="true">
 
-            <com.google.android.material.appbar.CollapsingToolbarLayout
-                android:id="@+id/garage_ctl"
-                style="@style/Widget.Material3.CollapsingToolbar.Large"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
-                android:fitsSystemWindows="true"
-                app:collapsedTitleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
-                app:collapsedTitleTextColor="@color/foreground"
-                app:contentScrim="@color/foreground_30"
-                app:expandedTitleGravity="bottom"
-                app:expandedTitleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                app:expandedTitleTextColor="@color/foreground"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-                app:statusBarScrim="@color/accentDark"
-                app:title="Garage Live Count"
-                app:titleCollapseMode="fade"
-                app:titleEnabled="false">
+<!--            <com.google.android.material.appbar.CollapsingToolbarLayout-->
+<!--                android:id="@+id/garage_ctl"-->
+<!--                style="@style/Widget.Material3.CollapsingToolbar.Large"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="?attr/collapsingToolbarLayoutLargeSize"-->
+<!--                android:fitsSystemWindows="true"-->
+<!--                app:collapsedTitleTextAppearance="@style/TextAppearance.Material3.TitleMedium"-->
+<!--                app:collapsedTitleTextColor="@color/foreground"-->
+<!--                app:contentScrim="@color/foreground_30"-->
+<!--                app:expandedTitleGravity="bottom"-->
+<!--                app:expandedTitleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium"-->
+<!--                app:expandedTitleTextColor="@color/foreground"-->
+<!--                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"-->
+<!--                app:statusBarScrim="@color/accentDark"-->
+<!--                app:title="Garage Live Count"-->
+<!--                app:titleCollapseMode="fade"-->
+<!--                app:titleEnabled="false">-->
 
                 <com.google.android.material.appbar.MaterialToolbar
                     android:id="@+id/tb"
@@ -46,7 +45,7 @@
                     app:layout_collapseMode="pin"
                     app:title="Garage Live Count" />
 
-            </com.google.android.material.appbar.CollapsingToolbarLayout>
+<!--            </com.google.android.material.appbar.CollapsingToolbarLayout>-->
 
         </com.google.android.material.appbar.AppBarLayout>
 

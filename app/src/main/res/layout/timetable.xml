@@ -77,22 +77,22 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/route_card" />
 
-                    <HorizontalScrollView
-                        android:id="@+id/hSV"
+                <HorizontalScrollView
+                    android:id="@+id/hSV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true"
+                    android:scrollbarSize="0dp"
+                    app:layout_constraintStart_toEndOf="@id/drag_rec"
+                    app:layout_constraintTop_toBottomOf="@id/date_progress">
+
+                    <LinearLayout
+                        android:id="@+id/ll_table"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="true"
-                        android:scrollbarSize="0dp"
-                        app:layout_constraintStart_toEndOf="@id/drag_rec"
-                        app:layout_constraintTop_toBottomOf="@id/date_progress">
-
-                        <LinearLayout
-                            android:id="@+id/ll_table"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="13dp"
-                            android:orientation="vertical"
-                            android:layout_marginStart="20dp">
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="13dp"
+                        android:orientation="vertical">
 
                         <!-- This Table Layout is header followed by the table itself-->
                         <TableLayout
@@ -105,13 +105,15 @@
                             android:paddingEnd="40dp"
                             android:stretchColumns="*" />
 
-                    <androidx.core.widget.NestedScrollView
-                        android:id="@+id/verticalScroll"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fillViewport="true"
-                        android:overScrollMode="ifContentScrolls"
-                        android:fadeScrollbars="false">
+                        <androidx.core.widget.NestedScrollView
+                            android:id="@+id/verticalScroll"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fadeScrollbars="false"
+                            android:fadingEdgeLength="50dp"
+                            android:fillViewport="true"
+                            android:overScrollMode="ifContentScrolls"
+                            android:requiresFadingEdge="vertical">
 
                             <TableLayout
                                 android:id="@+id/tl_times"
@@ -121,13 +123,13 @@
                                 android:paddingEnd="40dp"
                                 android:stretchColumns="*" />
 
-                    </androidx.core.widget.NestedScrollView>
+                        </androidx.core.widget.NestedScrollView>
 
-                        </LinearLayout>
+                    </LinearLayout>
 
-                    </HorizontalScrollView>
+                </HorizontalScrollView>
 
-<!--                </LinearLayout>-->
+                <!--                </LinearLayout>-->
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/viewMoreBtn"
@@ -136,17 +138,17 @@
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="-16dp"
                     android:layout_marginEnd="30dp"
-                    android:stateListAnimator="@null"
                     android:background="@android:color/transparent"
                     android:fontFamily="sans-serif-medium"
-                    app:icon="@drawable/chevron_right"
-                    app:iconPadding="-1dp"
-                    app:iconGravity="end"
-                    android:textAllCaps="false"
-                    app:iconTint="@color/foreground_60"
+                    android:stateListAnimator="@null"
                     android:text="@string/view_more"
+                    android:textAllCaps="false"
                     android:textColor="@color/foreground_60"
                     android:textSize="16sp"
+                    app:icon="@drawable/chevron_right"
+                    app:iconGravity="end"
+                    app:iconPadding="-1dp"
+                    app:iconTint="@color/foreground_60"
                     app:layout_constraintStart_toEndOf="@id/drag_rec"
                     app:layout_constraintTop_toBottomOf="@id/hSV" />
 

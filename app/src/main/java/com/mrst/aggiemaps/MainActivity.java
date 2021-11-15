@@ -10,10 +10,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
@@ -174,12 +176,20 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     private void clearFocusOnSearch() {
+
+        // Change visibility of search view and bar
         materialSearchView.clearFocus();
         materialSearchView.setVisibility(View.GONE);
-        showSystemUI();
-        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
+
+        // Set color of status bar back to transparent
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+
+        // Get rid of bottom bar
         bottomBar.setVisibility(View.VISIBLE);
 
+        // Case for if it is in the directions fragment
+        DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         if (whichSearchBar > 1 && directionsFragment != null) {
             directionsFragment.clearFocusOnSearch();
         } else {
@@ -188,15 +198,26 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     public void requestFocusOnSearch(int searchBar) {
+
+        // Change visibility of search view and bar
         materialSearchView.requestFocus();
         materialSearchView.setVisibility(View.VISIBLE);
         materialSearchBar.setVisibility(View.GONE);
-        hideSystemUI();
+
+        // Set the status and nav bar color
+        getWindow().setStatusBarColor(getColor(R.color.background));
+        getWindow().setNavigationBarColor(getColor(R.color.background));
+
+        // Set which search bar is being called and get rid of the bottom bar
         whichSearchBar = searchBar;
         bottomBar.setVisibility(View.GONE);
+
+        // Collapse route sheet if it is open
         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
-        if (mapsFragment != null)
+        if (mapsFragment != null) {
             mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            mapsFragment.standardBottomSheet.setVisibility(View.INVISIBLE);
+        }
     }
 
     public void setBar(Toolbar tb) {
@@ -237,6 +258,49 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
     }
 
+    private void setWindowFlag(final int bits, boolean on) {
+        Window win = getWindow();
+        WindowManager.LayoutParams winParams = win.getAttributes();
+        if (on) {
+            winParams.flags |= bits;
+        } else {
+            winParams.flags &= ~bits;
+        }
+        win.setAttributes(winParams);
+    }
+
+    private void transparentStatusAndNavigation() {
+        Window window = getWindow();
+
+        // make full transparent statusBar
+        int visibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        visibility = visibility | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        window.getDecorView().setSystemUiVisibility(visibility);
+        int windowManager = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        windowManager = windowManager | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+        setWindowFlag(windowManager, false);
+        window.setStatusBarColor(Color.TRANSPARENT);
+        window.setNavigationBarColor(Color.TRANSPARENT);
+
+        // Set light/dark icons
+        int nightModeFlags = getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                int flags = getWindow().getDecorView().getSystemUiVisibility();
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                getWindow().getDecorView().setSystemUiVisibility(flags);
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                flags = getWindow().getDecorView().getSystemUiVisibility();
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                getWindow().getDecorView().setSystemUiVisibility(flags);
+                break;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -254,14 +318,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
-
+        transparentStatusAndNavigation();
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
         // Set the status bar to be transparent
-        Window w = getWindow();
-        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//        Window w = getWindow();
+//        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         client = new OkHttpClient();  // Create OkHttpClient to be used in API request
         new Thread(this::haveNetworkConnection).start();
@@ -304,9 +368,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
                 if (nav != null && actionBar != null) {
                     nav.setTint(getColor(R.color.foreground));
-//                    actionBar.setIcon(nav);
-                    actionBar.setDisplayShowTitleEnabled(true);
-                    actionBar.setTitle("YEET");
                 }
                 materialSearchBar.setNavigationIcon(nav);
                 materialSearchBar.setHint("Aggie MapS");
@@ -458,6 +519,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                         // Open the bus routes bottom sheet
                         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
                         if (mapsFragment != null) {
+                            mapsFragment.standardBottomSheet.setVisibility(View.VISIBLE);
                             mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
                             mapsFragment.rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                         }
@@ -700,57 +762,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         if (directionsFragment.sheet.getVisibility() == View.VISIBLE) {
             directionsFragment.exitDirections();
-        }
-    }
-
-    /*
-     * Un-Show the navigation bar and get out of full screen
-     */
-    private void hideSystemUI() {
-        View decorView = getWindow().getDecorView();
-        int currentNightMode = Configuration.UI_MODE_NIGHT_MASK & getResources().getConfiguration().uiMode;
-        switch (currentNightMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                // Night mode is not active, we're using the light theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                // Night mode is active, we're using dark theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN);
-                break;
-        }
-    }
-
-    /*
-     * Show the navigation bar and get out of full screen
-     */
-    private void showSystemUI() {
-        View decorView = getWindow().getDecorView();
-
-        int currentNightMode = Configuration.UI_MODE_NIGHT_MASK & getResources().getConfiguration().uiMode;
-        switch (currentNightMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                // Night mode is not active, we're using the light theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                // Night mode is active, we're using dark theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-                break;
         }
     }
 

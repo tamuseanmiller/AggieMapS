@@ -1,8 +1,15 @@
 package com.mrst.aggiemaps;
 
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Pair;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -11,13 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
-import android.util.Pair;
-import android.util.TypedValue;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
+import com.rubensousa.decorator.LinearMarginDecoration;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,14 +26,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.HashMap;
-
-import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
-import com.rubensousa.decorator.LinearMarginDecoration;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GarageFragment extends Fragment {
@@ -48,16 +43,15 @@ public class GarageFragment extends Fragment {
         // Inflate the layout for this fragment
         gView = inflater.inflate(R.layout.fragment_garages, container, false);
         Toolbar t = gView.findViewById(R.id.tb);
-        ((MainActivity)requireActivity()).setBar(t);
-        CollapsingToolbarLayout ctl = gView.findViewById(R.id.garage_ctl);
+        t.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.foreground_30)));
+//        ((MainActivity)requireActivity()).setBar(t);
+//        CollapsingToolbarLayout ctl = gView.findViewById(R.id.garage_ctl);
 //        ctl.setTitleEnabled(true);
-        ctl.setTitle("YEET");
         Drawable garage = ContextCompat.getDrawable(requireActivity(), R.drawable.garage);
         if (garage != null) {
             garage.setTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
             t.setNavigationIcon(garage);
         }
-//        t.setTitle("YEET");
 
         // Initialize layout elements
         swlRefresh = gView.findViewById(R.id.swl_garages);

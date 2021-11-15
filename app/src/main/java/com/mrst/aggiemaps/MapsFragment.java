@@ -145,6 +145,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
     @Override
     public void onItemClick(View view, int position) {
+        standardBottomSheet.setVisibility(View.VISIBLE);
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         if (rightSheetBehavior.getState() != RightSheetBehavior.STATE_COLLAPSED)
             rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
@@ -688,6 +689,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 standardBottomSheetBehavior.setPeekHeight(0);
                 standardBottomSheetBehavior.setHalfExpandedRatio(0.49f);
+                standardBottomSheet.setVisibility(View.INVISIBLE);
 
                 // Set the max height of the bottom sheet by putting it below the searchbar
                 View view = requireActivity().findViewById(R.id.main_app_bar);
@@ -712,6 +714,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     public void onStateChanged(@NonNull View bottomSheet, int newState) {
                         if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                             requireActivity().findViewById(R.id.bottom_bar).setVisibility(View.VISIBLE);
+                            standardBottomSheet.setVisibility(View.INVISIBLE);
+                            requireActivity().getWindow().setNavigationBarColor(Color.TRANSPARENT);
+                        } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                            requireActivity().getWindow().setNavigationBarColor(ContextCompat.getColor(requireActivity(), R.color.background));
                         }
                     }
 
@@ -748,9 +754,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        standardBottomSheet.setVisibility(View.INVISIBLE);
                     } else {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                        standardBottomSheet.setVisibility(View.INVISIBLE);
                     }
                 });
             });
@@ -1245,6 +1253,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // When a route is clicked, close sheet, set route number and draw route
         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        standardBottomSheet.setVisibility(View.INVISIBLE);
         mMap.clear(); // Clear map first
         if (busRoute.routeNumber.equals("All")) {
             fabTimetable.setVisibility(View.GONE);

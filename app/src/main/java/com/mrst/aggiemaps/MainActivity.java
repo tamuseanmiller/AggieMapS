@@ -57,6 +57,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
@@ -200,6 +201,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         bottomBar.setVisibility(View.GONE);
     }
 
+    public void setBar(Toolbar tb) {
+        setSupportActionBar(tb);
+    }
+
     /*
      * Method to make a GET request to a given URL
      * returns response body as String
@@ -292,18 +297,19 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             materialSearchBar = findViewById(R.id.material_search_bar);
             materialSearchView = findViewById(R.id.material_search_view);
 
-            // Set the default toolbar and actionbar
-            Toolbar toolbar = materialSearchBar.getToolbar();
-            runOnUiThread(() -> setSupportActionBar(toolbar));
-            ActionBar actionBar = getSupportActionBar();
-            Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
-            if (nav != null && actionBar != null) {
-                nav.setTint(getColor(R.color.foreground));
-                actionBar.setIcon(nav);
-            }
-
             // Set Default Search Bar Settings
             runOnUiThread(() -> {
+                // Set the default toolbar and actionbar
+                Toolbar toolbar = materialSearchBar.getToolbar();
+                runOnUiThread(() -> setSupportActionBar(toolbar));
+                ActionBar actionBar = getSupportActionBar();
+                Drawable nav = ContextCompat.getDrawable(this, R.drawable.magnify);
+                if (nav != null && actionBar != null) {
+                    nav.setTint(getColor(R.color.foreground));
+//                    actionBar.setIcon(nav);
+                    actionBar.setDisplayShowTitleEnabled(true);
+                    actionBar.setTitle("YEET");
+                }
                 materialSearchBar.setNavigationIcon(nav);
                 materialSearchBar.setHint("Aggie MapS");
                 materialSearchBar.setElevation(5);

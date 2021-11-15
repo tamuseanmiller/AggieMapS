@@ -135,7 +135,7 @@ public class DirectionsFragment extends Fragment {
                 String errorCode = Integer.toString(response.code());
                 String errorMessage = response.message();
                 Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_INDEFINITE);
-                snackbar.setAction("Try Again", view -> {
+                snackbar.setAction("OK", view -> {
                     snackbar.dismiss();
                 });
                 snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
@@ -788,7 +788,7 @@ public class DirectionsFragment extends Fragment {
                     requireActivity().runOnUiThread(() -> ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE));
                     if (newTripPlan == null) {
                         Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Invalid Request", Snackbar.LENGTH_INDEFINITE);
-                        snackbar.setAction("Try Again", view -> {
+                        snackbar.setAction("OK", view -> {
                             snackbar.dismiss();
                         });
                         snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));

@@ -4,137 +4,98 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/foreground_60"
-    tools:context=".GarageFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".GarageFragment">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:theme="@style/AggieMapS.Garage">
 
         <com.google.android.material.appbar.AppBarLayout
-            style="@style/Widget.Material3.AppBarLayout"
+            android:id="@+id/abl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true">
+            android:fitsSystemWindows="true"
+            android:paddingTop="16dp"
+            app:liftOnScroll="true">
 
             <com.google.android.material.appbar.CollapsingToolbarLayout
-                style="@style/Widget.Material3.CollapsingToolbar.Medium"
+                android:id="@+id/garage_ctl"
+                style="@style/Widget.Material3.CollapsingToolbar.Large"
                 android:layout_width="match_parent"
-                android:layout_height="300dp">
+                android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
+                android:fitsSystemWindows="true"
+                app:collapsedTitleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+                app:collapsedTitleTextColor="@color/foreground"
+                app:contentScrim="@color/foreground_30"
+                app:expandedTitleGravity="bottom"
+                app:expandedTitleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+                app:expandedTitleTextColor="@color/foreground"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:statusBarScrim="@color/accentDark"
+                app:title="Garage Live Count"
+                app:titleCollapseMode="fade"
+                app:titleEnabled="false">
 
                 <com.google.android.material.appbar.MaterialToolbar
-                    style="@style/Widget.Material3.Toolbar"
+                    android:id="@+id/tb"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_scrollFlags="scroll|enterAlways|snap"
-                    app:title="YEET"
-                    app:subtitle="HEH"
-                    android:elevation="0dp" />
+                    android:elevation="0dp"
+                    app:layout_collapseMode="pin"
+                    app:menu="@menu/search_menu"
+                    app:title="Garage Live Count" />
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
         </com.google.android.material.appbar.AppBarLayout>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:theme="@style/AggieMapS.Garage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="30dp"
-        android:layout_marginHorizontal="0dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/garagesCardMain"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swl_garages"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="300dp"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/garagesCardHeader"
-                style="@style/TitleBarCorners"
+            <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:backgroundTint="@color/foreground_30"
-                android:clickable="false"
-                android:focusable="false"
-                app:cardElevation="0dp"
-                app:cardPreventCornerOverlap="false"
-                app:contentPadding="0dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:layout_height="match_parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_marginHorizontal="0dp"
+                    android:theme="@style/AggieMapS.Garage">
 
-                    <TextView
-                        android:id="@+id/garagesTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="35dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:text="Garages"
-                        android:textColor="@color/accent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/spacesTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="45dp"
-                        android:fontFamily="sans-serif-medium"
-                        android:text="Spaces"
-                        android:textColor="@color/accent"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/garages_progress"
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:elevation="0dp"
-                        android:indeterminate="true"
+                        android:layout_height="match_parent">
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/garages_progress"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:elevation="0dp"
+                            android:indeterminate="true"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/garages_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+            </androidx.core.widget.NestedScrollView>
 
-            </com.google.android.material.card.MaterialCardView>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="50dp">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/garages_recycler"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/garages_refreshBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="Refresh"
-            android:textColor="@color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/garagesCardMain" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

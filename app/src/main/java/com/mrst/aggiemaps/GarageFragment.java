@@ -90,7 +90,7 @@ public class GarageFragment extends Fragment {
         return gView;
     }
 
-    private void updateGarageUI() {
+    public void updateGarageUI() {
         // Get the live counts from the function
         HashMap garageHashMap = getLiveCount();
 

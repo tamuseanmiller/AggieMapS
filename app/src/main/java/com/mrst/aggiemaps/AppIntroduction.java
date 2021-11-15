@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import com.github.appintro.AppIntro;
 import com.github.appintro.AppIntroFragment;
 import com.github.appintro.AppIntroPageTransformerType;
+import com.permissionx.guolindev.PermissionX;
 
 public class AppIntroduction extends AppIntro {
     public static final String SHARED_PREFS = "sharedPrefs";
@@ -30,19 +31,12 @@ public class AppIntroduction extends AppIntro {
             addSlide(AppIntroFragment.newInstance());
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
         } else {
-            addSlide(AppIntroFragment.newInstance("HOWDY!",
+            addSlide(AppIntroFragment.newInstance("Howdy!",
                     "Welcome to AggieMapS, an application to help navigate the Texas A&M " +
                             "Campus through the Aggie Spirit Bus system!",
                     R.drawable.map_intro,
-                    ContextCompat.getColor(this, R.color.purple_300)
+                    ContextCompat.getColor(this, R.color.red_300)
             ));
-
-//             Default add slides for bus routes test and matching of custom layout file
-//            addSlide(AppIntroFragment.newInstance("Bus Routes",
-//                    "Please click the button below to download the bus routes for smoother app navigation!",
-//                    R.drawable.current_location_intro,
-//                    ContextCompat.getColor(this, R.color.accent)
-//            ));
 
             // custom slide for the cache button
             addSlide(new IntroCacheRoutesFragment());
@@ -53,11 +47,6 @@ public class AppIntroduction extends AppIntro {
                     R.drawable.current_location_intro,
                     ContextCompat.getColor(this, R.color.blue_300)
             ));
-
-            askForPermissions(
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    3,
-                    false);
 
 
             // Fade Transition
@@ -80,7 +69,7 @@ public class AppIntroduction extends AppIntro {
             setWizardMode(false);
 
             //Show/hide skip button
-            setSkipButtonEnabled(true);
+            setSkipButtonEnabled(false);
 
             //Enable immersive mode (no status and nav bar)
             setImmersiveMode();
@@ -104,8 +93,15 @@ public class AppIntroduction extends AppIntro {
 
     @Override
     protected void onDonePressed(Fragment currentFragment) {
+
+        // Request Location Permission
+        PermissionX.init(currentFragment)
+                .permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+                .request((allGranted, grantedList, deniedList) -> {
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                });
+
         super.onDonePressed(currentFragment);
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
         AppIntroSeen();
     }
 

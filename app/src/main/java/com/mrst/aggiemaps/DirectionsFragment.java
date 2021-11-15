@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -101,16 +102,22 @@ public class DirectionsFragment extends Fragment {
         llSrcDestContainer.setVisibility(View.VISIBLE);
         if (srcItem != null && destItem != null)
             sheet.setVisibility(View.VISIBLE);
-        showSystemUI();
+
+        // Set the status and nav bar color
+        requireActivity().getWindow().setStatusBarColor(Color.TRANSPARENT);
+        requireActivity().getWindow().setNavigationBarColor(Color.TRANSPARENT);
     }
 
     private void requestFocusOnSearch(int whichSearchBar) {
         llSrcDestContainer.setVisibility(View.GONE);
         if (srcItem != null && destItem != null)
             sheet.setVisibility(View.GONE);
-        hideSystemUI();
         ((MainActivity) requireActivity()).whichSearchBar = whichSearchBar;
         ((MainActivity) requireActivity()).requestFocusOnSearch(whichSearchBar);
+
+        // Set the status and nav bar color
+        requireActivity().getWindow().setStatusBarColor(ContextCompat.getColor(requireActivity(), R.color.background));
+        requireActivity().getWindow().setNavigationBarColor(ContextCompat.getColor(requireActivity(), R.color.background));
     }
 
     /*
@@ -309,57 +316,6 @@ public class DirectionsFragment extends Fragment {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /*
-     * Un-Show the navigation bar and get out of full screen
-     */
-    private void hideSystemUI() {
-        View decorView = requireActivity().getWindow().getDecorView();
-        int currentNightMode = Configuration.UI_MODE_NIGHT_MASK & getResources().getConfiguration().uiMode;
-        switch (currentNightMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                // Night mode is not active, we're using the light theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                // Night mode is active, we're using dark theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN);
-                break;
-        }
-    }
-
-    /*
-     * Show the navigation bar and get out of full screen
-     */
-    private void showSystemUI() {
-        View decorView = requireActivity().getWindow().getDecorView();
-
-        int currentNightMode = Configuration.UI_MODE_NIGHT_MASK & getResources().getConfiguration().uiMode;
-        switch (currentNightMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                // Night mode is not active, we're using the light theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                // Night mode is active, we're using dark theme
-                decorView.setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-                break;
-        }
     }
 
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
@@ -625,7 +581,7 @@ public class DirectionsFragment extends Fragment {
                         @Override
                         public void onGlobalLayout() {
                             view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight());
+                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() + convertDpToPx(64));
                         }
                     });
                 }

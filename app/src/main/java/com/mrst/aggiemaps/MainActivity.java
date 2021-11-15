@@ -75,6 +75,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Queue;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
@@ -350,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Initialize Places
             // Initialize the SDK
-            Places.initialize(getApplicationContext(), getString(R.string.maps_api_key));
+            Places.initialize(getApplicationContext(), BuildConfig.MAPS_API_KEY);
 
             // Create a new PlacesClient instance
             placesClient = Places.createClient(this);

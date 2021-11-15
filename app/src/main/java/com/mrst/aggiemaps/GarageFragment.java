@@ -30,7 +30,7 @@ public class GarageFragment extends Fragment {
 
     private LinearProgressIndicator progressIndicator;
     private Button refreshBtn;
-    private RecyclerView garagesRecycler;
+    public RecyclerView garagesRecycler;
     private View gView;
 
     @Override
@@ -75,7 +75,7 @@ public class GarageFragment extends Fragment {
     /*
     Function to web scrape the
      */
-    private HashMap<String, Integer> getLiveCount() {
+    public HashMap<String, Integer> getLiveCount() {
         HashMap<String, Integer> garageCounts = new HashMap<>();
         // Initialize data
         String garageUrl = "https://transport.tamu.edu/parking/realtimestatus.aspx/";

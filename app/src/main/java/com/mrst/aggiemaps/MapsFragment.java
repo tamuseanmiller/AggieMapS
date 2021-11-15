@@ -140,6 +140,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private NestedScrollView vScroll;
     private FrameLayout rightSheet;
     private HashMap<Polyline, String> polylineTitles;
+    public MaterialDatePicker<Long> datePicker;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -744,7 +745,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             });
 
             // Initialize the Date Picker for the TimeTable
-            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+            datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select date")
                     .build();
             datePicker.addOnPositiveButtonClickListener(selection -> {

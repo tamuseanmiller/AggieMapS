@@ -266,7 +266,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     MarkerOptions marker = new MarkerOptions();
                     String title = stops.getJSONObject(i).getJSONObject("Stop").getString("Name");
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -10));
                     marker.title(title);
                     marker.anchor(0.5F, 0.5F);
                     marker.position(new LatLng(x, y));

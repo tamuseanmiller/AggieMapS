@@ -6,6 +6,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
 
@@ -50,8 +51,26 @@ public class MainActivityTest {
                 .perform(click());      // click() is a ViewAction
         onView(withId(R.id.standard_bottom_sheet))
                 .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
-
     }
 
+    @Test
+    public void garageView() {
+        onView(withId(R.id.bottom_bar))            // withId(R.id.my_view) is a ViewMatcher
+                .perform(click());              // click() is a ViewAction
+        onView(withId(R.id.bottom_bar))
+                .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+        onView(withId(R.id.directions))            // withId(R.id.my_view) is a ViewMatcher
+                .perform(click());              // click() is a ViewAction
+        onView(withId(R.id.directions))
+                .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+        onView(withId(R.id.garages))            // withId(R.id.my_view) is a ViewMatcher
+                .perform(click());              // click() is a ViewAction
+        onView(withId(R.id.garages))
+                .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+        onView(withId(R.id.swl_garages))
+                .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+        onView(withId(R.id.garages_recycler))
+                .check(matches(isDisplayed())); // matches(isDisplayed()) is a ViewAssertion
+    }
 
 }

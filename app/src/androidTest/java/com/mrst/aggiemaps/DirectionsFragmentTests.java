@@ -109,9 +109,7 @@ public class DirectionsFragmentTests {
         Thread.sleep(1000);
         onView(withId(R.id.fab_swap))
                 .perform(click());
-        onView(withId(R.id.trip_progress))
-                .check(matches(isDisplayed()));
-        Thread.sleep(1000);
+        Thread.sleep(1500);
         onView(withId(R.id.directions_bottom_sheet))
                 .check(matches(isDisplayed()));
     }

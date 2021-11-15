@@ -41,7 +41,8 @@ public class MainActivityTest {
     }
 
     @Test
-    public void bottomBar() {
+    public void bottomBar() throws InterruptedException {
+        Thread.sleep(500);
         onView(withId(R.id.directions))            // withId(R.id.my_view) is a ViewMatcher
                 .perform(click());              // click() is a ViewAction
         onView(withId(R.id.directions))

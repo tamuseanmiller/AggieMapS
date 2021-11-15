@@ -6,16 +6,25 @@ import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import android.content.Intent;
+import android.widget.DatePicker;
+
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.rule.ActivityTestRule;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.datepicker.MaterialDatePicker;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.time.LocalDateTime;
 
 public class MapsFragmentTest {
     @Rule
@@ -42,6 +51,7 @@ public class MapsFragmentTest {
                 .check(matches(isDisplayed()));
         Thread.sleep(500);
         mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        Thread.sleep(500);
         onView(withId(R.id.recycler_oncampus))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(5, click()));
         Thread.sleep(3000);
@@ -86,6 +96,7 @@ public class MapsFragmentTest {
 
         onView(withId(R.id.try_another_date_button))
                 .perform(click());
+
     }
 
 }

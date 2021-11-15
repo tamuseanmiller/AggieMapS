@@ -37,7 +37,6 @@ import java.util.List;
 
 public class GarageFragment extends Fragment {
 
-    private LinearProgressIndicator progressIndicator;
     private SwipeRefreshLayout swlRefresh;
     private RecyclerView garagesRecycler;
     private View gView;
@@ -61,9 +60,7 @@ public class GarageFragment extends Fragment {
 //        t.setTitle("YEET");
 
         // Initialize layout elements
-        progressIndicator = gView.findViewById(R.id.garages_progress);
         swlRefresh = gView.findViewById(R.id.swl_garages);
-        progressIndicator.setVisibility(View.VISIBLE);
 
         // recyclerview for the rows
         garagesRecycler = gView.findViewById(R.id.garages_recycler);
@@ -89,7 +86,6 @@ public class GarageFragment extends Fragment {
             swlRefresh.setRefreshing(true);
             new Thread(this::updateGarageUI).start();
         });
-        progressIndicator.setVisibility(View.INVISIBLE);
 
         return gView;
     }

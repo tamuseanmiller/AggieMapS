@@ -50,6 +50,8 @@ public class GarageFragmentTest {
             List<Integer> values = new ArrayList<Integer>(garageHashMap.values());
             List<String> keys = new ArrayList<String>(garageHashMap.keySet());
 
+            garageFragment.updateGarageUI();
+
             for(int i=0; i<values.size();i++){
                 onView(new RecyclerViewMatcher(R.id.garages_recycler).viewHolderViewAtPosition(i,R.id.spacesRow)).check(matches(withText(values.get(i).toString())));
             }

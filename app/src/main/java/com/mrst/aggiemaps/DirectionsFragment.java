@@ -706,7 +706,7 @@ public class DirectionsFragment extends Fragment {
     }
 
     // Return distance output that is readable and coherent
-    private String getDistanceText(double miles) {
+    protected String getDistanceText(double miles) {
         if (miles < 0.1) {
             return (int) (miles * 5280) + " feet";
         }
@@ -714,14 +714,14 @@ public class DirectionsFragment extends Fragment {
     }
 
     // Return time output that is readable and consistent
-    private String getTimeText(double minutes) {
+    protected String getTimeText(double minutes) {
         if (minutes > 2) {
             return (int) minutes + " min";
         }
         return (int) (minutes * 60) + " sec";
     }
 
-    private String getETAText(double totalTime) {
+    protected String getETAText(double totalTime) {
         Calendar currentTime = Calendar.getInstance();
         currentTime.getTime();
         currentTime.add(Calendar.MINUTE, (int) totalTime);

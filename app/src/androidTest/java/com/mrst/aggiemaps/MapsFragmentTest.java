@@ -62,7 +62,16 @@ public class MapsFragmentTest {
 
     @Test
     public void TimeTableTest() throws InterruptedException {
-        busRoutesTest();
+        onView(withId(R.id.buses))
+                .perform(click());
+        onView(withId(R.id.standard_bottom_sheet))
+                .check(matches(isDisplayed()));
+        Thread.sleep(500);
+        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        Thread.sleep(1000);
+        onView(withId(R.id.recycler_oncampus))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(5, click()));
+        Thread.sleep(1000);
 
         onView(withId(R.id.fab_timetable))
                 .check(matches(isDisplayed()));

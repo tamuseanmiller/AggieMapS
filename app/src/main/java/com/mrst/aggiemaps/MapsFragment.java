@@ -65,6 +65,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.rubensousa.decorator.ColumnProvider;
@@ -119,7 +120,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public List<BusRoute> onList;  // The on campus route list
     public List<BusRoute> offList;  // The off campus route list
     public List<BusRoute> gameDayList;  // The game day route list
-    private RightSheetBehavior<View> rightSheetBehavior;  // The timetable sheet behavior
+    public RightSheetBehavior<View> rightSheetBehavior;  // The timetable sheet behavior
     private TableLayout tlTimetable;
     private TableLayout tl_times;
     private TextView viewMoreBtn;  // The view more button in the timetable
@@ -182,7 +183,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to make a GET request to a given URL
      * returns response body as String
      */
-    public String getApiCall(String url) {
+    private String getApiCall(String url) {
         try {
             // Create request
             Request request = new Request.Builder()
@@ -191,13 +192,27 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Execute request and get response
             Response response = client.newCall(request).execute();
-            ResponseBody body = response.body();
-
-            return Objects.requireNonNull(body).string(); // Return the response as a string
+            if (response.isSuccessful()) {
+                ResponseBody body = response.body();
+                System.out.println(body);
+                return Objects.requireNonNull(body).string(); // Return the response as a string
+            } else {
+                // notify error
+                String errorCode = Integer.toString(response.code());
+                String errorMessage = response.message();
+                Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setAction("OK", view -> {
+                    snackbar.dismiss();
+                });
+                snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
+                snackbar.show();
+                return "";
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 
@@ -266,7 +281,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     MarkerOptions marker = new MarkerOptions();
                     String title = stops.getJSONObject(i).getJSONObject("Stop").getString("Name");
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -10));
                     marker.title(title);
                     marker.anchor(0.5F, 0.5F);
                     marker.position(new LatLng(x, y));
@@ -732,8 +747,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 fabTimetable.setOnClickListener(v -> {
                     if (rightSheetBehavior.getState() == RightSheetBehavior.STATE_COLLAPSED) {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
+                        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     } else {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+                        standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     }
                 });
             });

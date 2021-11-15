@@ -4,15 +4,12 @@ import static android.content.ContentValues.TAG;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
@@ -57,7 +54,6 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
@@ -79,9 +75,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 
+import eu.okatrych.rightsheet.RightSheetBehavior;
 import github.com.st235.lib_expandablebottombar.ExpandableBottomBar;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -185,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
         bottomBar.setVisibility(View.VISIBLE);
 
-        if (whichSearchBar > 1) {
+        if (whichSearchBar > 1 && directionsFragment != null) {
             directionsFragment.clearFocusOnSearch();
         } else {
             materialSearchBar.setVisibility(View.VISIBLE);
@@ -199,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         hideSystemUI();
         whichSearchBar = searchBar;
         bottomBar.setVisibility(View.GONE);
+        MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
+        if (mapsFragment != null)
+            mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     public void setBar(Toolbar tb) {
@@ -459,7 +457,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     } else {
                         // Open the bus routes bottom sheet
                         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
-                        mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                        if (mapsFragment != null) {
+                            mapsFragment.standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+                            mapsFragment.rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
+                        }
                     }
                 }
                 return null;

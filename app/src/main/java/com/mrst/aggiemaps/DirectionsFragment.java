@@ -4,7 +4,9 @@ import static android.content.ContentValues.TAG;
 import static com.mrst.aggiemaps.MainActivity.DEST_SEARCH_BAR;
 import static com.mrst.aggiemaps.MainActivity.MAIN_SEARCH_BAR;
 import static com.mrst.aggiemaps.MainActivity.SRC_SEARCH_BAR;
+import static java.lang.Math.abs;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -204,6 +206,28 @@ public class DirectionsFragment extends Fragment {
     }
 
     /*
+     * Method to get zoom padding when zooming in on route
+     */
+    public int getZoomPadding(LatLngBounds routeBounds) {
+
+        // Get ratio of route height to width
+        double heightRoute = abs(routeBounds.northeast.latitude - routeBounds.southwest.latitude);
+        double widthRoute = abs(routeBounds.northeast.longitude - routeBounds.southwest.longitude);
+        double routeRatio = widthRoute / heightRoute;
+
+        // Get screen width
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) requireContext()).getWindowManager()
+                .getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        int widthScreen = displayMetrics.widthPixels;
+
+        // Set padding based on the route form factor in relation to width of the screen (might need to fix for tablets)
+        int padding = (int) (widthScreen / (7 * routeRatio));
+        return padding;
+    }
+
+    /*
      * Method to create array of a route from two latlng coordinates
      * returns a TripPlan obj
      */
@@ -294,8 +318,8 @@ public class DirectionsFragment extends Fragment {
             }
 
             // Animate the camera to the new bounds
-            int padding = 100; // TODO: set this programmatically
             LatLngBounds bounds = builder.build();
+            int padding = getZoomPadding(bounds); // TODO: offset this padding towards bottom
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
             requireActivity().runOnUiThread(() -> {

@@ -2,7 +2,9 @@ package com.mrst.aggiemaps;
 
 import static android.content.ContentValues.TAG;
 import static android.content.Context.MODE_PRIVATE;
+import static java.lang.Math.abs;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -142,6 +144,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private FrameLayout rightSheet;
     private HashMap<Polyline, String> polylineTitles;
     public MaterialDatePicker<Long> datePicker;
+    private LatLngBounds overallBounds;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -247,6 +250,28 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     /*
+     * Method to get zoom padding when zooming in on route
+     */
+    public int getZoomPadding(LatLngBounds routeBounds) {
+
+        // Get ratio of route height to width
+        double heightRoute = abs(routeBounds.northeast.latitude - routeBounds.southwest.latitude);
+        double widthRoute = abs(routeBounds.northeast.longitude - routeBounds.southwest.longitude);
+        double routeRatio = widthRoute / heightRoute;
+
+        // Get screen width
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) requireContext()).getWindowManager()
+                .getDefaultDisplay()
+                .getMetrics(displayMetrics);
+        int widthScreen = displayMetrics.widthPixels;
+
+        // Set padding based on the route form factor in relation to width of the screen (might need to fix for tablets)
+        int padding = (int) (widthScreen / (8 * routeRatio));
+        return padding;
+    }
+
+    /*
      * Method to fetch and a bus route on the map
      */
     public void updateBusRoute(String routeNo, int color, boolean zoom, boolean routeIsDrawn) {
@@ -282,7 +307,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     MarkerOptions marker = new MarkerOptions();
                     String title = stops.getJSONObject(i).getJSONObject("Stop").getString("Name");
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -10));
+                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -15));
                     marker.title(title);
                     marker.anchor(0.5F, 0.5F);
                     marker.position(new LatLng(x, y));
@@ -293,8 +318,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             }
 
             // Animate the camera to the new bounds
-            int padding = 70;
             LatLngBounds bounds = builder.build();
+            int padding = getZoomPadding(bounds);
             final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             if (zoom && !routeIsDrawn)
                 requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
@@ -331,7 +356,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     for (Pair<String, LatLng> i : busStops) {
                         MarkerOptions marker = new MarkerOptions();
                         marker.flat(true);
-                        marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -15));
                         marker.anchor(0.5F, 0.5F);
                         marker.position(i.second);
                         marker.title(i.first);
@@ -374,7 +399,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             for (Pair<String, LatLng> i : aggieBusRoute.stops) {
                 MarkerOptions marker = new MarkerOptions();
                 marker.flat(true);
-                marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -20));
+                marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -15));
                 marker.anchor(0.5F, 0.5F);
                 marker.title(i.first);
                 marker.position(i.second);
@@ -382,13 +407,22 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             }
 
             // Zoom to bounds
-            int padding = 70;
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             builder.include(aggieBusRoute.northEastBound);
             builder.include(aggieBusRoute.southWestBound);
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
-            if (zoom) requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
-
+            LatLngBounds bounds = builder.build();
+            int padding = getZoomPadding(bounds);
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            if (zoom) {
+                requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+            } else {
+                if (overallBounds == null) {
+                    overallBounds = bounds;
+                } else {
+                    overallBounds = overallBounds.including(bounds.northeast);
+                    overallBounds = overallBounds.including(bounds.southwest);
+                }
+            }
             if (update) updateBusRoute(routeNo, color, false, true);
 
         } else
@@ -615,8 +649,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     for (LatLng i : points) {
                         builder.include(i);
                     }
-                    int padding = 70;
                     LatLngBounds bounds = builder.build();
+                    int padding = getZoomPadding(bounds);
                     final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                     requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
                 }).start();
@@ -1257,6 +1291,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         mMap.clear(); // Clear map first
         if (busRoute.routeNumber.equals("All")) {
             fabTimetable.setVisibility(View.GONE);
+            overallBounds = null;
             new Thread(() -> {
                 switch (busRoute.routeName) {
                     case "Favorites":
@@ -1284,6 +1319,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         }
                         break;
                 }
+                int padding = getZoomPadding(overallBounds);
+                final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(overallBounds, padding);
+                requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
             }).start();
         } else {
             currentRouteNo = busRoute.routeNumber;

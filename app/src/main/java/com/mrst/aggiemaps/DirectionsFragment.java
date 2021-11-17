@@ -239,6 +239,7 @@ public class DirectionsFragment extends Fragment {
             String result = getApiCall(call);
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
+
             Log.d("ROUTING", String.valueOf(features_json));
             // Parse every feature
             ArrayList<Feature> features = new ArrayList<>();
@@ -293,42 +294,42 @@ public class DirectionsFragment extends Fragment {
                 LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
                 geometry.add(new_latlng);
             }
+            if (features_json.length() > 3) {
+                // Create a builder for bounds to zoom to
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-            // Create a builder for bounds to zoom to
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-            // Draw line
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.width(10);
-            polylineOptions.geodesic(true);
-            polylineOptions.pattern(null);
-            polylineOptions.clickable(true);
-            polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
-            MarkerOptions endMarker = new MarkerOptions();
-            for (int i = 0; i < paths.length(); i++) {
-                double lat = paths.getJSONArray(i).getDouble(0);
-                double lng = paths.getJSONArray(i).getDouble(1);
-                LatLng latlng = new LatLng(lng, lat);
-                polylineOptions.add(latlng);
-                builder.include(latlng);
-                if (i == paths.length() - 1) {
-                    endMarker.position(latlng);
-                    endMarker.draggable(false);
+                // Draw line
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.width(10);
+                polylineOptions.geodesic(true);
+                polylineOptions.pattern(null);
+                polylineOptions.clickable(true);
+                polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
+                MarkerOptions endMarker = new MarkerOptions();
+                for (int i = 0; i < paths.length(); i++) {
+                    double lat = paths.getJSONArray(i).getDouble(0);
+                    double lng = paths.getJSONArray(i).getDouble(1);
+                    LatLng latlng = new LatLng(lng, lat);
+                    polylineOptions.add(latlng);
+                    builder.include(latlng);
+                    if (i == paths.length() - 1) {
+                        endMarker.position(latlng);
+                        endMarker.draggable(false);
+                    }
                 }
+
+                // Animate the camera to the new bounds
+                LatLngBounds bounds = builder.build();
+                int padding = getZoomPadding(bounds); // TODO: offset this padding towards bottom
+                final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 0);
+                requireActivity().runOnUiThread(() -> {
+                    mMap.setPadding(padding, (int) (padding * 1.5), padding, padding / 2);
+                    mMap.animateCamera(cu);
+                    mMap.setPadding(0, 0, 0, 0);
+                    mMap.addPolyline(polylineOptions);  // Add polyline
+                    mMap.addMarker(endMarker);
+                });
             }
-
-            // Animate the camera to the new bounds
-            LatLngBounds bounds = builder.build();
-            int padding = getZoomPadding(bounds); // TODO: offset this padding towards bottom
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 0);
-            requireActivity().runOnUiThread(() -> {
-                mMap.setPadding(padding, (int) (padding * 1.5), padding, padding / 2);
-                mMap.animateCamera(cu);
-                mMap.setPadding(0, 0, 0, 0);
-                mMap.addPolyline(polylineOptions);  // Add polyline
-                mMap.addMarker(endMarker);
-            });
-
             // Parse summary information
             JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
             double totalTime = summary.getDouble("totalTime");
@@ -765,6 +766,7 @@ public class DirectionsFragment extends Fragment {
                         default:
                             throw new IllegalStateException("Unexpected value: " + tripTypeGroup.getCheckedChipId());
                     }
+
                     // Set bottom bar visibility to gone
                     requireActivity().runOnUiThread(() -> ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE));
                     if (newTripPlan == null) {
@@ -783,6 +785,22 @@ public class DirectionsFragment extends Fragment {
                             sheet.setVisibility(View.GONE);
                         });
 
+                    } else if (newTripPlan.getFeatures().size() <= 3) {
+                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Source and destination points are too close together.", Snackbar.LENGTH_INDEFINITE);
+                        snackbar.setAction("OK", view -> {
+                            snackbar.dismiss();
+                        });
+                        snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                        snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
+                        snackbar.show();
+                        requireActivity().runOnUiThread(() -> {
+                            tripProgress.setVisibility(View.INVISIBLE);
+                            // Set bottom bar visibility to visible
+                            ((MainActivity) requireActivity()).bottomBar.setVisibility(View.VISIBLE);
+                            fabMyLocation.setVisibility(View.VISIBLE);
+                            sheet.setVisibility(View.GONE);
+                            exitDirections();
+                        });
                     } else {
                         ArrayList<ListItem> tempDirections = new ArrayList<>();
                         ArrayList<Feature> routeFeatures = newTripPlan.getFeatures();

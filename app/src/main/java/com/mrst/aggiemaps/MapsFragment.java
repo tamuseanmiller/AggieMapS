@@ -187,7 +187,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to make a GET request to a given URL
      * returns response body as String
      */
-    private String getApiCall(String url) {
+    public String getApiCall(String url) {
         try {
             // Create request
             Request request = new Request.Builder()

@@ -4,6 +4,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -35,6 +36,7 @@ public class GarageFragment extends Fragment {
     private SwipeRefreshLayout swlRefresh;
     private RecyclerView garagesRecycler;
     private View gView;
+    private Runnable runnable;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -73,7 +75,13 @@ public class GarageFragment extends Fragment {
         garagesRecycler.addItemDecoration(new LinearMarginDecoration(px, px, px, px, RecyclerView.VERTICAL, false, false, false, null));
         garagesRecycler.suppressLayout(true);
         swlRefresh.setRefreshing(true);
-        new Thread(this::updateGarageUI).start();
+
+        //Rerun updating GarageUI every 5 minutes
+        Handler handler = new Handler();
+        handler.post(runnable = () -> {
+            handler.postDelayed(runnable, 300000);
+            new Thread(this::updateGarageUI).start();
+        });
 
         // Set onRefresh listener
         swlRefresh.setOnRefreshListener(() -> {

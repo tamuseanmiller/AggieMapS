@@ -320,11 +320,12 @@ public class DirectionsFragment extends Fragment {
             // Animate the camera to the new bounds
             LatLngBounds bounds = builder.build();
             int padding = getZoomPadding(bounds); // TODO: offset this padding towards bottom
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 0);
             requireActivity().runOnUiThread(() -> {
-                mMap.addPolyline(polylineOptions);  // Add polyline
+                mMap.setPadding(padding, (int) (padding * 1.5), padding, padding / 2);
                 mMap.animateCamera(cu);
+                mMap.setPadding(0, 0, 0, 0);
+                mMap.addPolyline(polylineOptions);  // Add polyline
                 mMap.addMarker(endMarker);
             });
 

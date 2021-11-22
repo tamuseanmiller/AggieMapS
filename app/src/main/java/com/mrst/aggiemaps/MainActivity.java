@@ -513,7 +513,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
             // Set OnClick Listeners
-            materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
+            materialSearchView.setNavigationOnClickListener(v -> {clearFocusOnSearch();
+                PointF bottomBarAnchor = new PointF();
+                int[] bottomBarLocation = new int[2];
+                materialSearchBar.getLocationOnScreen(bottomBarLocation);
+                bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
+                bottomBarAnchor.offset(650, 105);
+
+                createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);});
 
             // Set listeners for when someone tries to type into the searchview
             materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -653,7 +660,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             PointF bottomBarAnchor = new PointF();
             int[] bottomBarLocation = new int[2];
-            bottomBar.getLocationOnScreen(bottomBarLocation);
+            materialSearchView.getLocationOnScreen(bottomBarLocation);
             bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
             bottomBarAnchor.offset(650, 105);
 

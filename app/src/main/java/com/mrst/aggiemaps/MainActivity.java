@@ -11,23 +11,27 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,6 +67,12 @@ import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
 import com.permissionx.guolindev.PermissionX;
+import com.takusemba.spotlight.OnSpotlightListener;
+import com.takusemba.spotlight.OnTargetListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.Target;
+import com.takusemba.spotlight.effet.RippleEffect;
+import com.takusemba.spotlight.shape.Circle;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -75,7 +85,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Queue;
 
 import eu.okatrych.rightsheet.RightSheetBehavior;
@@ -119,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     private FusedLocationProviderClient fusedLocationProviderClient;
     public int gisId;
     public int recentId;
+    private Spotlight s;
 
     enum SearchTag {
         CATEGORY,
@@ -512,6 +522,9 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             bottomBar.setOnItemReselectedListener((i, j, k) -> {
                 if (j.getId() == R.id.buses) {
 
+                    // Finish spotlight
+                    if (s != null) s.finish();
+
                     // If settings is visible, get rid of it and make the bar visible
                     if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
                         materialSearchBar.setVisibility(View.VISIBLE);
@@ -546,6 +559,80 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             });
 
         }).start();
+    }
+
+    private void createSpotlight(PointF anchor, @LayoutRes int layout) {
+
+        // Show bus route selection spotlight
+        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
+                .findViewById(android.R.id.content)).getChildAt(0);
+        View overlay = getLayoutInflater().inflate(layout, viewGroup, false);
+        Target.Builder busRoutesTarget = new Target.Builder()
+                .setAnchor(anchor)
+                .setShape(new Circle(100f))
+                .setEffect(new RippleEffect(100f, 200f, getColor(R.color.cyan_400)))
+                .setOverlay(overlay)
+                .setOnTargetListener(new OnTargetListener() {
+                    @Override
+                    public void onStarted() {
+
+                    }
+
+                    @Override
+                    public void onEnded() {
+
+                    }
+                });
+
+        Spotlight.Builder spotlight = new Spotlight.Builder(this)
+                .setTargets(busRoutesTarget.build())
+                .setBackgroundColor(getColor(R.color.background_60))
+                .setContainer(viewGroup)
+                .setDuration(1000L)
+                .setAnimation(new DecelerateInterpolator(2f))
+                .setOnSpotlightListener(new OnSpotlightListener() {
+                    @Override
+                    public void onStarted() {
+
+                    }
+
+                    @Override
+                    public void onEnded() {
+
+                    }
+                });
+
+        s = spotlight.build();
+
+        runOnUiThread(s::start);
+
+        Handler mHandler = new Handler();
+        mHandler.postDelayed((Runnable) () -> {
+            runOnUiThread(s::finish);
+        }, 4000);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        // Get the preferences for the spotlight
+        SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if (!sharedPref.getBoolean("bus_routes_spotlight", false)) {
+
+            // Set the value to true so it doesn't show again
+            editor.putBoolean("bus_routes_spotlight", true);
+            editor.apply();
+
+            PointF bottomBarAnchor = new PointF();
+            int[] bottomBarLocation = new int[2];
+            bottomBar.getLocationOnScreen(bottomBarLocation);
+            bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
+            bottomBarAnchor.offset(650, 105);
+
+            createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);
+        }
     }
 
     // Create an intent that can start the Speech Recognizer activity

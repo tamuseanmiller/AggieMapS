@@ -75,6 +75,7 @@ dependencies {
     implementation 'com.github.st235:expandablebottombar:1.4.0'
     implementation 'com.guolindev.permissionx:permissionx:1.6.1'
     implementation 'org.jsoup:jsoup:1.14.3'
+    implementation 'com.github.takusemba:spotlight:2.0.4'
 
     androidTestImplementation 'androidx.test:runner:1.4.0'
     androidTestImplementation 'androidx.test:rules:1.4.1-alpha03'

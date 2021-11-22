@@ -280,6 +280,24 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         win.setAttributes(winParams);
     }
 
+    /*
+     * Function to set the default map padding based on bottom bar
+     */
+    public int getDefaultBottomPadding() {
+
+        // Get bottom bar height
+        int bottomBarHeight = 0;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int usableHeight = displayMetrics.heightPixels;
+        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        int realHeight = displayMetrics.heightPixels;
+        if (realHeight > usableHeight)
+            bottomBarHeight = realHeight - usableHeight;
+
+        return bottomBarHeight;
+    }
+
     private void transparentStatusAndNavigation() {
         Window window = getWindow();
 
@@ -333,6 +351,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+//        // Set padding to match navigation bar height
+//        ConstraintLayout.LayoutParams bottomParams = new ConstraintLayout.LayoutParams(
+//                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+//                ConstraintLayout.LayoutParams.WRAP_CONTENT
+//        );
+//        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+//        bottomBar.setLayoutParams(bottomParams);
 
         // Set the status bar to be transparent
 //        Window w = getWindow();

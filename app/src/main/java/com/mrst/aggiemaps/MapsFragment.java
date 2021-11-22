@@ -248,6 +248,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Get screen width
         DisplayMetrics displayMetrics = new DisplayMetrics();
+        if (!isAdded()) {
+            return 0;
+        }
         ((Activity) requireContext()).getWindowManager()
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);

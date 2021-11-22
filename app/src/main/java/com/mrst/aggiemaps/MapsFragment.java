@@ -154,19 +154,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
     }
 
-    class TripType {
-        public static final int WALK = 1;
-        public static final int WALK_ADA = 2;
-        public static final int DRIVE = 3;
-        public static final int DRIVE_ADA = 4;
-        public static final int BUS = 5;
-        public static final int BUS_ADA = 6;
-        public static final int BIKE = 7;
-        public static final int VISITOR_DRIVE = 8;
-        public static final int VISITOR_DRIVE_ADA = 9;
-
-    }
-
     /*
      * Method to convert transportation coords to LatLng
      * returns Point

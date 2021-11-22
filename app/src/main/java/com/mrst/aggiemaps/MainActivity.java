@@ -713,7 +713,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     "parameterValues=&rangeValues=&quantizationParameters=&" +
                     "featureEncoding=esriDefault&f=pjson");
             try {
-                if (resp != null) {
+                if (!resp.isEmpty()) {
                     ArrayList<ListItem> tempList = new ArrayList<>();
                     JSONObject jsonObject = new JSONObject(resp);
                     JSONArray features = jsonObject.getJSONArray("features");

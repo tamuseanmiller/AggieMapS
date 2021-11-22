@@ -39,7 +39,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.WALK);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.WALK);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -52,7 +52,7 @@ public class InstrumentedTripPlanTest {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.WALK);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.WALK);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -65,7 +65,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.WALK);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.WALK);
         assertNull(tripPlan);
     }
 
@@ -74,7 +74,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.DRIVE);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -87,7 +87,7 @@ public class InstrumentedTripPlanTest {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.DRIVE);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -100,7 +100,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.DRIVE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.DRIVE);
         assertNull(tripPlan);
     }
 
@@ -109,7 +109,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -122,7 +122,7 @@ public class InstrumentedTripPlanTest {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -135,7 +135,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS);
         assertNull(tripPlan);
     }
 
@@ -144,7 +144,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BIKE);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -157,7 +157,7 @@ public class InstrumentedTripPlanTest {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BIKE);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -170,7 +170,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BIKE);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BIKE);
         assertNull(tripPlan);
     }
 
@@ -179,7 +179,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to EABA
         LatLng src = new LatLng(30.62133, -96.34030);
         LatLng dest = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS_ADA);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -192,7 +192,7 @@ public class InstrumentedTripPlanTest {
         // EABA to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.61589, -96.33695);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS_ADA);
         assertNotNull(tripPlan);
         assertNotNull(tripPlan.getFeatures());
         assertNotNull(tripPlan.getGeometry());
@@ -205,7 +205,7 @@ public class InstrumentedTripPlanTest {
         // ZACH to ZACH
         LatLng dest = new LatLng(30.62133, -96.34030);
         LatLng src = new LatLng(30.62133, -96.34030);
-        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, MapsFragment.TripType.BUS_ADA);
+        TripPlan tripPlan = directionsFragment.getTripPlan(src, dest, DirectionsFragment.TripType.BUS_ADA);
         assertNull(tripPlan);
     }
 }

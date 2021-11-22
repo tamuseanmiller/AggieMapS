@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -99,6 +100,20 @@ public class DirectionsFragment extends Fragment {
     private MaterialButton directionsButton;
     private CircularProgressIndicator tripProgress;
     private ArrayList<ListItem> textDirections;
+    private Chip adaChip;
+
+    class TripType {
+        public static final int WALK = 1;
+        public static final int WALK_ADA = 2;
+        public static final int DRIVE = 3;
+        public static final int DRIVE_ADA = 4;
+        public static final int BUS = 5;
+        public static final int BUS_ADA = 6;
+        public static final int BIKE = 7;
+        public static final int VISITOR_DRIVE = 8;
+        public static final int VISITOR_DRIVE_ADA = 9;
+
+    }
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -233,6 +248,7 @@ public class DirectionsFragment extends Fragment {
      */
     public TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
         try {
+            if (adaChip.isChecked() && tripType != TripType.BIKE) tripType++;  // Check for ADA
             String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
 //            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?doNotLocateOnRestrictedElements=true&outputLines=esriNAOutputLineTrueShape&outSR=4326&returnBarriers=false&returnDirections=true&returnPolygonBarriers=false&returnPolylineBarriers=false&returnRoutes=true&returnStops=false&returnZ=false&startTimeIsUTC=true&stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Current%20Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Zachry%20Engineering%20Education%20Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&travelMode=" + tripType + "&f=pjson";
             //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
@@ -344,7 +360,7 @@ public class DirectionsFragment extends Fragment {
         return null;
     }
 
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
+    private final OnMapReadyCallback callback = new OnMapReadyCallback() {
 
         /**
          * Manipulates the map once available.
@@ -409,7 +425,6 @@ public class DirectionsFragment extends Fragment {
                 // Don't do anything if directions are being shown
                 if (srcItem != null && destItem != null) return;
 
-
                 // Creating a marker
                 MarkerOptions markerOptions = new MarkerOptions();
 
@@ -427,7 +442,7 @@ public class DirectionsFragment extends Fragment {
                 if (srcItem == null && destItem == null) {
                     srcItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, MainActivity.SearchTag.RESULT, latLng);
                     srcSearchBar.setText(srcItem.title);
-                } else if (destItem == null && srcItem != null) {
+                } else if (srcItem != null && destItem == null) {
                     destItem = new ListItem(String.format("%.4f, %.4f", latLng.latitude, latLng.longitude), "", 0, MainActivity.SearchTag.RESULT, latLng);
                     destSearchBar.setText(destItem.title);
                     createDirections(destItem);
@@ -639,6 +654,12 @@ public class DirectionsFragment extends Fragment {
                 }
             });
 
+            // Initialize Accessibility chip
+            adaChip = mView.findViewById(R.id.ada_chip);
+            adaChip.setOnCheckedChangeListener((compoundButton, b) -> {
+                if (srcItem != null && destItem != null) createDirections(destItem);
+            });
+
             // Create Directions bottom sheet header items
             tripTime = mView.findViewById(R.id.eta_min);
             tripLength = mView.findViewById(R.id.trip_total_length);
@@ -718,19 +739,21 @@ public class DirectionsFragment extends Fragment {
     public void createDirections(ListItem itemTapped) {
         mMap.clear();
         if (itemTapped != null) {
-            int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
-            if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
-                LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                srcSearchBar.setText("Current location");
-                destSearchBar.setText(itemTapped.title);
-                destItem = itemTapped;
-                srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
-            } else if (whichSearchBar == SRC_SEARCH_BAR) {
-                srcSearchBar.setText(itemTapped.title);
-                srcItem = itemTapped;
-            } else if (whichSearchBar == DEST_SEARCH_BAR) {
-                destSearchBar.setText(itemTapped.title);
-                destItem = itemTapped;
+            if (srcItem == null || destItem == null) {
+                int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
+                if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
+                    LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    srcSearchBar.setText("Current location");
+                    destSearchBar.setText(itemTapped.title);
+                    destItem = itemTapped;
+                    srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
+                } else if (whichSearchBar == SRC_SEARCH_BAR) {
+                    srcSearchBar.setText(itemTapped.title);
+                    srcItem = itemTapped;
+                } else if (whichSearchBar == DEST_SEARCH_BAR) {
+                    destSearchBar.setText(itemTapped.title);
+                    destItem = itemTapped;
+                }
             }
 
             if (destItem != null && srcItem != null) {
@@ -741,26 +764,26 @@ public class DirectionsFragment extends Fragment {
                 // Set bottom bar visibility to gone
                 ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE);
 
-                // Get Trip Plan and input into
+                // Get Trip Plan with specific trip type
                 new Thread(() -> {
                     TripPlan newTripPlan;
-                    int iconSrc = R.drawable.bus;
+                    int iconSrc;
                     Chip c = tripTypeGroup.findViewById(tripTypeGroup.getCheckedChipId());
                     switch (c.getText().toString()) {
                         case "Car": // Car
-                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.DRIVE);
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, TripType.DRIVE);
                             iconSrc = R.drawable.car;
                             break;
                         case "Bus": // Bus
-                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BUS);
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, TripType.BUS);
                             iconSrc = R.drawable.bus;
                             break;
                         case "Bike": // Bike
-                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.BIKE);
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, TripType.BIKE);
                             iconSrc = R.drawable.bike;
                             break;
                         case "Walk": // Walk
-                            newTripPlan = getTripPlan(srcItem.position, destItem.position, MapsFragment.TripType.WALK);
+                            newTripPlan = getTripPlan(srcItem.position, destItem.position, TripType.WALK);
                             iconSrc = R.drawable.walk;
                             break;
                         default:

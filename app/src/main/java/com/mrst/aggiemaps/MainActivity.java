@@ -313,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         // Set light/dark icons
         int nightModeFlags = getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
+                Configuration.UI_MODE_NIGHT_MASK;
         switch (nightModeFlags) {
             case Configuration.UI_MODE_NIGHT_YES:
                 int flags = getWindow().getDecorView().getSystemUiVisibility();
@@ -513,14 +513,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
             // Set OnClick Listeners
-            materialSearchView.setNavigationOnClickListener(v -> {clearFocusOnSearch();
-                PointF bottomBarAnchor = new PointF();
-                int[] bottomBarLocation = new int[2];
-                materialSearchBar.getLocationOnScreen(bottomBarLocation);
-                bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
-                bottomBarAnchor.offset(650, 105);
-
-                createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);});
+            materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
 
             // Set listeners for when someone tries to type into the searchview
             materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -642,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         Handler mHandler = new Handler();
         mHandler.postDelayed((Runnable) () -> {
             runOnUiThread(s::finish);
-        }, 4000);
+        }, 6000);
     }
 
     @Override
@@ -661,9 +654,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             // Create the location of the spotlight
             PointF bottomBarAnchor = new PointF();
             int[] bottomBarLocation = new int[2];
-            materialSearchView.getLocationOnScreen(bottomBarLocation);
-            bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
-            bottomBarAnchor.offset(650, 105);
+            bottomBar.getLocationInWindow(bottomBarLocation);
+            float x = bottomBarLocation[0] + bottomBar.getWidth() / 2f + convertDpToPx(40);
+            float y = bottomBarLocation[1] + bottomBar.getHeight() / 2f;
+            bottomBarAnchor.set(x, y);
 
             // Add a spotlight to the bottom bar
             createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);

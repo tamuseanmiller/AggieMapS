@@ -2,6 +2,7 @@ package com.mrst.aggiemaps;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,10 +46,8 @@ public class GarageFragment extends Fragment {
         // Inflate the layout for this fragment
         gView = inflater.inflate(R.layout.fragment_garages, container, false);
         Toolbar t = gView.findViewById(R.id.tb);
-        t.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(requireActivity(), R.color.foreground_30)));
-//        ((MainActivity)requireActivity()).setBar(t);
-//        CollapsingToolbarLayout ctl = gView.findViewById(R.id.garage_ctl);
-//        ctl.setTitleEnabled(true);
+        t.setBackgroundColor(Color.TRANSPARENT);
+        t.setElevation(0);
         Drawable garage = ContextCompat.getDrawable(requireActivity(), R.drawable.garage);
         if (garage != null) {
             garage.setTint(ContextCompat.getColor(requireActivity(), R.color.foreground));

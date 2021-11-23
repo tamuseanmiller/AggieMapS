@@ -738,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 for (int i = 1; i < mapsFragment.busRoutes.size(); i++) {
                     String routeNumber = mapsFragment.busRoutes.get(i).routeNumber.toLowerCase();
                     String routeName = mapsFragment.busRoutes.get(i).routeName.toLowerCase();
-                    if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all"))
+                    if ((routeNumber.contains(charSequence) || routeName.contains(charSequence)) && !routeNumber.equals("all") && tempList.size() < 6)
                         tempList.add(new ListItem(mapsFragment.busRoutes.get(i).routeNumber, mapsFragment.busRoutes.get(i).routeName, 0, R.drawable.bus, SearchTag.RESULT, null));
                 }
             }

@@ -625,12 +625,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             editor.putBoolean("bus_routes_spotlight", true);
             editor.apply();
 
+            // Create the location of the spotlight
             PointF bottomBarAnchor = new PointF();
             int[] bottomBarLocation = new int[2];
             bottomBar.getLocationOnScreen(bottomBarLocation);
             bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
             bottomBarAnchor.offset(650, 105);
 
+            // Add a spotlight to the bottom bar
             createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);
         }
     }

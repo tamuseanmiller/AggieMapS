@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.esri.core.geometry.Point;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -58,6 +59,11 @@ import com.lapism.search.widget.MaterialSearchBar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.locationtech.proj4j.CRSFactory;
+import org.locationtech.proj4j.CoordinateReferenceSystem;
+import org.locationtech.proj4j.CoordinateTransform;
+import org.locationtech.proj4j.CoordinateTransformFactory;
+import org.locationtech.proj4j.ProjCoordinate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,6 +105,19 @@ public class DirectionsFragment extends Fragment {
     private MaterialButton directionsButton;
     private CircularProgressIndicator tripProgress;
     private ArrayList<ListItem> textDirections;
+
+    static class TripType {
+        public static final int WALK = 1;
+        public static final int WALK_ADA = 2;
+        public static final int DRIVE = 3;
+        public static final int DRIVE_ADA = 4;
+        public static final int BUS = 5;
+        public static final int BUS_ADA = 6;
+        public static final int BIKE = 7;
+        public static final int VISITOR_DRIVE = 8;
+        public static final int VISITOR_DRIVE_ADA = 9;
+
+    }
 
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
@@ -155,6 +174,7 @@ public class DirectionsFragment extends Fragment {
     int parseManeuverType(String maneuverType) {
         switch (maneuverType) {
             case "esriDMTStop":
+            case "esriDMTDepart":
                 return R.drawable.map_marker_outline;
             case "esriDMTStraight":
                 return R.drawable.arrow_up;
@@ -188,8 +208,6 @@ public class DirectionsFragment extends Fragment {
                 return R.drawable.call_split;
             case "esriDMTHighwayChange":
                 return R.drawable.source_fork;
-            case "esriDMTDepart":
-                return R.drawable.map_marker_outline;
             case "esriDMTTripItem":
                 return R.drawable.sign_direction;
             default:
@@ -211,13 +229,65 @@ public class DirectionsFragment extends Fragment {
         return numGeom.length;
     }
 
+    ArrayList<LatLng> fromCompressedGeometry(String str) {
+        double xDiffPrev = 0;
+        double yDiffPrev = 0;
+        ArrayList<LatLng> points = new ArrayList<>();
+        double x = 0.0;
+        double y = 0.0;
+        double coefficient = 0.0;
+
+        // Split the string into an array on the + and - characters
+        String[] strings = str.split("[+\\-]");
+
+        // The first value is the coefficient in base 32
+        coefficient = Integer.parseInt(strings[1], 32);
+
+        for (int j = 2; j < strings.length; j += 2) {
+            // j is the offset for the x value
+            // Convert the value from base 32 and add the previous x value
+            x = (Integer.parseInt(strings[j], 32) + xDiffPrev);
+            xDiffPrev = x;
+
+            // j+1 is the offset for the y value
+            // Convert the value from base 32 and add the previous y value
+            y = (Integer.parseInt(strings[j + 1], 32) + yDiffPrev);
+            yDiffPrev = y;
+
+            Point p = convertWebMercatorToLatLng(x/coefficient, y/coefficient);
+
+            points.add(new LatLng(p.getY(), -p.getX()));
+        }
+
+        return points;
+    }
+
+    /*
+     * Method to convert transportation coords to LatLng
+     * returns Point
+     */
+    private static Point convertWebMercatorToLatLng(final double x, final double y) {
+        CRSFactory crsFactory = new CRSFactory();
+        CoordinateReferenceSystem targetCRS = crsFactory.createFromName("EPSG:4236");
+        CoordinateReferenceSystem sourceCRS = crsFactory.createFromName("EPSG:3857");
+        CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
+        CoordinateTransform wgsToUtm = ctFactory.createTransform(sourceCRS, targetCRS);
+        ProjCoordinate result = new ProjCoordinate();
+        wgsToUtm.transform(new ProjCoordinate(x, y), result);
+
+        return new Point(result.x, result.y);
+    }
+
     /*
      * Method to create array of a route from two latlng coordinates
      * returns a TripPlan obj
      */
     private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
         try {
-            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
+            if (adaChip.isChecked() && tripType != TripType.BIKE) tripType++;  // Check for ADA
+
+            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=3857&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
+            //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A3857%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
 //            String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?doNotLocateOnRestrictedElements=true&outputLines=esriNAOutputLineTrueShape&outSR=4326&returnBarriers=false&returnDirections=true&returnPolygonBarriers=false&returnPolylineBarriers=false&returnRoutes=true&returnStops=false&returnZ=false&startTimeIsUTC=true&stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Current%20Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A2%2C%22stopName%22%3A%22Zachry%20Engineering%20Education%20Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&travelMode=" + tripType + "&f=pjson";
             //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
             String result = getApiCall(call);
@@ -254,6 +324,21 @@ public class DirectionsFragment extends Fragment {
                     featureGeometry.add(geometry.get(currGeometry));
                     currGeometry++;
                 }
+
+
+                String compressedGeometry = features_json.getJSONObject(i).getString("compressedGeometry");
+                // Draw line
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.width(10);
+                polylineOptions.geodesic(true);
+                polylineOptions.pattern(null);
+                polylineOptions.clickable(true);
+                polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
+                MarkerOptions endMarker = new MarkerOptions();
+                for (LatLng j : fromCompressedGeometry(compressedGeometry)) {
+                    polylineOptions.add(j);
+                }
+                requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
 
                 // Add feature
                 Feature new_feature = new Feature(length, time, text, ETA, manueverType, featureGeometry, speed(length, time));
@@ -292,8 +377,19 @@ public class DirectionsFragment extends Fragment {
 //            JSONObject geometry_json = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry");
 //            JSONArray directions = new JSONObject(result).getJSONArray("directions");
 
-            // Create a builder for bounds to zoom to
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            // Parse all of the geometry
+            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
+            ArrayList<LatLng> geometry = new ArrayList<>();
+            for (int i = 0; i < paths.length(); i++) {
+                Point p = convertWebMercatorToLatLng(paths.getJSONArray(i).getDouble(0), paths.getJSONArray(i).getDouble(1));
+                double lat = p.getX();
+                double lng = p.getY();
+                LatLng new_latlng = new LatLng(lng, lat);
+                geometry.add(new_latlng);
+            }
+            if (features_json.length() > 3) {
+                // Create a builder for bounds to zoom to
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
             // Draw lines
             LatLng endPoint = null;
@@ -560,6 +656,8 @@ public class DirectionsFragment extends Fragment {
             locationPermissionGranted = false;
         }
     }
+
+
 
     @Nullable
     @Override

@@ -19,3 +19,5 @@ local.properties
 app/src/main/res/values/properties.xml
 
 app/src/debug/res/values/google_maps_api.xml
+
+app/release/app-release.aab

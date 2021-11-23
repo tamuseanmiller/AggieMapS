@@ -248,6 +248,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Get screen width
         DisplayMetrics displayMetrics = new DisplayMetrics();
+        if (!isAdded()) {
+            return 0;
+        }
         ((Activity) requireContext()).getWindowManager()
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
@@ -1124,16 +1127,17 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 });
             }
 
+            // Add bus routes
+            busRoutes.addAll(favList);
+            busRoutes.addAll(onList);
+            busRoutes.addAll(offList);
+            busRoutes.addAll(gameDayList);
+            AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
+            AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        busRoutes.addAll(favList);
-        busRoutes.addAll(onList);
-        busRoutes.addAll(offList);
-        busRoutes.addAll(gameDayList);
-        AggieBusRoutes aggieBusRoutes = new AggieBusRoutes(favList, onList, offList, gameDayList);
-        AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
     }
 
     /*
@@ -1327,9 +1331,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             handler.post(runnable = () -> {
                 handler.postDelayed(runnable, 3000);
                 if (currentRouteNo.equals(busRoute.routeNumber)) {
-                    new Thread(() -> {
-                        drawBusesOnRoute(busRoute.routeNumber);
-                    }).start();
+                    new Thread(() -> drawBusesOnRoute(busRoute.routeNumber)).start();
                 }
             });
         }

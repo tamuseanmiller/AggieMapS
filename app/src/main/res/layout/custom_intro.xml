@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textColor="@color/white"
-        android:text="Please click the button below to download the bus routes for faster navigation!"
+        android:text="Downloading routes will allow us to load bus routes much faster. Click the button below to cache routes!"
         android:textAlignment="center"
         app:layout_constraintTop_toBottomOf="@+id/image"
         app:layout_constraintRight_toRightOf="parent"

@@ -280,6 +280,24 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         win.setAttributes(winParams);
     }
 
+    /*
+     * Function to set the default map padding based on bottom bar
+     */
+    public int getDefaultBottomPadding() {
+
+        // Get bottom bar height
+        int bottomBarHeight = 0;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int usableHeight = displayMetrics.heightPixels;
+        getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        int realHeight = displayMetrics.heightPixels;
+        if (realHeight > usableHeight)
+            bottomBarHeight = realHeight - usableHeight;
+
+        return bottomBarHeight;
+    }
+
     private void transparentStatusAndNavigation() {
         Window window = getWindow();
 
@@ -333,6 +351,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+//        // Set padding to match navigation bar height
+//        ConstraintLayout.LayoutParams bottomParams = new ConstraintLayout.LayoutParams(
+//                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+//                ConstraintLayout.LayoutParams.WRAP_CONTENT
+//        );
+//        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+//        bottomBar.setLayoutParams(bottomParams);
 
         // Set the status bar to be transparent
 //        Window w = getWindow();
@@ -487,7 +513,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
             // Set OnClick Listeners
-            materialSearchView.setNavigationOnClickListener(v -> clearFocusOnSearch());
+            materialSearchView.setNavigationOnClickListener(v -> {clearFocusOnSearch();
+                PointF bottomBarAnchor = new PointF();
+                int[] bottomBarLocation = new int[2];
+                materialSearchBar.getLocationOnScreen(bottomBarLocation);
+                bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
+                bottomBarAnchor.offset(650, 105);
+
+                createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);});
 
             // Set listeners for when someone tries to type into the searchview
             materialSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -628,7 +661,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             // Create the location of the spotlight
             PointF bottomBarAnchor = new PointF();
             int[] bottomBarLocation = new int[2];
-            bottomBar.getLocationOnScreen(bottomBarLocation);
+            materialSearchView.getLocationOnScreen(bottomBarLocation);
             bottomBarAnchor.set(bottomBarLocation[0], bottomBarLocation[1]);
             bottomBarAnchor.offset(650, 105);
 

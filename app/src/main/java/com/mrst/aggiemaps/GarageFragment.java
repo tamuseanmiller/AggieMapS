@@ -94,7 +94,10 @@ public class GarageFragment extends Fragment {
 
     public void updateGarageUI() {
         // Get the live counts from the function
-        HashMap garageHashMap = getLiveCount();
+        HashMap<String, Integer> garageHashMap = getLiveCount();
+
+        // Null check
+        if (garageHashMap == null) return;
 
         // Convert the hashmap to lists
         List<Integer> values = new ArrayList<Integer>(garageHashMap.values());
@@ -108,9 +111,8 @@ public class GarageFragment extends Fragment {
 
         // Use the data list to set the content of each row
         GaragesAdapter adapter = new GaragesAdapter(data);
-        requireActivity().runOnUiThread(() -> {
-            garagesRecycler.setAdapter(adapter);
-        });
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() -> garagesRecycler.setAdapter(adapter));
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {

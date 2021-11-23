@@ -224,11 +224,6 @@ public class DirectionsFragment extends Fragment {
         return !(length / time >= 0.09);
     }
 
-    private int countGeometry(String str) {
-        String[] numGeom = str.split("[+\\-]");
-        return numGeom.length;
-    }
-
     ArrayList<LatLng> fromCompressedGeometry(String str) {
         double xDiffPrev = 0;
         double yDiffPrev = 0;
@@ -284,7 +279,6 @@ public class DirectionsFragment extends Fragment {
      */
     private TripPlan getTripPlan(LatLng src, LatLng dest, int tripType) {
         try {
-            if (adaChip.isChecked() && tripType != TripType.BIKE) tripType++;  // Check for ADA
 
             String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=3857&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
             //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/20210825/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A4326%7D%2C%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Current+Location%22%7D%2C%22popupTemplate%22%3Anull%7D%2C%7B%22geometry%22%3A%7B%22spatialReference%22%3A%7B%22wkid%22%3A3857%7D%2C%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22symbol%22%3Anull%2C%22attributes%22%3A%7B%22routeName%22%3A8%2C%22stopName%22%3A%22Zachry+Engineering+Education+Complex%22%7D%2C%22popupTemplate%22%3Anull%7D%5D%7D&barriers=&polylineBarriers=&polygonBarriers=&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictionAttributeNames=ADA%2C+Doors%2C+No+Bike%2C+No+Bus%2C+No+Drive%2C+One+Way%2C+Visitor%2C+No+Walk+OffCampus&attributeParameterValues=&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&directionsStyleName=&outputLines=esriNAOutputLineTrueShape&findBestSequence=false&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=0&startTimeIsUTC=true&outputGeometryPrecision=&outputGeometryPrecisionUnits=esriMeters&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&overrides=&f=pjson";
@@ -294,20 +288,11 @@ public class DirectionsFragment extends Fragment {
             System.out.println((result));
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
             Log.d("ROUTING", String.valueOf(features_json));
-
-            // Parse all of the geometry
-            JSONArray paths = new JSONObject(result).getJSONObject("routes").getJSONArray("features").getJSONObject(0).getJSONObject("geometry").getJSONArray("paths").getJSONArray(0);
-            ArrayList<LatLng> geometry = new ArrayList<>();
-            int currGeometry = 0;  // Used later to correlate geometry to feature
-            for (int i = 0; i < paths.length(); i++) {
-                LatLng new_latlng = new LatLng(paths.getJSONArray(i).getDouble(1), paths.getJSONArray(i).getDouble(0));
-                geometry.add(new_latlng);
-            }
+            boolean currWalking = true;
 
             // Parse every feature
             ArrayList<Feature> features = new ArrayList<>();
             for (int i = 0; i < features_json.length(); i++) {
-                ArrayList<LatLng> featureGeometry = new ArrayList<>();
                 JSONObject attributes = features_json.getJSONObject(i).getJSONObject("attributes");
 
                 // Get the feature information
@@ -317,28 +302,11 @@ public class DirectionsFragment extends Fragment {
                 String text = attributes.getString("text");
                 int ETA = attributes.getInt("ETA");
 
-                // Get the number of geometry terms to use
+                // Get compressed geometry
                 String compressedGeometry = features_json.getJSONObject(i).getString("compressedGeometry");
-                int num = countGeometry(compressedGeometry) - 3;
-                for(int j = 0; j < num && currGeometry < geometry.size(); j++) {
-                    featureGeometry.add(geometry.get(currGeometry));
-                    currGeometry++;
-                }
 
-
-                String compressedGeometry = features_json.getJSONObject(i).getString("compressedGeometry");
-                // Draw line
-                PolylineOptions polylineOptions = new PolylineOptions();
-                polylineOptions.width(10);
-                polylineOptions.geodesic(true);
-                polylineOptions.pattern(null);
-                polylineOptions.clickable(true);
-                polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
-                MarkerOptions endMarker = new MarkerOptions();
-                for (LatLng j : fromCompressedGeometry(compressedGeometry)) {
-                    polylineOptions.add(j);
-                }
-                requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+                // Add compressed geometry featureGeometry
+                ArrayList<LatLng> featureGeometry = new ArrayList<>(fromCompressedGeometry(compressedGeometry));
 
                 // Add feature
                 Feature new_feature = new Feature(length, time, text, ETA, manueverType, featureGeometry, speed(length, time));
@@ -391,55 +359,56 @@ public class DirectionsFragment extends Fragment {
                 // Create a builder for bounds to zoom to
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-            // Draw lines
-            LatLng endPoint = null;
-            LatLng lastPoint = null;
-            for (Feature feature : features) {
-                PolylineOptions polylineOptions = new PolylineOptions();
-                polylineOptions.width(10);
-                polylineOptions.geodesic(true);
-                polylineOptions.pattern(null);
-                polylineOptions.clickable(true);
-                if (feature.isWalking())
-                    polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
-                else
-                    polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                // Draw lines
+                LatLng endPoint = null;
+                LatLng lastPoint = null;
+                for (Feature feature : features) {
+                    PolylineOptions polylineOptions = new PolylineOptions();
+                    polylineOptions.width(10);
+                    polylineOptions.geodesic(true);
+                    polylineOptions.pattern(null);
+                    polylineOptions.clickable(true);
+                    if (feature.isWalking())
+                        polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.accent));
+                    else
+                        polylineOptions.color(ContextCompat.getColor(requireActivity(), R.color.foreground));
 
-                if (lastPoint != null) polylineOptions.add(lastPoint);
-                if(feature.getGeometries() != null) {
-                    for (LatLng geom : feature.getGeometries()) {
-                        polylineOptions.add(geom);
-                        builder.include(geom);
-                        endPoint = geom;
-                        lastPoint = geom;
+                    if (lastPoint != null) polylineOptions.add(lastPoint);
+                    if (feature.getGeometries() != null) {
+                        for (LatLng geom : feature.getGeometries()) {
+                            polylineOptions.add(geom);
+                            builder.include(geom);
+                            endPoint = geom;
+                            lastPoint = geom;
+                        }
                     }
+
+                    // Add polyline
+                    requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
                 }
 
-                // Add polyline
-                requireActivity().runOnUiThread(() -> mMap.addPolyline(polylineOptions));
+                // Make the marker
+                if (endPoint != null) {
+                    MarkerOptions endMarker = new MarkerOptions();
+                    endMarker.position(endPoint);
+                    endMarker.draggable(false);
+                    requireActivity().runOnUiThread(() -> mMap.addMarker(endMarker));
+                }
+
+                // Animate the camera to the new bounds
+                int padding = 100; // TODO: set this programmatically
+                LatLngBounds bounds = builder.build();
+                final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
+
+                // Parse summary information
+                JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
+                double totalTime = summary.getDouble("totalTime");
+                double totalLength = summary.getDouble("totalLength");
+                double totalDriveTime = summary.getDouble("totalDriveTime");
+
+                return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
             }
-
-            // Make the marker
-            if (endPoint != null) {
-                MarkerOptions endMarker = new MarkerOptions();
-                endMarker.position(endPoint);
-                endMarker.draggable(false);
-                requireActivity().runOnUiThread(() -> mMap.addMarker(endMarker));
-            }
-
-            // Animate the camera to the new bounds
-            int padding = 100; // TODO: set this programmatically
-            LatLngBounds bounds = builder.build();
-            final CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
-            requireActivity().runOnUiThread(() -> mMap.animateCamera(cu));
-
-            // Parse summary information
-            JSONObject summary = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONObject("summary");
-            double totalTime = summary.getDouble("totalTime");
-            double totalLength = summary.getDouble("totalLength");
-            double totalDriveTime = summary.getDouble("totalDriveTime");
-
-            return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
         } catch (JSONException e) {
             e.printStackTrace();
         }

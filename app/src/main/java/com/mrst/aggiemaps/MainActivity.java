@@ -490,13 +490,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             runOnUiThread(() -> {
                 materialSearchView.addView(nSV);
                 Drawable navigationIcon = ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24);
-                navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                if (navigationIcon != null) {
+                    navigationIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                }
                 materialSearchView.setNavigationIcon(ContextCompat.getDrawable(this, R.drawable.search_ic_outline_arrow_back_24));
                 materialSearchView.setVisibility(View.GONE);
                 materialSearchView.setHint("Try Building Numbers/Names");
                 materialSearchView.setBackgroundColor(ContextCompat.getColor(this, R.color.background));
                 Drawable clearIcon = ContextCompat.getDrawable(this, R.drawable.close);
-                clearIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                if (clearIcon != null) {
+                    clearIcon.setTintList(ColorStateList.valueOf(getColor(R.color.foreground)));
+                }
                 materialSearchView.setClearIcon(clearIcon);
                 materialSearchView.setDividerColor(ContextCompat.getColor(this, android.R.color.transparent));
                 materialSearchView.setTextClearOnBackPressed(false);
@@ -536,7 +540,17 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Create bottom bar
             bottomBar = findViewById(R.id.bottom_bar);
-            runOnUiThread(() -> bottomBar.getMenu().select(R.id.buses));
+            runOnUiThread(() -> {
+                bottomBar.getMenu().select(R.id.buses);
+
+                // Set padding to match navigation bar height
+                RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                        convertDpToPx(65)
+                );
+                bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+                bottomBar.setLayoutParams(bottomParams);
+            });
 
             // Get bus routes on tap
             bottomBar.setOnItemReselectedListener((i, j, k) -> {
@@ -635,14 +649,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-
-        // Set padding to match navigation bar height
-        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
-                ConstraintLayout.LayoutParams.WRAP_CONTENT,
-                convertDpToPx(65)
-        );
-        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
-        bottomBar.setLayoutParams(bottomParams);
 
         // Get the preferences for the spotlight
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);

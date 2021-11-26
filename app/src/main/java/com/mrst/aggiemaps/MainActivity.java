@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,7 +39,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.FragmentManager;
@@ -881,7 +879,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
         // End directions on back pressed if directions are being shown
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
-        if (directionsFragment.sheet.getVisibility() == View.VISIBLE) {
+        if (directionsFragment.directionsSheet.getVisibility() == View.VISIBLE) {
             directionsFragment.exitDirections();
         }
     }

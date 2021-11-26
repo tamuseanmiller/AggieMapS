@@ -21,7 +21,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,7 +49,6 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -83,9 +81,9 @@ public class DirectionsFragment extends Fragment {
     private LinearLayout llSrcDestContainer;
     private FloatingActionButton fabCancel;
     private FloatingActionButton fabSwap;
-    private BottomSheetBehavior<View> bottomSheetBehavior;
+    private BottomSheetBehavior<View> directionsSheetBehavior;
     private DirectionsAdapter directionsAdapter;
-    public FrameLayout sheet;
+    public FrameLayout directionsSheet;
     private OkHttpClient client;  // Client to make API requests
     public GoogleMap mMap;
     private boolean locationPermissionGranted;
@@ -120,7 +118,7 @@ public class DirectionsFragment extends Fragment {
     public void clearFocusOnSearch() {
         llSrcDestContainer.setVisibility(View.VISIBLE);
         if (srcItem != null && destItem != null)
-            sheet.setVisibility(View.VISIBLE);
+            directionsSheet.setVisibility(View.VISIBLE);
 
         // Set the status and nav bar color
         requireActivity().getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -130,7 +128,7 @@ public class DirectionsFragment extends Fragment {
     private void requestFocusOnSearch(int whichSearchBar) {
         llSrcDestContainer.setVisibility(View.GONE);
         if (srcItem != null && destItem != null)
-            sheet.setVisibility(View.GONE);
+            directionsSheet.setVisibility(View.GONE);
         ((MainActivity) requireActivity()).whichSearchBar = whichSearchBar;
         ((MainActivity) requireActivity()).requestFocusOnSearch(whichSearchBar);
 
@@ -600,11 +598,11 @@ public class DirectionsFragment extends Fragment {
             // reuse materialSearchView settings
 
             // 6. Initialize the BottomSheet
-            sheet = mView.findViewById(R.id.directions_bottom_sheet);
+            directionsSheet = mView.findViewById(R.id.directions_bottom_sheet);
 
             // 7. Get the BottomSheetBehavior
-            bottomSheetBehavior = BottomSheetBehavior.from(sheet);
-            bottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            directionsSheetBehavior = BottomSheetBehavior.from(directionsSheet);
+            directionsSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
                 @Override
                 public void onStateChanged(@NonNull View bottomSheet, int newState) {
 
@@ -628,10 +626,10 @@ public class DirectionsFragment extends Fragment {
 
             // 8. Set the settings of the BottomSheetBehavior
             requireActivity().runOnUiThread(() -> {
-                bottomSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
-                bottomSheetBehavior.setHideable(false);
-                bottomSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(110));
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                directionsSheetBehavior.setSaveFlags(RightSheetBehavior.SAVE_ALL);
+                directionsSheetBehavior.setHideable(false);
+                directionsSheetBehavior.setPeekHeight(mView.findViewById(R.id.cl_directions).getMeasuredHeight() + convertDpToPx(110) + getDefaultBottomPadding());
+                directionsSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             });
 
             // Set the max height of the bottom sheet by putting it below the searchbar
@@ -642,23 +640,8 @@ public class DirectionsFragment extends Fragment {
             // 9. Initialize Progress Indicator
             tripProgress = mView.findViewById(R.id.trip_progress);
 
-            // 10. Initialize Main App Bar
-            View view = requireActivity().findViewById(R.id.main_app_bar);
-            if (view instanceof AppBarLayout) {
-                ViewTreeObserver viewTreeObserver = view.getViewTreeObserver();
-                if (viewTreeObserver.isAlive()) {
-                    viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                            bottomSheetBehavior.setMaxHeight(height - view.getHeight() * 2 - tripTypeGroup.getMeasuredHeight() + convertDpToPx(64));
-                        }
-                    });
-                }
-
-            } else {
-                bottomSheetBehavior.setMaxHeight(height - convertDpToPx(80));
-            }
+            // Set the max height of the directions sheet
+            directionsSheetBehavior.setMaxHeight(height + 100);
 
             // 11. Initialize Source and Dest Container
             llSrcDestContainer = mView.findViewById(R.id.ll_srcdest);
@@ -677,7 +660,7 @@ public class DirectionsFragment extends Fragment {
             // Initilize the trip type chip group
             tripTypeGroup = mView.findViewById(R.id.trip_type_group);
             tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                if (sheet.getVisibility() == View.VISIBLE) {
+                if (directionsSheet.getVisibility() == View.VISIBLE) {
                     ((MainActivity) requireActivity()).whichSearchBar = DEST_SEARCH_BAR;
                     createDirections(destItem);
                 }
@@ -837,7 +820,8 @@ public class DirectionsFragment extends Fragment {
                             // Set bottom bar visibility to visible
                             ((MainActivity) requireActivity()).bottomBar.setVisibility(View.VISIBLE);
                             fabMyLocation.setVisibility(View.VISIBLE);
-                            sheet.setVisibility(View.GONE);
+                            directionsSheet.setVisibility(View.GONE);
+                            exitDirections();
                         });
 
 
@@ -854,7 +838,7 @@ public class DirectionsFragment extends Fragment {
                             // Set bottom bar visibility to visible
                             ((MainActivity) requireActivity()).bottomBar.setVisibility(View.VISIBLE);
                             fabMyLocation.setVisibility(View.VISIBLE);
-                            sheet.setVisibility(View.GONE);
+                            directionsSheet.setVisibility(View.GONE);
                             exitDirections();
                         });
                     } else {
@@ -901,7 +885,7 @@ public class DirectionsFragment extends Fragment {
                         iconFilled.setTint(ContextCompat.getColor(requireActivity(), R.color.white));
 
                         // Directions button
-                        directionsButton.setOnClickListener(v -> bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
+                        directionsButton.setOnClickListener(v -> directionsSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED));
 
                         // Parse the trip plan into the Bottom Sheet
                         requireActivity().runOnUiThread(() -> {
@@ -917,7 +901,7 @@ public class DirectionsFragment extends Fragment {
                             tripTypeIcon.setImageDrawable(iconFilled);
 
                             // Change the visibility of the BottomSheet to "visible"
-                            sheet.setVisibility(View.VISIBLE);
+                            directionsSheet.setVisibility(View.VISIBLE);
                             fabMyLocation.setVisibility(View.GONE);
                             tripProgress.setVisibility(View.INVISIBLE);
                         });
@@ -934,7 +918,7 @@ public class DirectionsFragment extends Fragment {
         mMap.clear();
 
         // Change the visibility of the BottomBar to "gone"
-        sheet.setVisibility(View.GONE);
+        directionsSheet.setVisibility(View.GONE);
         fabMyLocation.setVisibility(View.VISIBLE);
         tripProgress.setVisibility(View.GONE);
 
@@ -945,6 +929,5 @@ public class DirectionsFragment extends Fragment {
         destSearchBar.setHint("Choose destination");
         srcItem = null;
         destItem = null;
-
     }
 }

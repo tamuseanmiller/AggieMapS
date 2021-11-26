@@ -58,6 +58,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
         <github.com.st235.lib_expandablebottombar.ExpandableBottomBar
             android:id="@+id/bottom_bar"
             android:layout_width="wrap_content"
@@ -71,10 +77,10 @@
             app:exb_items="@menu/menu_bottom"
             app:exb_backgroundColor="@color/foreground"
             app:exb_transitionDuration="300"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"/>
+
+        </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -22,18 +22,22 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.util.Pair;
@@ -648,6 +652,24 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     };
 
     /*
+     * Function to set the default map padding based on bottom bar
+     */
+    public int getDefaultBottomPadding() {
+
+        // Get bottom bar height
+        int bottomBarHeight = 0;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int usableHeight = displayMetrics.heightPixels;
+        requireActivity().getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        int realHeight = displayMetrics.heightPixels;
+        if (realHeight > usableHeight)
+            bottomBarHeight = realHeight - usableHeight;
+
+        return bottomBarHeight;
+    }
+
+    /*
      * When the view is created, what happens
      */
     @Nullable
@@ -790,6 +812,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             fabMyLocation = mView.findViewById(R.id.fab_mylocation);
             requireActivity().runOnUiThread(() -> {
                 fabMyLocation.setOnClickListener(v -> getDeviceLocation());
+
+                // Set padding to match navigation bar height
+                CoordinatorLayout.LayoutParams bottomParams = new CoordinatorLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT
+                );
+                bottomParams.setMargins(0, 0, 0, getDefaultBottomPadding() + convertDpToPx(85));
+                bottomParams.gravity = Gravity.BOTTOM | Gravity.END;
+                mView.findViewById(R.id.cl_fabs).setLayoutParams(bottomParams);
             });
 
             // Initialize the Date Picker for the TimeTable

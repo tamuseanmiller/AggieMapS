@@ -21,7 +21,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -158,10 +157,8 @@ public class DirectionsFragment extends Fragment {
                 // notify error
                 String errorCode = Integer.toString(response.code());
                 String errorMessage = response.message();
-                Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_INDEFINITE);
-                snackbar.setAction("OK", view -> {
-                    snackbar.dismiss();
-                });
+                Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Error Code: " + errorCode + " " + errorMessage, Snackbar.LENGTH_LONG);
+                snackbar.setAction("OK", view -> snackbar.dismiss());
                 snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
                 snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
                 snackbar.show();
@@ -254,6 +251,7 @@ public class DirectionsFragment extends Fragment {
             //String call = "https://gis.tamu.edu/arcgis/rest/services/Routing/ChrisRoutingTest/NAServer/Route/solve?stops=%7B%22features%22%3A%5B%7B%22geometry%22%3A%7B%22x%22%3A" + src.longitude + "%2C%22y%22%3A" + src.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22From%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%2C%7B%22geometry%22%3A%7B%22x%22%3A" + dest.longitude + "%2C%22y%22%3A" + dest.latitude + "%7D%2C%22attributes%22%3A%7B%22Name%22%3A%22To%22%2C%22RouteName%22%3A%22Route+A%22%7D%7D%5D%7D&outSR=4326&ignoreInvalidLocations=true&accumulateAttributeNames=Length%2C+Time&impedanceAttributeName=Time&restrictUTurns=esriNFSBAllowBacktrack&useHierarchy=false&returnDirections=true&returnRoutes=true&returnStops=false&returnBarriers=false&returnPolylineBarriers=false&returnPolygonBarriers=false&directionsLanguage=en&outputLines=esriNAOutputLineTrueShapeWithMeasure&findBestSequence=true&preserveFirstStop=true&preserveLastStop=true&useTimeWindows=false&timeWindowsAreUTC=false&startTime=5&startTimeIsUTC=false&outputGeometryPrecisionUnits=esriMiles&directionsOutputType=esriDOTComplete&directionsTimeAttributeName=Time&directionsLengthUnits=esriNAUMiles&returnZ=false&travelMode=" + tripType + "&f=pjson";
             String result = getApiCall(call);
             System.out.println((result));
+
             JSONArray features_json = new JSONObject(result).getJSONArray("directions").getJSONObject(0).getJSONArray("features");
 
             Log.d("ROUTING", String.valueOf(features_json));
@@ -351,7 +349,6 @@ public class DirectionsFragment extends Fragment {
             double totalTime = summary.getDouble("totalTime");
             double totalLength = summary.getDouble("totalLength");
             double totalDriveTime = summary.getDouble("totalDriveTime");
-
 
             return new TripPlan(geometry, features, totalLength, totalTime, totalDriveTime);
         } catch (JSONException e) {
@@ -518,7 +515,6 @@ public class DirectionsFragment extends Fragment {
             locationPermissionGranted = false;
         }
     }
-
 
 
     @Nullable
@@ -741,23 +737,24 @@ public class DirectionsFragment extends Fragment {
     public void createDirections(ListItem itemTapped) {
         mMap.clear();
         if (itemTapped != null) {
-            if (srcItem == null || destItem == null) {
-                int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
-                if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
-                    LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                    srcSearchBar.setText("Current location");
-                    destSearchBar.setText(itemTapped.title);
-                    destItem = itemTapped;
-                    srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
-                } else if (whichSearchBar == SRC_SEARCH_BAR) {
-                    srcSearchBar.setText(itemTapped.title);
-                    srcItem = itemTapped;
-                } else if (whichSearchBar == DEST_SEARCH_BAR) {
-                    destSearchBar.setText(itemTapped.title);
-                    destItem = itemTapped;
-                }
+
+            // Set source and destination items based on what is tapped
+            int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
+            if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
+                LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                srcSearchBar.setText("Current location");
+                destSearchBar.setText(itemTapped.title);
+                destItem = itemTapped;
+                srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
+            } else if (whichSearchBar == SRC_SEARCH_BAR) {
+                srcSearchBar.setText(itemTapped.title);
+                srcItem = itemTapped;
+            } else if (whichSearchBar == DEST_SEARCH_BAR) {
+                destSearchBar.setText(itemTapped.title);
+                destItem = itemTapped;
             }
 
+            // If a source and destination exists, create directions
             if (destItem != null && srcItem != null) {
 
                 // Show progress indicator
@@ -795,13 +792,15 @@ public class DirectionsFragment extends Fragment {
                     // Set bottom bar visibility to gone
                     requireActivity().runOnUiThread(() -> ((MainActivity) requireActivity()).bottomBar.setVisibility(View.GONE));
                     if (newTripPlan == null) {
-                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Invalid Request", Snackbar.LENGTH_INDEFINITE);
+
+                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Invalid Route", Snackbar.LENGTH_LONG);
                         snackbar.setAction("OK", view -> {
                             snackbar.dismiss();
                         });
                         snackbar.setBackgroundTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
                         snackbar.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.background));
                         snackbar.show();
+
                         requireActivity().runOnUiThread(() -> {
                             tripProgress.setVisibility(View.INVISIBLE);
                             // Set bottom bar visibility to visible
@@ -810,8 +809,9 @@ public class DirectionsFragment extends Fragment {
                             sheet.setVisibility(View.GONE);
                         });
 
+
                     } else if (newTripPlan.getFeatures().size() <= 3) {
-                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Source and destination points are too close together.", Snackbar.LENGTH_INDEFINITE);
+                        Snackbar snackbar = Snackbar.make(requireActivity().findViewById(R.id.cl_main), "Source and destination points are too close together.", Snackbar.LENGTH_LONG);
                         snackbar.setAction("OK", view -> {
                             snackbar.dismiss();
                         });
@@ -905,6 +905,7 @@ public class DirectionsFragment extends Fragment {
         // Change the visibility of the BottomBar to "gone"
         sheet.setVisibility(View.GONE);
         fabMyLocation.setVisibility(View.VISIBLE);
+        tripProgress.setVisibility(View.GONE);
 
         // Reset the hints
         srcSearchBar.setText("");

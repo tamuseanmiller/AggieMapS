@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.speech.RecognizerIntent;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +30,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.LayoutRes;
@@ -37,6 +39,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.FragmentManager;
@@ -352,14 +356,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
         setContentView(R.layout.activity_main);
 
-//        // Set padding to match navigation bar height
-//        ConstraintLayout.LayoutParams bottomParams = new ConstraintLayout.LayoutParams(
-//                ConstraintLayout.LayoutParams.WRAP_CONTENT,
-//                ConstraintLayout.LayoutParams.WRAP_CONTENT
-//        );
-//        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
-//        bottomBar.setLayoutParams(bottomParams);
-
         // Set the status bar to be transparent
 //        Window w = getWindow();
 //        w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -641,6 +637,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+
+        // Set padding to match navigation bar height
+        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                convertDpToPx(65)
+        );
+        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+        bottomBar.setLayoutParams(bottomParams);
 
         // Get the preferences for the spotlight
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);

@@ -73,6 +73,8 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.collections.MarkerManager;
 import com.rubensousa.decorator.ColumnProvider;
 import com.rubensousa.decorator.GridMarginDecoration;
 
@@ -91,6 +93,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -148,6 +151,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private HashMap<Polyline, String> polylineTitles;
     public MaterialDatePicker<Long> datePicker;
     private LatLngBounds overallBounds;
+    MarkerManager markerManager;
+    private MarkerManager.Collection markerCollection;
+    private Collection<MarkerOptions> markerOptionsCollectionPOI;
+    private Collection<MarkerOptions> markerOptionsCollectionRestrooms;
+    private Collection<MarkerOptions> markerOptionsCollectionKiosk;
+    private Collection<MarkerOptions> markerOptionsCollectionEntrances;
+    private Collection<MarkerOptions> markerOptionsCollectionEPhones;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -621,6 +631,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Get the current location of the device and set the position of the map.
             getDeviceLocation();
 
+            markerManager = new MarkerManager(mMap);
+            markerCollection = markerManager.newCollection();
+
             // Set Click Listener for polyline
             mMap.setOnPolylineClickListener(polyline -> {
 
@@ -709,18 +722,18 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Set decorations for the recyclers
             requireActivity().runOnUiThread(() -> {
-            ColumnProvider col = () -> 1;
-            favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
-            favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            DisplayMetrics metrics = new DisplayMetrics();
-            requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            col = () -> 2;
-            onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
-            gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
-            gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+                ColumnProvider col = () -> 1;
+                favRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 1, GridLayoutManager.HORIZONTAL, false));
+                favRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+                DisplayMetrics metrics = new DisplayMetrics();
+                requireActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                col = () -> 2;
+                onCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+                onCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+                offCampusRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+                offCampusRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
+                gameDayRoutes.setLayoutManager(new GridLayoutManager(getActivity(), 2, GridLayoutManager.HORIZONTAL, false));
+                gameDayRoutes.addItemDecoration(new GridMarginDecoration(0, 0, col, GridLayoutManager.HORIZONTAL, false, null));
             });
             // Set up the bottom sheet
             standardBottomSheet = mView.findViewById(R.id.standard_bottom_sheet);
@@ -800,6 +813,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                         standardBottomSheet.setVisibility(View.INVISIBLE);
+
+//                      Temporarily have these here to test layering
+                        getPOIs();
+                        getRestrooms();
+                        getParking();
+//                        Too many accessible entrances on map
+//                        getAccessibleEntrances();
+                        getEPhones();
+
                     } else {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -811,8 +833,14 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Initialize the my current location FAB
             fabMyLocation = mView.findViewById(R.id.fab_mylocation);
             requireActivity().runOnUiThread(() -> {
-                fabMyLocation.setOnClickListener(v -> getDeviceLocation());
-
+                fabMyLocation.setOnClickListener(v -> {
+                            getDeviceLocation();
+//                          Temporarily clear the markerCollection for testing using current loc fab
+                            getActivity().runOnUiThread(() -> {
+                                markerCollection.clear();
+                            });
+                        }
+                );
                 // Set padding to match navigation bar height
                 CoordinatorLayout.LayoutParams bottomParams = new CoordinatorLayout.LayoutParams(
                         ConstraintLayout.LayoutParams.WRAP_CONTENT,
@@ -820,7 +848,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 );
                 bottomParams.setMargins(0, 0, 0, getDefaultBottomPadding() + convertDpToPx(85));
                 bottomParams.gravity = Gravity.BOTTOM | Gravity.END;
-                mView.findViewById(R.id.cl_fabs).setLayoutParams(bottomParams);
+                mView.findViewById(R.id.cl_fabs).setLayoutParams(bottomParams); 
             });
 
             // Initialize the Date Picker for the TimeTable
@@ -1366,6 +1394,206 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             });
         }
     }
+
+    /*
+    Function to get Places of Interest on Campus from arcGIS
+    Places of Interest: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
+    */
+
+    private void getPOIs() {
+        new Thread(() -> {
+            markerOptionsCollectionPOI = new ArrayList<>();
+            BitmapDescriptor iconVal;
+            String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+            try {
+                if (resp != null) {
+                    ArrayList<ListItem> tempList = new ArrayList<>();
+                    JSONObject jsonObject = new JSONObject(resp);
+                    JSONArray features = jsonObject.getJSONArray("features");
+                    for (int i = 0; i < features.length(); i++) {
+                        String name = features.getJSONObject(i).getJSONObject("attributes").getString("Name");
+                        String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
+                        JSONArray points = features.getJSONObject(i).getJSONObject("geometry").getJSONArray("points").getJSONArray(0);
+                        Log.e("TEST", type);
+                        switch(type){
+                            case "Memorial":
+                                iconVal  = BitmapFromVector(getActivity(), R.drawable.grave_stone,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400),0);
+                                break;
+                            case "Statue":
+                                iconVal = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                                break;
+                            case "Fountain":
+                                iconVal  = BitmapFromVector(getActivity(), R.drawable.fountain,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400),0);
+                                break;
+                            case "Monument":
+                                iconVal = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                                break;
+                            case "Garden":
+                                iconVal  = BitmapFromVector(getActivity(), R.drawable.flower,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400),0);
+                                break;
+                            case "Building":
+                                iconVal  = BitmapFromVector(getActivity(), R.drawable.office_building,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400),0);
+                                break;
+                            default:
+                                iconVal = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                                break;
+                        }
+                        markerOptionsCollectionPOI.add(new MarkerOptions()
+                                .position(new LatLng(points.getDouble(1), points.getDouble(0)))
+                                .icon(iconVal)
+                                .title(name));
+                    }
+                    getActivity().runOnUiThread(() -> {
+                        markerCollection.addAll(markerOptionsCollectionPOI);
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /*
+    Function to get Restrooms on Campus from arcGIS
+    Restrooms: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/1/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
+     */
+    private void getRestrooms() {
+        new Thread(() -> {
+            markerOptionsCollectionRestrooms = new ArrayList<>();
+            String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/1/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+            try {
+                if (resp != null) {
+                    JSONObject jsonObject = new JSONObject(resp);
+                    JSONArray features = jsonObject.getJSONArray("features");
+                    for (int i = 0; i < features.length(); i++) {
+                        String name = features.getJSONObject(i).getJSONObject("attributes").getString("Name");
+                        String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
+                        String notes = features.getJSONObject(i).getJSONObject("attributes").getString("Notes");
+                        Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
+                        Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
+                        markerOptionsCollectionRestrooms.add(new MarkerOptions()
+                                .position(new LatLng(y, x))
+                                .icon(BitmapFromVector(getActivity(), R.drawable.toilet,
+                                        ContextCompat.getColor(requireActivity(), R.color.blue_500),0))
+                                .title(notes));
+                    }
+                    getActivity().runOnUiThread(() -> {
+                        markerCollection.addAll(markerOptionsCollectionRestrooms);
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+
+    /*
+    Function to get Visitor Parking Kiosk on Campus from arcGIS
+    Visitor Parking Kiosk: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/3/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
+    */
+    private void getParking() {
+        new Thread(() -> {
+            markerOptionsCollectionKiosk = new ArrayList<>();
+            String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/3/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+            try {
+                if (resp != null) {
+                    ArrayList<ListItem> tempList = new ArrayList<>();
+                    JSONObject jsonObject = new JSONObject(resp);
+                    JSONArray features = jsonObject.getJSONArray("features");
+                    for (int i = 0; i < features.length(); i++) {
+                        String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
+                        Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
+                        Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
+                        markerOptionsCollectionKiosk.add(new MarkerOptions()
+                                .position(new LatLng(y, x))
+                                .icon(BitmapFromVector(getActivity(), R.drawable.parking,
+                                        ContextCompat.getColor(requireActivity(), R.color.foreground),0))
+                                .title(type));
+                    }
+                    getActivity().runOnUiThread(() -> {
+                        markerCollection.addAll(markerOptionsCollectionKiosk);
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /*
+    Function to get Accessible Entrances on Campus from arcGIS
+    Accessible Entrances: https://gis.tamu.edu/arcgis/rest/services/FCOR/ADA_120717/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=GIS.FCOR.Bldg_Entrance.FID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
+     */
+    private void getAccessibleEntrances() {
+        new Thread(() -> {
+            markerOptionsCollectionEntrances = new ArrayList<>();
+            String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/ADA_120717/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=GIS.FCOR.Bldg_Entrance.FID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson\n");
+            try {
+                if (resp != null) {
+                    ArrayList<ListItem> tempList = new ArrayList<>();
+                    JSONObject jsonObject = new JSONObject(resp);
+                    JSONArray features = jsonObject.getJSONArray("features");
+                    for (int i = 0; i < features.length(); i++) {
+                        String category = features.getJSONObject(i).getJSONObject("attributes").getString("Category");
+                        Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
+                        Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
+                        markerOptionsCollectionEntrances.add(new MarkerOptions()
+                                .position(new LatLng(y, x))
+                                .icon(BitmapFromVector(getActivity(), R.drawable.wheelchair_accessibility,
+                                ContextCompat.getColor(requireActivity(), R.color.green_500),0))
+                                .title(category));
+                    }
+                    getActivity().runOnUiThread(() -> {
+                        markerCollection.addAll(markerOptionsCollectionEntrances);
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+
+    /*
+    Function to get Emergency Phones on Campus from arcGIS
+    Emergency Phones: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/4/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
+     */
+    private void getEPhones() {
+        new Thread(() -> {
+            markerOptionsCollectionEPhones = new ArrayList<>();
+            String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/4/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
+            try {
+                if (resp != null) {
+                    ArrayList<ListItem> tempList = new ArrayList<>();
+                    JSONObject jsonObject = new JSONObject(resp);
+                    JSONArray features = jsonObject.getJSONArray("features");
+                    for (int i = 0; i < features.length(); i++) {
+                        String telNum = features.getJSONObject(i).getJSONObject("attributes").getString("TelNum");
+                        String location = features.getJSONObject(i).getJSONObject("attributes").getString("Location");
+                        String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
+                        Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
+                        Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
+                        markerOptionsCollectionEPhones.add(new MarkerOptions()
+                                .position(new LatLng(y, x))
+                                .icon(BitmapFromVector(getActivity(), R.drawable.phone,
+                                        ContextCompat.getColor(requireActivity(), R.color.red_500),0))
+                                .title(type));
+                    }
+                    getActivity().runOnUiThread(() -> {
+                        markerCollection.addAll(markerOptionsCollectionEPhones);
+                    });
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
 
     /*
      * Don't worry about this

@@ -17,6 +17,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,8 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -516,6 +519,23 @@ public class DirectionsFragment extends Fragment {
         }
     }
 
+    /*
+     * Function to set the default map padding based on bottom bar
+     */
+    public int getDefaultBottomPadding() {
+
+        // Get bottom bar height
+        int bottomBarHeight = 0;
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int usableHeight = displayMetrics.heightPixels;
+        requireActivity().getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
+        int realHeight = displayMetrics.heightPixels;
+        if (realHeight > usableHeight)
+            bottomBarHeight = realHeight - usableHeight;
+
+        return bottomBarHeight;
+    }
 
     @Nullable
     @Override
@@ -536,6 +556,17 @@ public class DirectionsFragment extends Fragment {
             fabMyLocation.setOnClickListener(v -> {
                 LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
+            });
+
+            requireActivity().runOnUiThread(() -> {
+                // Set padding to match navigation bar height
+                CoordinatorLayout.LayoutParams bottomParams = new CoordinatorLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT
+                );
+                bottomParams.setMargins(0, 0, 0, getDefaultBottomPadding() + convertDpToPx(103));
+                bottomParams.gravity = Gravity.BOTTOM | Gravity.END;
+                mView.findViewById(R.id.cl_myLocation).setLayoutParams(bottomParams);
             });
 
             directionsRecycler = mView.findViewById(R.id.directions_recycler);

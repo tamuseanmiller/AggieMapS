@@ -816,15 +816,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_EXPANDED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                         standardBottomSheet.setVisibility(View.INVISIBLE);
-
-//                      Temporarily have these here to test layering
-                        getPOIs();
-                        getRestrooms();
-                        getParking();
-//                        Too many accessible entrances on map
-//                        getAccessibleEntrances();
-                        getEPhones();
-
                     } else {
                         rightSheetBehavior.setState(RightSheetBehavior.STATE_COLLAPSED);
                         standardBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);

@@ -161,6 +161,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     private Collection<MarkerOptions> markerOptionsCollectionKiosk;
     private Collection<MarkerOptions> markerOptionsCollectionEntrances;
     private Collection<MarkerOptions> markerOptionsCollectionEPhones;
+    public boolean poiVisible;
+    public boolean restroomsVisible;
+    public boolean kiosksVisible;
+    public boolean entrancesVisible;
+    public boolean ePhonesVisible;
 
     @Override
     public void onItemClick(View view, int position) {
@@ -873,13 +878,13 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             polylineTitles = new HashMap<>();
 
             // Initialize chips
-            Chip chip_POIs = getActivity().findViewById(R.id.chip_POI);
-            Chip chip_restrooms = getActivity().findViewById(R.id.chip_restrooms);
-            Chip chip_parking = getActivity().findViewById(R.id.chip_parking);
-            Chip chip_accessible = getActivity().findViewById(R.id.chip_accessible);
-            Chip chip_EPhones = getActivity().findViewById(R.id.chip_EPhones);
+            Chip chip_POIs = requireActivity().findViewById(R.id.chip_POI);
+            Chip chip_restrooms = requireActivity().findViewById(R.id.chip_restrooms);
+            Chip chip_parking = requireActivity().findViewById(R.id.chip_parking);
+            Chip chip_accessible = requireActivity().findViewById(R.id.chip_accessible);
+            Chip chip_EPhones = requireActivity().findViewById(R.id.chip_EPhones);
 
-            // Set on Checked Change Listners for each chip
+            // Set on Checked Change Listeners for each chip
             chip_POIs.setOnCheckedChangeListener((compoundButton, b) -> {
                 if (chip_POIs.isChecked()){ getPOIs(); }
                 else{ markerCollection.clear(); }
@@ -1469,6 +1474,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerCollection.addAll(markerOptionsCollectionPOI);
                     });
                 }
+                poiVisible = true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1503,6 +1509,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerCollection.addAll(markerOptionsCollectionRestrooms);
                     });
                 }
+                restroomsVisible = true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1537,6 +1544,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerCollection.addAll(markerOptionsCollectionKiosk);
                     });
                 }
+                kiosksVisible = true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1570,6 +1578,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerCollection.addAll(markerOptionsCollectionEntrances);
                     });
                 }
+                entrancesVisible = true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1606,6 +1615,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerCollection.addAll(markerOptionsCollectionEPhones);
                     });
                 }
+                ePhonesVisible = true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }

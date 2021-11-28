@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,20 +30,37 @@ public class POIPickerModalSheet extends BottomSheetDialogFragment implements Ma
 
         // Add markers
         MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
-        if (mapsFragment != null && markers.get(position).selected) {
-            switch (markers.get(position).text) {
-                case "Points of Interest":
-                    mapsFragment.getPOIs();
-                    break;
-                case "Restrooms":
-                    mapsFragment.getRestrooms();
-                    break;
-                case "Emergency Phones":
-                    mapsFragment.getEPhones();
-                    break;
-                case "Parking":
-                    mapsFragment.getParking();
-                    break;
+        if (mapsFragment != null) {
+            if (markers.get(position).selected) {
+                switch (markers.get(position).text) {
+                    case "Points of Interest":
+                        mapsFragment.getPOIs();
+                        break;
+                    case "Restrooms":
+                        mapsFragment.getRestrooms();
+                        break;
+                    case "Emergency Phones":
+                        mapsFragment.getEPhones();
+                        break;
+                    case "Parking":
+                        mapsFragment.getParking();
+                        break;
+                }
+            } else {
+                switch (markers.get(position).text) {
+                    case "Points of Interest":
+                        mapsFragment.poiVisible = false;
+                        break;
+                    case "Restrooms":
+                        mapsFragment.restroomsVisible = false;
+                        break;
+                    case "Emergency Phones":
+                        mapsFragment.ePhonesVisible = false;
+                        break;
+                    case "Parking":
+                        mapsFragment.kiosksVisible = false;
+                        break;
+                }
             }
         }
     }
@@ -77,6 +93,15 @@ public class POIPickerModalSheet extends BottomSheetDialogFragment implements Ma
         s3.drawable = ContextCompat.getDrawable(requireActivity(), R.drawable.parking_illustration);
         s3.text = "Parking";
         s3.selected = false;
+
+        // Set selected
+        MapsFragment mapsFragment = (MapsFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("f2");
+        if (mapsFragment != null) {
+            s0.selected = mapsFragment.poiVisible;
+            s1.selected = mapsFragment.restroomsVisible;
+            s2.selected = mapsFragment.ePhonesVisible;
+            s3.selected = mapsFragment.kiosksVisible;
+        }
 
         markers = new ArrayList<>();
         markers.add(s0);

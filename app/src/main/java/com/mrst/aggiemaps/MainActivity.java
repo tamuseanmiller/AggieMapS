@@ -598,6 +598,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             });
 
             modalBottomSheet = new POIPickerModalSheet();
+            modalBottomSheet.setCancelable(true);
             FloatingActionButton markerFab = findViewById(R.id.marker_fab);
             markerFab.setOnClickListener(v -> modalBottomSheet.show(getSupportFragmentManager(), POIPickerModalSheet.POI));
 

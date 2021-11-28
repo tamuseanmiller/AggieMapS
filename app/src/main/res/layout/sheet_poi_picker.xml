@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Markers"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/markers_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"/>
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center_horizontal"-->
+<!--        android:layout_margin="20dp"-->
+<!--        android:orientation="horizontal">-->
+
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
+
+<!--            <com.google.android.material.card.MaterialCardView-->
+<!--                android:id="@+id/test"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:foreground="?attr/selectableItemBackground"-->
+<!--                app:cardCornerRadius="18dp"-->
+<!--                app:cardElevation="0dp"-->
+<!--                app:strokeColor="@color/blue_300"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                app:strokeWidth="4dp">-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:layout_width="60dp"-->
+<!--                    android:layout_height="60dp"-->
+<!--                    android:padding="5dp"-->
+<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"-->
+<!--                    android:background="@drawable/parking_illustration"-->
+<!--                    app:strokeColor="@color/background"-->
+<!--                    app:strokeWidth="5dp" />-->
+
+<!--            </com.google.android.material.card.MaterialCardView>-->
+
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/test"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:text="Parking"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                style="@style/TextAppearance.Material3.LabelMedium"/>-->
+
+<!--        </RelativeLayout>-->
+
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
+
+<!--            <com.google.android.material.card.MaterialCardView-->
+<!--                android:id="@+id/test1"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:foreground="?attr/selectableItemBackground"-->
+<!--                app:cardCornerRadius="18dp"-->
+<!--                app:cardElevation="0dp"-->
+<!--                app:strokeColor="@color/blue_300"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                app:strokeWidth="4dp">-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:layout_width="60dp"-->
+<!--                    android:layout_height="60dp"-->
+<!--                    android:padding="5dp"-->
+<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"-->
+<!--                    android:background="@drawable/bathroom_illustration"-->
+<!--                    app:strokeColor="@color/background"-->
+<!--                    app:strokeWidth="5dp" />-->
+
+<!--            </com.google.android.material.card.MaterialCardView>-->
+
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/test1"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:text="Restrooms"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                style="@style/TextAppearance.Material3.LabelMedium"/>-->
+
+<!--        </RelativeLayout>-->
+
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
+
+<!--            <com.google.android.material.card.MaterialCardView-->
+<!--                android:id="@+id/test2"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:foreground="?attr/selectableItemBackground"-->
+<!--                app:cardCornerRadius="18dp"-->
+<!--                app:cardElevation="0dp"-->
+<!--                app:strokeColor="@color/blue_300"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                app:strokeWidth="4dp">-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:layout_width="60dp"-->
+<!--                    android:layout_height="60dp"-->
+<!--                    android:padding="5dp"-->
+<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"-->
+<!--                    android:background="@drawable/poi_illustration"-->
+<!--                    app:strokeColor="@color/background"-->
+<!--                    app:strokeWidth="5dp" />-->
+
+<!--            </com.google.android.material.card.MaterialCardView>-->
+
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/test2"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:text="Points of Interest"-->
+<!--                android:textAlignment="center"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                style="@style/TextAppearance.Material3.LabelMedium"/>-->
+
+<!--        </RelativeLayout>-->
+
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
+
+<!--            <com.google.android.material.card.MaterialCardView-->
+<!--                android:id="@+id/test3"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:foreground="?attr/selectableItemBackground"-->
+<!--                app:cardCornerRadius="18dp"-->
+<!--                app:cardElevation="0dp"-->
+<!--                app:strokeColor="@color/background"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                app:strokeWidth="4dp">-->
+
+<!--                <com.google.android.material.imageview.ShapeableImageView-->
+<!--                    android:layout_width="60dp"-->
+<!--                    android:layout_height="60dp"-->
+<!--                    android:padding="5dp"-->
+<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"-->
+<!--                    android:background="@drawable/emergency_illustration"-->
+<!--                    app:strokeColor="@color/background"-->
+<!--                    app:strokeWidth="5dp" />-->
+
+<!--            </com.google.android.material.card.MaterialCardView>-->
+
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/test3"-->
+<!--                android:layout_centerHorizontal="true"-->
+<!--                android:text="Emergency Phones"-->
+<!--                android:textAlignment="center"-->
+<!--                android:layout_marginTop="5dp"-->
+<!--                style="@style/TextAppearance.Material3.LabelMedium"/>-->
+
+<!--        </RelativeLayout>-->
+
+<!--    </LinearLayout>-->
+
+</LinearLayout>

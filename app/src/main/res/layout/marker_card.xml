@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_marker"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:foreground="?attr/selectableItemBackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/marker_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/blue_300"
+            app:strokeWidth="4dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/marker_image"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:padding="5dp"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.RoundedRectangle"
+                android:background="@drawable/parking_illustration"
+                app:strokeColor="@color/background"
+                app:strokeWidth="5dp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/marker_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Parking"
+            android:textAlignment="center"
+            android:layout_marginTop="5dp"
+            style="@style/TextAppearance.Material3.LabelMedium"/>
+
+</LinearLayout>

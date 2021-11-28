@@ -40,6 +40,17 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/marker_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="mini"
+            android:src="@drawable/map_marker_outline"
+            android:layout_gravity="end"
+            app:backgroundTint="@color/accent"
+            android:layout_marginEnd="16dp"
+            app:tint="@color/white"/>
+
     <com.google.android.material.chip.ChipGroup
                 android:id="@+id/POI_chip_group"
                 android:layout_width="wrap_content"

@@ -23,7 +23,7 @@
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Button.Circle"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Circle"
         android:backgroundTint="@color/foreground"
         app:iconTint="@color/background"
         app:rippleColor="@color/accent"

@@ -65,6 +65,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.lapism.search.widget.MaterialSearchBar;
 import com.lapism.search.widget.MaterialSearchView;
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     public int gisId;
     public int recentId;
     private Spotlight s;
+    public POIPickerModalSheet modalBottomSheet;
 
     enum SearchTag {
         CATEGORY,
@@ -594,6 +596,10 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 }
                 return null;
             });
+
+            modalBottomSheet = new POIPickerModalSheet();
+            FloatingActionButton markerFab = findViewById(R.id.marker_fab);
+            markerFab.setOnClickListener(v -> modalBottomSheet.show(getSupportFragmentManager(), POIPickerModalSheet.POI));
 
         }).start();
     }

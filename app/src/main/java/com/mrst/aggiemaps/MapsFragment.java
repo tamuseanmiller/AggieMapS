@@ -872,7 +872,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             // Initialize polyline hashmap
             polylineTitles = new HashMap<>();
 
-
             // Initialize chips
             Chip chip_POIs = getActivity().findViewById(R.id.chip_POI);
             Chip chip_restrooms = getActivity().findViewById(R.id.chip_restrooms);
@@ -1419,7 +1418,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     Places of Interest: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
     */
 
-    private void getPOIs() {
+    public void getPOIs() {
         new Thread(() -> {
             markerOptionsCollectionPOI = new ArrayList<>();
             BitmapDescriptor iconVal;
@@ -1480,7 +1479,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     Function to get Restrooms on Campus from arcGIS
     Restrooms: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/1/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
      */
-    private void getRestrooms() {
+    public void getRestrooms() {
         new Thread(() -> {
             markerOptionsCollectionRestrooms = new ArrayList<>();
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/1/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
@@ -1515,7 +1514,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     Function to get Visitor Parking Kiosk on Campus from arcGIS
     Visitor Parking Kiosk: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/3/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
     */
-    private void getParking() {
+    public void getParking() {
         new Thread(() -> {
             markerOptionsCollectionKiosk = new ArrayList<>();
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/3/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");
@@ -1548,7 +1547,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     Function to get Accessible Entrances on Campus from arcGIS
     Accessible Entrances: https://gis.tamu.edu/arcgis/rest/services/FCOR/ADA_120717/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=GIS.FCOR.Bldg_Entrance.FID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
      */
-    private void getAccessibleEntrances() {
+    public void getAccessibleEntrances() {
         new Thread(() -> {
             markerOptionsCollectionEntrances = new ArrayList<>();
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/ADA_120717/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=GIS.FCOR.Bldg_Entrance.FID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson\n");
@@ -1582,7 +1581,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     Function to get Emergency Phones on Campus from arcGIS
     Emergency Phones: https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/4/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson
      */
-    private void getEPhones() {
+    public void getEPhones() {
         new Thread(() -> {
             markerOptionsCollectionEPhones = new ArrayList<>();
             String resp = getApiCall("https://gis.tamu.edu/arcgis/rest/services/FCOR/MapInfo_20190529/MapServer/4/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&having=&returnIdsOnly=false&returnCountOnly=false&orderByFields=OBJECTID+ASC&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson");

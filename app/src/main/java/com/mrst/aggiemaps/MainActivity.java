@@ -581,12 +581,15 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 fm.beginTransaction().hide(settingsFragment).commit();
                 if (j.getId() == R.id.directions) {
                     materialSearchBar.setVisibility(View.GONE);
+                    poiChips.setVisibility(View.GONE);
                     viewPager.setCurrentItem(1);
                 } else if (j.getId() == R.id.garages) {
                     materialSearchBar.setVisibility(View.GONE);
+                    poiChips.setVisibility(View.GONE);
                     viewPager.setCurrentItem(0);
                 } else if (j.getId() == R.id.buses) {
                     materialSearchBar.setVisibility(View.VISIBLE);
+                    poiChips.setVisibility(View.VISIBLE);
                     viewPager.setCurrentItem(2);
                 }
                 return null;

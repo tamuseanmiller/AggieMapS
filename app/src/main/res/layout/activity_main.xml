@@ -12,6 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <LinearLayout
+        android:id="@+id/ll_mapsfrag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
     <!-- Default Search Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/main_app_bar"
@@ -33,6 +39,98 @@
             app:layout_scrollFlags="enterAlways|snap" />
 
     </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.chip.ChipGroup
+                android:id="@+id/POI_chip_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                app:selectionRequired="false"
+                app:singleSelection="false">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_POI"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:checked="false"
+                    android:text="POIs"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIcon="@drawable/office_building"
+                    app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_restrooms"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:checked="false"
+                    android:text="Restrooms"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIcon="@drawable/toilet"
+                    app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_parking"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:checked="false"
+                    android:text="Parking"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIcon="@drawable/parking"
+                    app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_accessible"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:checked="false"
+                    android:text="Accessible Entrances"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIcon="@drawable/wheelchair_accessibility"
+                    app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_EPhones"
+                    style="@style/AggieMapS.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:checked="false"
+                    android:text="Emergency Phones"
+                    android:textColor="@color/txic_color_chips"
+                    app:chipBackgroundColor="@color/bg_color_chips"
+                    app:chipIcon="@drawable/phone"
+                    app:chipIconSize="18dp"
+                    app:chipIconTint="@color/txic_color_chips"
+                    app:chipStartPadding="10dp"
+                    app:iconEndPadding="-3dp" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
 
     <LinearLayout
         android:id="@+id/ll_main"

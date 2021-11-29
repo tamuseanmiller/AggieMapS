@@ -63,6 +63,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -578,29 +579,31 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 return null;
             });
 
+            modalBottomSheet = new POIPickerModalSheet();
+            modalBottomSheet.setCancelable(true);
+            FloatingActionButton markerFab = findViewById(R.id.marker_fab);
+            markerFab.setOnClickListener(v -> modalBottomSheet.show(getSupportFragmentManager(), POIPickerModalSheet.POI));
+
+
             // Switch between fragments on tap
             bottomBar.setOnItemSelectedListener((i, j, k) -> {
                 fm.beginTransaction().hide(settingsFragment).commit();
                 if (j.getId() == R.id.directions) {
                     materialSearchBar.setVisibility(View.GONE);
-                    poiChips.setVisibility(View.GONE);
+                    markerFab.setVisibility(View.GONE);
                     viewPager.setCurrentItem(1);
                 } else if (j.getId() == R.id.garages) {
                     materialSearchBar.setVisibility(View.GONE);
-                    poiChips.setVisibility(View.GONE);
+                    markerFab.setVisibility(View.GONE);
                     viewPager.setCurrentItem(0);
                 } else if (j.getId() == R.id.buses) {
                     materialSearchBar.setVisibility(View.VISIBLE);
-                    poiChips.setVisibility(View.VISIBLE);
+                    markerFab.setVisibility(View.VISIBLE);
                     viewPager.setCurrentItem(2);
                 }
                 return null;
             });
 
-            modalBottomSheet = new POIPickerModalSheet();
-            modalBottomSheet.setCancelable(true);
-            FloatingActionButton markerFab = findViewById(R.id.marker_fab);
-            markerFab.setOnClickListener(v -> modalBottomSheet.show(getSupportFragmentManager(), POIPickerModalSheet.POI));
 
         }).start();
     }

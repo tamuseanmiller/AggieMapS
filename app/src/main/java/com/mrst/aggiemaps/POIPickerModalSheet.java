@@ -50,15 +50,19 @@ public class POIPickerModalSheet extends BottomSheetDialogFragment implements Ma
                 switch (markers.get(position).text) {
                     case "Points of Interest":
                         mapsFragment.poiVisible = false;
+                        mapsFragment.markerCollectionPOIs.clear();
                         break;
                     case "Restrooms":
                         mapsFragment.restroomsVisible = false;
+                        mapsFragment.markerCollectionRestrooms.clear();
                         break;
                     case "Emergency Phones":
                         mapsFragment.ePhonesVisible = false;
+                        mapsFragment.markerCollectionEPhones.clear();
                         break;
                     case "Parking":
                         mapsFragment.kiosksVisible = false;
+                        mapsFragment.markerCollectionParking.clear();
                         break;
                 }
             }

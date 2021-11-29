@@ -155,7 +155,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public MaterialDatePicker<Long> datePicker;
     private LatLngBounds overallBounds;
     MarkerManager markerManager;
-    private MarkerManager.Collection markerCollection;
+    public MarkerManager.Collection markerCollectionPOIs;
+    public MarkerManager.Collection markerCollectionRestrooms;
+    public MarkerManager.Collection markerCollectionParking;
+    public MarkerManager.Collection markerCollectionEPhones;
+
     private Collection<MarkerOptions> markerOptionsCollectionPOI;
     private Collection<MarkerOptions> markerOptionsCollectionRestrooms;
     private Collection<MarkerOptions> markerOptionsCollectionKiosk;
@@ -640,7 +644,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             getDeviceLocation();
 
             markerManager = new MarkerManager(mMap);
-            markerCollection = markerManager.newCollection();
+            markerCollectionPOIs = markerManager.newCollection();
+            markerCollectionRestrooms = markerManager.newCollection();
+            markerCollectionParking = markerManager.newCollection();;
+            markerCollectionEPhones = markerManager.newCollection();;
 
             // Set Click Listener for polyline
             mMap.setOnPolylineClickListener(polyline -> {
@@ -876,35 +883,6 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
             // Initialize polyline hashmap
             polylineTitles = new HashMap<>();
-
-            // Initialize chips
-            Chip chip_POIs = requireActivity().findViewById(R.id.chip_POI);
-            Chip chip_restrooms = requireActivity().findViewById(R.id.chip_restrooms);
-            Chip chip_parking = requireActivity().findViewById(R.id.chip_parking);
-            Chip chip_accessible = requireActivity().findViewById(R.id.chip_accessible);
-            Chip chip_EPhones = requireActivity().findViewById(R.id.chip_EPhones);
-
-            // Set on Checked Change Listeners for each chip
-            chip_POIs.setOnCheckedChangeListener((compoundButton, b) -> {
-                if (chip_POIs.isChecked()){ getPOIs(); }
-                else{ markerCollection.clear(); }
-            });
-            chip_restrooms.setOnCheckedChangeListener((compoundButton, b) -> {
-                if (chip_restrooms.isChecked()){ getRestrooms(); }
-                else{ markerCollection.clear(); }
-            });
-            chip_parking.setOnCheckedChangeListener((compoundButton, b) -> {
-                if (chip_parking.isChecked()){ getParking(); }
-                else{ markerCollection.clear(); }
-            });
-            chip_accessible.setOnCheckedChangeListener((compoundButton, b) -> {
-                if (chip_accessible.isChecked()){ getAccessibleEntrances(); }
-                else{ markerCollection.clear(); }
-            });
-            chip_EPhones.setOnCheckedChangeListener((compoundButton, b) -> {
-                if (chip_EPhones.isChecked()){ getEPhones(); }
-                else{ markerCollection.clear(); }
-            });
 
             // Then set up the bus routes on the bottom sheet
             new Thread(this::setUpBusRoutes).start();
@@ -1444,14 +1422,15 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                         ContextCompat.getColor(requireActivity(), R.color.purple_400), 0);
                                 break;
                             case "Statue":
-                                iconVal = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
-                                break;
+                                iconVal = BitmapFromVector(getActivity(), R.drawable.ic_monument,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400), 0);                                break;
                             case "Fountain":
                                 iconVal = BitmapFromVector(getActivity(), R.drawable.fountain,
                                         ContextCompat.getColor(requireActivity(), R.color.purple_400), 0);
                                 break;
                             case "Monument":
-                                iconVal = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE);
+                                iconVal = BitmapFromVector(getActivity(), R.drawable.ic_monument,
+                                        ContextCompat.getColor(requireActivity(), R.color.purple_400), 0);
                                 break;
                             case "Garden":
                                 iconVal = BitmapFromVector(getActivity(), R.drawable.flower,
@@ -1471,7 +1450,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(name));
                     }
                     getActivity().runOnUiThread(() -> {
-                        markerCollection.addAll(markerOptionsCollectionPOI);
+                        markerCollectionPOIs.addAll(markerOptionsCollectionPOI);
                     });
                 }
                 poiVisible = true;
@@ -1506,7 +1485,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(notes));
                     }
                     getActivity().runOnUiThread(() -> {
-                        markerCollection.addAll(markerOptionsCollectionRestrooms);
+                        markerCollectionRestrooms.addAll(markerOptionsCollectionRestrooms);
                     });
                 }
                 restroomsVisible = true;
@@ -1541,7 +1520,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(type));
                     }
                     getActivity().runOnUiThread(() -> {
-                        markerCollection.addAll(markerOptionsCollectionKiosk);
+                        markerCollectionParking.addAll(markerOptionsCollectionKiosk);
                     });
                 }
                 kiosksVisible = true;
@@ -1574,9 +1553,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                         ContextCompat.getColor(requireActivity(), R.color.green_500), 0))
                                 .title(category));
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollection.addAll(markerOptionsCollectionEntrances);
-                    });
+//                    getActivity().runOnUiThread(() -> {
+//                        markerCollection.addAll(markerOptionsCollectionEntrances);
+//                    });
                 }
                 entrancesVisible = true;
             } catch (JSONException e) {
@@ -1612,7 +1591,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(type));
                     }
                     getActivity().runOnUiThread(() -> {
-                        markerCollection.addAll(markerOptionsCollectionEPhones);
+                        markerCollectionEPhones.addAll(markerOptionsCollectionEPhones);
                     });
                 }
                 ePhonesVisible = true;

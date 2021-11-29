@@ -159,7 +159,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public MarkerManager.Collection markerCollectionRestrooms;
     public MarkerManager.Collection markerCollectionParking;
     public MarkerManager.Collection markerCollectionEPhones;
-
+    public MarkerManager.Collection markerCollectionEntrances;
     private Collection<MarkerOptions> markerOptionsCollectionPOI;
     private Collection<MarkerOptions> markerOptionsCollectionRestrooms;
     private Collection<MarkerOptions> markerOptionsCollectionKiosk;
@@ -646,6 +646,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             markerManager = new MarkerManager(mMap);
             markerCollectionPOIs = markerManager.newCollection();
             markerCollectionRestrooms = markerManager.newCollection();
+            markerCollectionEntrances = markerManager.newCollection();
             markerCollectionParking = markerManager.newCollection();;
             markerCollectionEPhones = markerManager.newCollection();;
 
@@ -1447,7 +1448,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         markerOptionsCollectionPOI.add(new MarkerOptions()
                                 .position(new LatLng(points.getDouble(1), points.getDouble(0)))
                                 .icon(iconVal)
-                                .title(name));
+                                .title(name)
+                                .snippet(type));
                     }
                     getActivity().runOnUiThread(() -> {
                         markerCollectionPOIs.addAll(markerOptionsCollectionPOI);
@@ -1482,7 +1484,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .position(new LatLng(y, x))
                                 .icon(BitmapFromVector(getActivity(), R.drawable.toilet,
                                         ContextCompat.getColor(requireActivity(), R.color.blue_500), 0))
-                                .title(notes));
+                                .title(name)
+                                .snippet(notes));
+
                     }
                     getActivity().runOnUiThread(() -> {
                         markerCollectionRestrooms.addAll(markerOptionsCollectionRestrooms);
@@ -1510,14 +1514,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                     JSONObject jsonObject = new JSONObject(resp);
                     JSONArray features = jsonObject.getJSONArray("features");
                     for (int i = 0; i < features.length(); i++) {
-                        String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
                         Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
                         Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
                         markerOptionsCollectionKiosk.add(new MarkerOptions()
                                 .position(new LatLng(y, x))
-                                .icon(BitmapFromVector(getActivity(), R.drawable.parking,
-                                        ContextCompat.getColor(requireActivity(), R.color.foreground), 0))
-                                .title(type));
+                                .icon(BitmapFromVector(getActivity(), R.drawable.ic_parking_outline,
+                                        ContextCompat.getColor(requireActivity(), R.color.foreground), 0)));
                     }
                     getActivity().runOnUiThread(() -> {
                         markerCollectionParking.addAll(markerOptionsCollectionKiosk);
@@ -1553,9 +1555,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                         ContextCompat.getColor(requireActivity(), R.color.green_500), 0))
                                 .title(category));
                     }
-//                    getActivity().runOnUiThread(() -> {
-//                        markerCollection.addAll(markerOptionsCollectionEntrances);
-//                    });
+                    getActivity().runOnUiThread(() -> {
+                        markerCollectionEntrances.addAll(markerOptionsCollectionEntrances);
+                    });
                 }
                 entrancesVisible = true;
             } catch (JSONException e) {
@@ -1586,9 +1588,10 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
                         markerOptionsCollectionEPhones.add(new MarkerOptions()
                                 .position(new LatLng(y, x))
-                                .icon(BitmapFromVector(getActivity(), R.drawable.phone,
+                                .icon(BitmapFromVector(getActivity(), R.drawable.phone_outline,
                                         ContextCompat.getColor(requireActivity(), R.color.red_500), 0))
-                                .title(type));
+                                .title(location)
+                                .snippet("TelNum: "+telNum+" - "+type));
                     }
                     getActivity().runOnUiThread(() -> {
                         markerCollectionEPhones.addAll(markerOptionsCollectionEPhones);

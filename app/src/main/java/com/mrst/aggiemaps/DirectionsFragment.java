@@ -552,8 +552,10 @@ public class DirectionsFragment extends Fragment {
             // Initialize my location FAB
             fabMyLocation = mView.findViewById(R.id.fab_mylocation);
             fabMyLocation.setOnClickListener(v -> {
-                LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
+                if (lastKnownLocation != null){
+                    LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
+                }
             });
 
             requireActivity().runOnUiThread(() -> {

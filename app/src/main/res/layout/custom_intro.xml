@@ -52,7 +52,7 @@
         android:id="@+id/cacheBusesBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cache Buses"
+        android:text="@string/cache_buses"
         android:stateListAnimator="@null"
         app:cornerRadius="25dp"
         app:backgroundTint="@color/blue_500"
@@ -60,6 +60,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginTop="20dp"
+        android:textColor="@color/white"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,7 +15,7 @@
             app:cardCornerRadius="18dp"
             app:cardElevation="0dp"
             app:strokeColor="@color/blue_300"
-            app:strokeWidth="4dp">
+            app:strokeWidth="3dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/marker_image"

@@ -547,14 +547,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             bottomBar = findViewById(R.id.bottom_bar);
             runOnUiThread(() -> {
                 bottomBar.getMenu().select(R.id.buses);
-
-                // Set padding to match navigation bar height
-                RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
-                        ConstraintLayout.LayoutParams.WRAP_CONTENT,
-                        convertDpToPx(65)
-                );
-                bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
-                bottomBar.setLayoutParams(bottomParams);
             });
 
             // Get bus routes on tap
@@ -664,6 +656,14 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
+
+        // Set padding to match navigation bar height
+        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                convertDpToPx(65)
+        );
+        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+        bottomBar.setLayoutParams(bottomParams);
 
         // Get the preferences for the spotlight
         SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);

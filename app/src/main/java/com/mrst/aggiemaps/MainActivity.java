@@ -28,7 +28,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -64,7 +63,6 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.divider.MaterialDividerItemDecoration;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -341,8 +339,8 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     protected void onCreate(Bundle savedInstanceState) {
 
         // Set current theme
-        SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
-        String theme = sharedPref.getString("theme", "system_theme");
+        AtomicReference<SharedPreferences> sharedPref = new AtomicReference<>(getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE));
+        String theme = sharedPref.get().getString("theme", "system_theme");
         switch (theme) {
             case "light":
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -547,6 +545,35 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             bottomBar = findViewById(R.id.bottom_bar);
             runOnUiThread(() -> {
                 bottomBar.getMenu().select(R.id.buses);
+
+                // Set padding to match navigation bar height
+                RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                        convertDpToPx(65)
+                );
+                bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
+                bottomBar.setLayoutParams(bottomParams);
+
+                // Get the preferences for the spotlight
+                sharedPref.set(getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE));
+                SharedPreferences.Editor editor = sharedPref.get().edit();
+                if (!sharedPref.get().getBoolean("bus_routes_spotlight", false)) {
+
+                    // Set the value to true so it doesn't show again
+                    editor.putBoolean("bus_routes_spotlight", true);
+                    editor.apply();
+
+                    // Create the location of the spotlight
+                    PointF bottomBarAnchor = new PointF();
+                    int[] bottomBarLocation = new int[2];
+                    bottomBar.getLocationInWindow(bottomBarLocation);
+                    float x = bottomBarLocation[0] + bottomBar.getWidth() / 2f + convertDpToPx(40);
+                    float y = bottomBarLocation[1] + bottomBar.getHeight() / 2f;
+                    bottomBarAnchor.set(x, y);
+
+                    // Add a spotlight to the bottom bar
+                    createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);
+                }
             });
 
             // Get bus routes on tap
@@ -651,40 +678,6 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         mHandler.postDelayed((Runnable) () -> {
             runOnUiThread(s::finish);
         }, 6000);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        // Set padding to match navigation bar height
-        RelativeLayout.LayoutParams bottomParams = new RelativeLayout.LayoutParams(
-                ConstraintLayout.LayoutParams.WRAP_CONTENT,
-                convertDpToPx(65)
-        );
-        bottomParams.setMargins(convertDpToPx(20), convertDpToPx(20), convertDpToPx(20), getDefaultBottomPadding() + convertDpToPx(16));
-        bottomBar.setLayoutParams(bottomParams);
-
-        // Get the preferences for the spotlight
-        SharedPreferences sharedPref = getSharedPreferences("com.mrst.aggiemaps.preferences", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        if (!sharedPref.getBoolean("bus_routes_spotlight", false)) {
-
-            // Set the value to true so it doesn't show again
-            editor.putBoolean("bus_routes_spotlight", true);
-            editor.apply();
-
-            // Create the location of the spotlight
-            PointF bottomBarAnchor = new PointF();
-            int[] bottomBarLocation = new int[2];
-            bottomBar.getLocationInWindow(bottomBarLocation);
-            float x = bottomBarLocation[0] + bottomBar.getWidth() / 2f + convertDpToPx(40);
-            float y = bottomBarLocation[1] + bottomBar.getHeight() / 2f;
-            bottomBarAnchor.set(x, y);
-
-            // Add a spotlight to the bottom bar
-            createSpotlight(bottomBarAnchor, R.layout.bus_routes_target);
-        }
     }
 
     // Create an intent that can start the Speech Recognizer activity

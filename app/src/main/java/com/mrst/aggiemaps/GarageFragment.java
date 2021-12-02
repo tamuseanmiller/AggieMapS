@@ -99,8 +99,8 @@ public class GarageFragment extends Fragment {
         if (garageHashMap == null) return;
 
         // Convert the hashmap to lists
-        List<Integer> values = new ArrayList<Integer>(garageHashMap.values());
-        List<String> keys = new ArrayList<String>(garageHashMap.keySet());
+        List<Integer> values = new ArrayList<>(garageHashMap.values());
+        List<String> keys = new ArrayList<>(garageHashMap.keySet());
 
         // Add the keys and values as pairs to the data list
         List<Pair<String, Integer>> data = new ArrayList<>();

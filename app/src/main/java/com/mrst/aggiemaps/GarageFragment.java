@@ -105,7 +105,7 @@ public class GarageFragment extends Fragment {
         // Add the keys and values as pairs to the data list
         List<Pair<String, Integer>> data = new ArrayList<>();
         for (int i = 0; i < values.size(); i++) {
-            data.add(new Pair(keys.get(i), values.get(i)));
+            data.add(new Pair<>(keys.get(i), values.get(i)));
         }
 
         // Use the data list to set the content of each row

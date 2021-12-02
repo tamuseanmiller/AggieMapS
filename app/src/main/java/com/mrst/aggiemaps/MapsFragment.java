@@ -265,23 +265,27 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      */
     public int getZoomPadding(LatLngBounds routeBounds) {
 
+        int padding = 0;
+
         // Get ratio of route height to width
-        double heightRoute = abs(routeBounds.northeast.latitude - routeBounds.southwest.latitude);
-        double widthRoute = abs(routeBounds.northeast.longitude - routeBounds.southwest.longitude);
-        double routeRatio = widthRoute / heightRoute;
+        if (routeBounds != null) {
+            double heightRoute = abs(routeBounds.northeast.latitude - routeBounds.southwest.latitude);
+            double widthRoute = abs(routeBounds.northeast.longitude - routeBounds.southwest.longitude);
+            double routeRatio = widthRoute / heightRoute;
 
-        // Get screen width
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        if (!isAdded()) {
-            return 0;
+            // Get screen width
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            if (!isAdded()) {
+                return 0;
+            }
+            requireActivity().getWindowManager()
+                    .getDefaultDisplay()
+                    .getMetrics(displayMetrics);
+            int widthScreen = displayMetrics.widthPixels;
+
+            // Set padding based on the route form factor in relation to width of the screen (might need to fix for tablets)
+            padding = (int) (widthScreen / (8 * routeRatio));
         }
-        ((Activity) requireContext()).getWindowManager()
-                .getDefaultDisplay()
-                .getMetrics(displayMetrics);
-        int widthScreen = displayMetrics.widthPixels;
-
-        // Set padding based on the route form factor in relation to width of the screen (might need to fix for tablets)
-        int padding = (int) (widthScreen / (8 * routeRatio));
         return padding;
     }
 

@@ -32,4 +32,5 @@
     <string name="zooms_in_on_current_location">Zooms in on current location</string>
     <string name="cache_buses">Cache Buses</string>
     <string name="points_of_interest_markers_button">Points of Interest Markers Button</string>
+    <string name="parking_garage_live_count">Parking Garage Live Count</string>
 </resources>

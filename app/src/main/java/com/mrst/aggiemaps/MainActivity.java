@@ -539,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Add the settings fragment to the fragment manager
             FragmentManager fm = getSupportFragmentManager();
-            fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commit();
+            fm.beginTransaction().add(R.id.ll_main, settingsFragment, "3").hide(settingsFragment).commitAllowingStateLoss();
 
             // Create bottom bar
             bottomBar = findViewById(R.id.bottom_bar);
@@ -899,7 +899,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      * Method called when we want the settings fragment to be shown
      */
     private void enterSettings() {
-        getSupportFragmentManager().beginTransaction().show(settingsFragment).commit();
+        getSupportFragmentManager().beginTransaction().show(settingsFragment).commitAllowingStateLoss();
         materialSearchBar.setVisibility(View.GONE);
     }
 
@@ -907,7 +907,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
      * Method called when we want the settings fragment to be hidden
      */
     public void exitSettings() {
-        getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
+        getSupportFragmentManager().beginTransaction().hide(settingsFragment).commitAllowingStateLoss();
         materialSearchBar.setVisibility(View.VISIBLE);
     }
 

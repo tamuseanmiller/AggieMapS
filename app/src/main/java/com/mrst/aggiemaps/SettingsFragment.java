@@ -1,21 +1,36 @@
 package com.mrst.aggiemaps;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroupAdapter;
 import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -119,8 +134,46 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         view.setBackgroundColor(ContextCompat.getColor(requireActivity(), R.color.background));
-        final RecyclerView rv = getListView(); // This holds the PreferenceScreen's items
-        rv.setPadding(convertDpToPx(16), convertDpToPx(80), 0, 0);
         super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    protected RecyclerView.Adapter onCreateAdapter(PreferenceScreen preferenceScreen) {
+        return new PreferenceGroupAdapter(preferenceScreen) {
+            public PreferenceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                @SuppressLint("RestrictedApi") PreferenceViewHolder holder = super.onCreateViewHolder(parent, viewType);
+                View customLayout = holder.itemView;
+
+                // Get the settings layout
+                if (customLayout.getId() == R.id.cl_settings) {
+
+                    // Get the coordinator layout
+                    final CoordinatorLayout cl = (CoordinatorLayout) customLayout;
+
+                    // Set the padding on the top to the size of the status bar
+                    Rect rectangle = new Rect();
+                    Window window = requireActivity().getWindow();
+                    window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
+                    int statusBarHeight = rectangle.top;
+                    cl.setPadding(0, statusBarHeight, 0, 0);
+
+                    // Get the Material Toolbar view
+                    AppBarLayout abl = cl.findViewById(R.id.abl_settings);
+                    MaterialToolbar bar = abl.findViewById(R.id.tb_settings);
+
+                    // Set the settings of the view
+                    bar.setBackgroundColor(Color.TRANSPARENT);
+                    bar.setElevation(0);
+                    Drawable garage = ContextCompat.getDrawable(requireActivity(), R.drawable.arrow_left);
+                    if (garage != null) {
+                        garage.setTint(ContextCompat.getColor(requireActivity(), R.color.foreground));
+                        bar.setNavigationIcon(garage);
+                    }
+
+                    bar.setNavigationOnClickListener(v -> ((MainActivity) requireActivity()).exitSettings());
+                }
+                return holder;
+            }
+        };
     }
 }

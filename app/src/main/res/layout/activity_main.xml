@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cl_main"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -18,52 +18,47 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-    <!-- Default Search Bar -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/main_app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:elevation="0.1dp"
-        android:fitsSystemWindows="true"
-        android:stateListAnimator="@null">
-
-        <!-- Simple MaterialToolbar extension -->
-        <com.lapism.search.widget.MaterialSearchBar
-            android:id="@+id/material_search_bar"
+        <!-- Default Search Bar -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/main_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="0dp"
+            android:background="@android:color/transparent"
+            android:elevation="0.1dp"
             android:fitsSystemWindows="true"
-            app:layout_scrollFlags="enterAlways|snap" />
+            android:stateListAnimator="@null">
 
-    </com.google.android.material.appbar.AppBarLayout>
+            <!-- Simple MaterialToolbar extension -->
+            <com.lapism.search.widget.MaterialSearchBar
+                android:id="@+id/material_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="0dp"
+                android:fitsSystemWindows="true"
+                app:layout_scrollFlags="enterAlways|snap" />
+
+        </com.google.android.material.appbar.AppBarLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/marker_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:fabSize="mini"
-            android:src="@drawable/map_marker_outline"
             android:layout_gravity="end"
-            app:backgroundTint="@color/accent"
             android:layout_marginEnd="16dp"
-            app:tint="@color/white"/>
+            android:src="@drawable/map_marker_outline"
+            app:backgroundTint="@color/foreground"
+            app:fabSize="mini"
+            app:tint="@color/background"
+            android:contentDescription="@string/points_of_interest_markers_button" />
 
-        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/ll_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"/>
-
-<!--    <androidx.fragment.app.FragmentContainerView-->
-<!--        android:id="@+id/maps_fragment"-->
-<!--        android:name="com.mrst.aggiemaps.MapsFragment"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
+        android:orientation="vertical" />
 
     <com.lapism.search.widget.MaterialSearchView
         android:id="@+id/material_search_view"
@@ -83,21 +78,21 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-        <github.com.st235.lib_expandablebottombar.ExpandableBottomBar
-            android:id="@+id/bottom_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="70dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="30dp"
-            android:layout_marginTop="20dp"
-            app:exb_backgroundCornerRadius="60dp"
-            app:exb_itemInactiveColor="@color/background"
-            app:exb_items="@menu/menu_bottom"
-            app:exb_backgroundColor="@color/foreground"
-            app:exb_transitionDuration="300"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"/>
+            <github.com.st235.lib_expandablebottombar.ExpandableBottomBar
+                android:id="@+id/bottom_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="70dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="30dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                app:exb_backgroundColor="@color/foreground"
+                app:exb_backgroundCornerRadius="60dp"
+                app:exb_itemInactiveColor="@color/background"
+                app:exb_items="@menu/menu_bottom"
+                app:exb_transitionDuration="300" />
 
         </RelativeLayout>
 

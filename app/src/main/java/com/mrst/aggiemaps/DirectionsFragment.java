@@ -11,7 +11,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -265,6 +268,27 @@ public class DirectionsFragment extends Fragment {
                 double time = attributes.getDouble("time");
                 String text = attributes.getString("text");
                 int ETA = attributes.getInt("ETA");
+
+                // Add bus stops if in bus travel mode
+                if ((tripType == TripType.BUS || tripType == TripType.BUS_ADA) && features_json.getJSONObject(i).has("strings")) {
+                    JSONArray strings = features_json.getJSONObject(i).getJSONArray("strings");
+
+                    // Traverse through strings and look for the bus route number
+                    for (int j = 0; j < strings.length(); j++) {
+                        JSONObject string = strings.getJSONObject(j);
+                        if (string.getString("stringType").equals("esriDSTStreetName") && string.getString("string").length() == 2) {
+
+                            // Parse the information of the bus stop, then set the text to the new text
+                            int numAt = text.indexOf(" at ");
+                            int numOn = text.indexOf(" on ");
+                            if (numAt != -1 && numOn != -1) {
+                                String stop = text.substring(numAt + 3, numOn);
+                                text = "Get on Bus " + string.getString("string") + " at stop" + stop;
+                                manueverType = Integer.MAX_VALUE;
+                            }
+                        }
+                    }
+                }
 
                 // Add feature
                 Feature new_feature = new Feature(length, time, text, ETA, manueverType);

@@ -321,8 +321,11 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 if (stops.getJSONObject(i).getString("PointTypeCode").equals("1")) {
                     MarkerOptions marker = new MarkerOptions();
                     String title = stops.getJSONObject(i).getJSONObject("Stop").getString("Name");
+                    if (stops.getJSONObject(i).getJSONObject("Stop").getBoolean("IsTimePoint"))
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -15));
+                    else
+                        marker.icon(BitmapFromVector(getActivity(), R.drawable.square, color, -15));
                     marker.flat(true);
-                    marker.icon(BitmapFromVector(getActivity(), R.drawable.checkbox_blank_circle, color, -15));
                     marker.title(title);
                     marker.anchor(0.5F, 0.5F);
                     marker.position(new LatLng(x, y));
@@ -714,6 +717,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
 
         // Inflate View
         View mView = inflater.inflate(R.layout.fragment_maps, container, false);
+
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -1333,6 +1337,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                 AggieBusRoutes.writeData(requireActivity(), aggieBusRoutes, "routes");
                 saveFavorites();
             }).start();
+
             return;  // skip showing the route if
         }
 
@@ -1451,9 +1456,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(name)
                                 .snippet(type));
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollectionPOIs.addAll(markerOptionsCollectionPOI);
-                    });
+                    requireActivity().runOnUiThread(() -> markerCollectionPOIs.addAll(markerOptionsCollectionPOI));
                 }
                 poiVisible = true;
             } catch (JSONException e) {
@@ -1478,8 +1481,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                         String name = features.getJSONObject(i).getJSONObject("attributes").getString("Name");
                         String type = features.getJSONObject(i).getJSONObject("attributes").getString("Type");
                         String notes = features.getJSONObject(i).getJSONObject("attributes").getString("Notes");
-                        Double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
-                        Double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
+                        double x = features.getJSONObject(i).getJSONObject("geometry").getDouble("x");
+                        double y = features.getJSONObject(i).getJSONObject("geometry").getDouble("y");
                         markerOptionsCollectionRestrooms.add(new MarkerOptions()
                                 .position(new LatLng(y, x))
                                 .icon(BitmapFromVector(getActivity(), R.drawable.toilet,
@@ -1488,9 +1491,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .snippet(notes));
 
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollectionRestrooms.addAll(markerOptionsCollectionRestrooms);
-                    });
+                    requireActivity().runOnUiThread(() -> markerCollectionRestrooms.addAll(markerOptionsCollectionRestrooms));
                 }
                 restroomsVisible = true;
             } catch (JSONException e) {
@@ -1521,9 +1522,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .icon(BitmapFromVector(getActivity(), R.drawable.ic_parking_outline,
                                         ContextCompat.getColor(requireActivity(), R.color.foreground), 0)));
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollectionParking.addAll(markerOptionsCollectionKiosk);
-                    });
+                    requireActivity().runOnUiThread(() -> markerCollectionParking.addAll(markerOptionsCollectionKiosk));
                 }
                 kiosksVisible = true;
             } catch (JSONException e) {
@@ -1555,9 +1554,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                         ContextCompat.getColor(requireActivity(), R.color.green_500), 0))
                                 .title(category));
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollectionEntrances.addAll(markerOptionsCollectionEntrances);
-                    });
+                    requireActivity().runOnUiThread(() -> markerCollectionEntrances.addAll(markerOptionsCollectionEntrances));
                 }
                 entrancesVisible = true;
             } catch (JSONException e) {
@@ -1593,9 +1590,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
                                 .title(location)
                                 .snippet("TelNum: "+telNum+" - "+type));
                     }
-                    getActivity().runOnUiThread(() -> {
-                        markerCollectionEPhones.addAll(markerOptionsCollectionEPhones);
-                    });
+                    requireActivity().runOnUiThread(() -> markerCollectionEPhones.addAll(markerOptionsCollectionEPhones));
                 }
                 ePhonesVisible = true;
             } catch (JSONException e) {
@@ -1616,5 +1611,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
         }
+
+        ViewGroup viewGroup = view.findViewById(R.id.ll_route);
+        viewGroup.getLayoutTransition().setAnimateParentHierarchy(false);
     }
 }

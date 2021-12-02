@@ -2,6 +2,9 @@ package com.mrst.aggiemaps;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,9 +64,16 @@ public class DirectionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     holderList.subtitleText.setVisibility(View.GONE);
                 if (mData.size() - 1 != position && mData.get(position + 1).tag != MainActivity.SearchTag.CATEGORY)
                     holderList.divider.setVisibility(View.VISIBLE);
-                Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
-                icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
-                holderList.directionIcon.setImageDrawable(icon);
+
+                if (mData.get(position).direction != Integer.MAX_VALUE) {
+                    Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), mData.get(position).direction);
+                    icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
+                    holderList.directionIcon.setImageDrawable(icon);
+                } else {
+                    Drawable icon = ContextCompat.getDrawable(mInflater.getContext(), R.drawable.bus);
+                    icon.setTintList(ColorStateList.valueOf(ContextCompat.getColor(mInflater.getContext(), R.color.white)));
+                    holderList.directionIcon.setImageDrawable(icon);
+                }
                 holderList.itemView.setEnabled(false);
                 break;
         }

@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 enum FeatureType {
+    BUS,
     LANDMARK,
     NOT_LANDMARK
 }

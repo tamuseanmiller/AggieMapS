@@ -9,6 +9,7 @@
     tools:context=".MapsFragment">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/cl_maps"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -47,6 +48,7 @@
             <!-- Bottom sheet contents. -->
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/route_selection_sheet"
                 style="@style/BottomSheetCorners"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

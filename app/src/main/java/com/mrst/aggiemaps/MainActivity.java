@@ -567,7 +567,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                     // If settings is visible, get rid of it and make the bar visible
                     if (getSupportFragmentManager().findFragmentByTag("3").isVisible()) {
                         materialSearchBar.setVisibility(View.VISIBLE);
-                        fm.beginTransaction().hide(settingsFragment).commit();
+                        exitSettings();
                     } else {
                         // Open the bus routes bottom sheet
                         MapsFragment mapsFragment = (MapsFragment) getSupportFragmentManager().findFragmentByTag("f2");
@@ -589,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
 
             // Switch between fragments on tap
             bottomBar.setOnItemSelectedListener((i, j, k) -> {
-                fm.beginTransaction().hide(settingsFragment).commit();
+                exitSettings();
                 if (j.getId() == R.id.directions) {
                     materialSearchBar.setVisibility(View.GONE);
                     markerFab.setVisibility(View.GONE);
@@ -732,7 +732,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
                 displaySpeechRecognizer();
                 break;
             case R.id.action_settings:
-                getSupportFragmentManager().beginTransaction().show(settingsFragment).commit();
+                enterSettings();
                 break;
         }
         if (id == R.id.action_microphone) {
@@ -893,7 +893,7 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
         }
         // Hide settings fragment if open
         if (!getSupportFragmentManager().findFragmentByTag("3").isHidden()) {
-            getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
+            exitSettings();
         }
         // End directions on back pressed if directions are being shown
         DirectionsFragment directionsFragment = (DirectionsFragment) getSupportFragmentManager().findFragmentByTag("f1");
@@ -903,8 +903,25 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
     }
 
     /*
+     * Method called when we want the settings fragment to be shown
+     */
+    private void enterSettings() {
+        getSupportFragmentManager().beginTransaction().show(settingsFragment).commit();
+        materialSearchBar.setVisibility(View.GONE);
+    }
+
+    /*
+     * Method called when we want the settings fragment to be hidden
+     */
+    public void exitSettings() {
+        getSupportFragmentManager().beginTransaction().hide(settingsFragment).commit();
+        materialSearchBar.setVisibility(View.VISIBLE);
+    }
+
+    /*
      * When a GIS Search Result is tapped, create marker and animate to position
      */
+    @SuppressLint("PotentialBehaviorOverride")
     @Override
     public void onGISClick(View view, int position) {
         addRecentSearches(GIS_ADAPTER, position);
@@ -925,17 +942,19 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             Drawable directions = ContextCompat.getDrawable(this, R.drawable.directions);
             directions.setTint(ContextCompat.getColor(this, R.color.foreground));
             mapsFragment.mMap.setOnMarkerClickListener(marker -> {
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle("Directions")
-                        .setMessage("Would you like to find directions to " + marker.getTitle())
-                        .setCancelable(true)
-                        .setPositiveButton("Yes", (dialogInterface, i) -> {
-                            directionsFragment.mMap.addMarker(selectedResult);
-                            enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, 0, SearchTag.RESULT, marker.getPosition()));
-                        })
-                        .setNegativeButton("No", null)
-                        .setIcon(directions)
-                        .show();
+                if (!Objects.requireNonNull(marker.getTitle()).startsWith("Occupancy") && !marker.isFlat()) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Directions")
+                            .setMessage("Would you like to find directions to " + marker.getTitle())
+                            .setCancelable(true)
+                            .setPositiveButton("Yes", (dialogInterface, i) -> {
+                                directionsFragment.mMap.addMarker(selectedResult);
+                                enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, 0, SearchTag.RESULT, marker.getPosition()));
+                            })
+                            .setNegativeButton("No", null)
+                            .setIcon(directions)
+                            .show();
+                }
                 return false;
             });
         }

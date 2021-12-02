@@ -170,6 +170,12 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     public boolean kiosksVisible;
     public boolean entrancesVisible;
     public boolean ePhonesVisible;
+    private final CRSFactory crsFactory = new CRSFactory();
+    private final CoordinateReferenceSystem targetCRS = crsFactory.createFromName("EPSG:4236");
+    private final CoordinateReferenceSystem sourceCRS = crsFactory.createFromName("EPSG:3857");
+    private final CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
+    private final CoordinateTransform wgsToUtm = ctFactory.createTransform(sourceCRS, targetCRS);
+    private final ProjCoordinate result = new ProjCoordinate();
 
     @Override
     public void onItemClick(View view, int position) {
@@ -183,15 +189,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * Method to convert transportation coords to LatLng
      * returns Point
      */
-    private static Point convertWebMercatorToLatLng(final double x, final double y) {
-        CRSFactory crsFactory = new CRSFactory();
-        CoordinateReferenceSystem targetCRS = crsFactory.createFromName("EPSG:4236");
-        CoordinateReferenceSystem sourceCRS = crsFactory.createFromName("EPSG:3857");
-        CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
-        CoordinateTransform wgsToUtm = ctFactory.createTransform(sourceCRS, targetCRS);
-        ProjCoordinate result = new ProjCoordinate();
+    private Point convertWebMercatorToLatLng(final double x, final double y) {
         wgsToUtm.transform(new ProjCoordinate(x, y), result);
-
         return new Point(result.x, result.y);
     }
 
@@ -508,13 +507,9 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
     }
 
     private void getLocationPermission() {
-        if (ContextCompat.checkSelfPermission(requireActivity(),
+        locationPermissionGranted = ContextCompat.checkSelfPermission(requireActivity(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            locationPermissionGranted = true;
-        } else {
-            locationPermissionGranted = false;
-        }
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     public void updateLocationUI() {
@@ -587,7 +582,7 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
      * When the map is ready to be interacted with
      * Ex. Draw lines, add circles, set style
      */
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
+    private final OnMapReadyCallback callback = new OnMapReadyCallback() {
 
         /**
          * Manipulates the map once available.
@@ -650,8 +645,8 @@ public class MapsFragment extends Fragment implements OnCampusAdapter.ItemClickL
             markerCollectionPOIs = markerManager.newCollection();
             markerCollectionRestrooms = markerManager.newCollection();
             markerCollectionEntrances = markerManager.newCollection();
-            markerCollectionParking = markerManager.newCollection();;
-            markerCollectionEPhones = markerManager.newCollection();;
+            markerCollectionParking = markerManager.newCollection();
+            markerCollectionEPhones = markerManager.newCollection();
 
             // Set Click Listener for polyline
             mMap.setOnPolylineClickListener(polyline -> {

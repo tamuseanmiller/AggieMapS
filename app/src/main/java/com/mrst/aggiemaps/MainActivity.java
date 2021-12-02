@@ -981,17 +981,19 @@ public class MainActivity extends AppCompatActivity implements GISSearchAdapter.
             mapsFragment.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(googleSearchAdapter.getItem(position).position, 18.0f));
             mapsFragment.mMap.addMarker(selectedResult);
             mapsFragment.mMap.setOnMarkerClickListener(marker -> {
-                new MaterialAlertDialogBuilder(this)
-                        .setTitle("Directions")
-                        .setMessage("Would you like to find directions to " + marker.getTitle())
-                        .setPositiveButton("Yes", (dialogInterface, i) -> {
-                            directionsFragment.mMap.addMarker(selectedResult);
-                            enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, SearchTag.RESULT, marker.getPosition()));
-                        })
-                        .setIcon(R.drawable.directions)
-                        .setCancelable(true)
-                        .setNegativeButton("No", null)
-                        .show();
+                if (!Objects.requireNonNull(marker.getTitle()).startsWith("Occupancy") && !marker.isFlat()) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("Directions")
+                            .setMessage("Would you like to find directions to " + marker.getTitle())
+                            .setPositiveButton("Yes", (dialogInterface, i) -> {
+                                directionsFragment.mMap.addMarker(selectedResult);
+                                enterDirectionsMode(new ListItem(marker.getTitle(), null, 0, SearchTag.RESULT, marker.getPosition()));
+                            })
+                            .setIcon(R.drawable.directions)
+                            .setCancelable(true)
+                            .setNegativeButton("No", null)
+                            .show();
+                }
                 return false;
             });
         }

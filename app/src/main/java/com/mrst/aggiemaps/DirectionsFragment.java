@@ -11,10 +11,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -576,7 +573,7 @@ public class DirectionsFragment extends Fragment {
             // Initialize my location FAB
             fabMyLocation = mView.findViewById(R.id.fab_mylocation);
             fabMyLocation.setOnClickListener(v -> {
-                if (lastKnownLocation != null){
+                if (lastKnownLocation != null) {
                     LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 13.0f));
                 }
@@ -683,7 +680,7 @@ public class DirectionsFragment extends Fragment {
             fabSwap = mView.findViewById(R.id.fab_swap);
             fabSwap.setOnClickListener(v -> swapDirections());
 
-            // Initilize the trip type chip group
+            // Initialize the trip type chip group
             tripTypeGroup = mView.findViewById(R.id.trip_type_group);
             tripTypeGroup.setOnCheckedChangeListener((group, checkedId) -> {
                 if (directionsSheet.getVisibility() == View.VISIBLE) {
@@ -709,12 +706,15 @@ public class DirectionsFragment extends Fragment {
     }
 
     private void swapDirections() {
+
+        // Swap both if directions are already being shown, show new directions
         if (srcItem != null && destItem != null) {
             srcSearchBar.setText(destItem.title);
             destSearchBar.setText(srcItem.title);
             ListItem tempItem = srcItem;
             srcItem = destItem;
             destItem = tempItem;
+            createDirections(destItem);
         } else if (srcItem != null) {
             destItem = srcItem;
             destSearchBar.setText(srcItem.title);
@@ -728,7 +728,6 @@ public class DirectionsFragment extends Fragment {
             destSearchBar.setText("");
             destSearchBar.setHint("Choose destination");
         }
-        createDirections(destItem);
     }
 
     private int convertDpToPx(int dp) {
@@ -766,7 +765,14 @@ public class DirectionsFragment extends Fragment {
         Calendar currentTime = Calendar.getInstance();
         currentTime.getTime();
         currentTime.add(Calendar.MINUTE, (int) totalTime);
-        String finalTime = currentTime.get(Calendar.HOUR) + ":" + currentTime.get(Calendar.MINUTE);
+
+        // Check for noon == 0
+        String finalTime;
+        if (currentTime.get(Calendar.HOUR) == 0) {
+            finalTime = "12:" + currentTime.get(Calendar.MINUTE);
+        } else {
+            finalTime = currentTime.get(Calendar.HOUR) + ":" + currentTime.get(Calendar.MINUTE);
+        }
         String afternoon = " PM";
         if (currentTime.get(Calendar.AM_PM) == Calendar.AM) {
             afternoon = " AM";
@@ -779,19 +785,21 @@ public class DirectionsFragment extends Fragment {
         if (itemTapped != null) {
 
             // Set source and destination items based on what is tapped
-            int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
-            if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
-                LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                srcSearchBar.setText("Current location");
-                destSearchBar.setText(itemTapped.title);
-                destItem = itemTapped;
-                srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
-            } else if (whichSearchBar == SRC_SEARCH_BAR) {
-                srcSearchBar.setText(itemTapped.title);
-                srcItem = itemTapped;
-            } else if (whichSearchBar == DEST_SEARCH_BAR) {
-                destSearchBar.setText(itemTapped.title);
-                destItem = itemTapped;
+            if (srcItem == null || destItem == null) {
+                int whichSearchBar = ((MainActivity) requireActivity()).whichSearchBar;
+                if (whichSearchBar == MAIN_SEARCH_BAR && locationPermissionGranted) {
+                    LatLng currLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    srcSearchBar.setText("Current location");
+                    destSearchBar.setText(itemTapped.title);
+                    destItem = itemTapped;
+                    srcItem = new ListItem("Current Location", "", 0, MainActivity.SearchTag.RESULT, currLocation);
+                } else if (whichSearchBar == SRC_SEARCH_BAR) {
+                    srcSearchBar.setText(itemTapped.title);
+                    srcItem = itemTapped;
+                } else if (whichSearchBar == DEST_SEARCH_BAR) {
+                    destSearchBar.setText(itemTapped.title);
+                    destItem = itemTapped;
+                }
             }
 
             // If a source and destination exists, create directions

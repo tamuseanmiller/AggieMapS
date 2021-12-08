@@ -40,7 +40,7 @@ The user can then select the Garage Fragment which is pretty straightforward. Wi
 
 The last fragment is the Settings fragment, this can be accessed by tapping the "cog" icon in the Search Bar of the Maps Fragment. Contained within are all of the settings to change the theme of the app and the styles of the map. It also gives you the capability to pre-load or update previously loaded bus routes. This will cut down on the amount of time it would take for a bus route to render on the map.
 
-[System Architecture Diagram](pictures/System_Architecture_Diagram.png)
+![System Architecture Diagram](pictures/System_Architecture_Diagram.png)
 
 ## API Specification
 
@@ -54,7 +54,7 @@ MAPS_API_KEY=<your-api-key>
 
 ## Contributions
 
-Check out the ![Contributing Guidelines](CONTRIBUTING.md)
+Check out the [Contributing Guidelines](CONTRIBUTING.md)
 
 ## Credits
 

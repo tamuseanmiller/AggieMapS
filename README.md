@@ -54,7 +54,7 @@ MAPS_API_KEY=<your-api-key>
 
 ## Contributions
 
-Check out the [Contributing Guidelines](CONTRIBUTING.md)
+Check out the ![Contributing Guidelines](CONTRIBUTING.md)
 
 ## Credits
 
